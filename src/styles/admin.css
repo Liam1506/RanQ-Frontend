@@ -6,7 +6,8 @@
 }
 
 .admin-box {
-  background-color: var(--color-option-bg);
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-option-bg);
   border-radius: var(--border-radius-card);
   padding: 1rem 1.25rem;
   display: flex;
@@ -44,22 +45,31 @@
 }
 
 .admin-btn-danger {
-  color: #c0392b;
+  color: var(--color-accent);
 }
-.admin-box-polls {
 
+.admin-btn-danger:hover {
+  color: red;
+}
+
+.admin-box-polls {}
+
+.admin-box .poll-card:hover {
+  opacity: 1;
 }
 
 .approve-btn {
   font-size: var(--font-size-sm);
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.75rem;
   width: fit-content;
-  align-self: center;
   border: none;
   border-radius: var(--border-radius);
   background: var(--color-option-bg);
-  color: #27ae60;
+  color: var(--color-accent);
   cursor: pointer;
+}
+.approve-btn:hover {
+  color: #27ae60;
 }
 
 .approve-btn:hover {

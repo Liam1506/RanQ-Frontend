@@ -16,7 +16,8 @@
 }
 
 .poll-card--detail {
-  padding: 2rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--color-divider);
   animation: cardIn 0.3s ease backwards;
 }
 
@@ -54,7 +55,7 @@
 }
 
 .poll-card--detail:hover {
-  transform: none;
+  opacity: 1;
 }
 
 .poll-vote-option:hover {

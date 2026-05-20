@@ -14,19 +14,17 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  padding: 1.25rem;
-  border-radius: var(--border-radius-card);
-  background-color: var(--color-input-bg);
-  color: var(--color-input-text);
-  box-shadow: var(--inset-shadow);
+  padding: 1.1rem 0;
+  color: var(--color-text);
   text-decoration: none;
   cursor: pointer;
   animation: cardIn 0.3s ease backwards;
-  transition: transform 0.2s ease;
+  border-bottom: 1px solid var(--color-divider);
+  transition: opacity 0.15s ease;
 }
 
 .poll-card:hover {
-  transform: scale(1.02);
+  opacity: 0.7;
 }
 
 .poll-question {

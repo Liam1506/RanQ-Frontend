@@ -18,6 +18,7 @@ type Poll = {
 };
 
 let allPolls: Poll[] = [];
+let showUnvoted = false;
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
@@ -62,14 +63,13 @@ function renderPoll(poll: Poll): string {
 
 function applyFilters() {
   const sort = (document.getElementById("filter-sort") as HTMLSelectElement).value;
-  const voted = (document.getElementById("filter-voted") as HTMLInputElement).checked;
 
   const feed = document.getElementById("feed")!;
 
   let polls = [...allPolls];
 
-  if (voted) {
-    polls = polls.filter((p) => p.voted_option_id !== null);
+  if (showUnvoted) {
+    polls = polls.filter((p) => p.voted_option_id === null);
   }
 
   if (sort === "oldest") {
@@ -128,7 +128,13 @@ async function loadFeed() {
   applyFilters();
 
   document.getElementById("filter-sort")?.addEventListener("change", applyFilters);
-  document.getElementById("filter-voted")?.addEventListener("change", applyFilters);
+
+  const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
+  unvotedBtn?.addEventListener("click", () => {
+    showUnvoted = !showUnvoted;
+    unvotedBtn.classList.toggle("active", showUnvoted);
+    applyFilters();
+  });
 }
 
 loadFeed();
