@@ -6,13 +6,13 @@
 }
 
 .settings-box {
-  background-color: var(--color-input-bg);
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-option-bg);
   border-radius: var(--border-radius-card);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  box-shadow: var(--inset-shadow);
 }
 
 .settings-box-title {
