@@ -3,10 +3,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/start.css";
 import "../styles/poll-card.css";
 import "../styles/poll-detail.css";
+import "../styles/poll-comments.css";
 ---
 
 <BaseLayout>
   <div id="poll-detail" class="poll-detail">
+    <p class="feed-loading">loading...</p>
+  </div>
+  <div id="poll-comments" class="poll-comments">
     <p class="feed-loading">loading...</p>
   </div>
 </BaseLayout>

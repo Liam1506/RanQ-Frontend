@@ -10,9 +10,9 @@
 .poll-detail {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: calc(100vh - 8rem);
-  padding-bottom: 5rem;
+  justify-content: flex-start;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
 .poll-card--detail {
@@ -66,3 +66,4 @@
   margin-top: 0.5rem;
   display: block;
 }
+
