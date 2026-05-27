@@ -16,6 +16,13 @@ type Poll = {
   options: Option[];
 };
 
+type Comment = {
+  id: string;
+  poll_id: string;
+  created_by: string;
+  content: string;
+};
+
 const backBtn = document.createElement("a");
 backBtn.className = "back-btn";
 backBtn.href = "/start";
@@ -43,6 +50,82 @@ async function loadPoll() {
   }
 
   renderPoll(container, poll);
+  loadComment(pollId);
+}
+
+async function loadComment(poll_id: string) {
+  const res = await fetch(API.polls.getAllComments, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id }),
+  });
+  if (!res.ok) {
+    return;
+  }
+
+  const comments: Comment[] = await res.json();
+  console.log(comments);
+
+  const commentContainer = document.getElementById("poll-comments")!;
+  commentContainer.innerHTML = "";
+
+  renderComments(commentContainer, pollId, comments);
+}
+
+function renderComments(container: HTMLElement, poll_id: string, comments: Comment[]) {
+  const section = document.createElement("div");
+  section.className = "comments-section";
+
+  const heading = document.createElement("p");
+  heading.className = "comments-heading";
+  heading.textContent = "comments";
+
+  const inputRow = document.createElement("div");
+  inputRow.className = "comment-input-row";
+
+  const input = document.createElement("input");
+  input.className = "comment-input";
+  input.placeholder = "add a comment...";
+  input.maxLength = 280;
+  input.id = "comment-input";
+
+  const submitBtn = document.createElement("button");
+  submitBtn.className = "comment-submit-btn";
+  submitBtn.textContent = "post";
+
+  inputRow.append(input, submitBtn);
+
+  const list = document.createElement("ul");
+  list.className = "comment-list";
+
+  if (comments.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "comment-empty";
+    empty.textContent = "no comments yet.";
+    list.append(empty);
+  } else {
+    for (const c of comments) {
+      const li = document.createElement("li");
+      li.className = "comment-item";
+
+      const author = document.createElement("span");
+      author.className = "comment-author";
+      author.textContent = c.created_by;
+
+      const body = document.createElement("span");
+      body.className = "comment-body";
+      body.textContent = c.content;
+
+      li.append(author, body);
+      list.append(li);
+    }
+  }
+
+  section.append(heading, inputRow, list);
+  container.append(section);
 }
 
 function renderPoll(container: HTMLElement, poll: Poll) {
@@ -95,7 +178,7 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   if (hasVoted) {
     const bars = optionsList.querySelectorAll<HTMLElement>(".poll-option-bar");
     const targets = poll.options.map((o) =>
-      totalVotes > 0 ? `${Math.round((o.votes / totalVotes) * 100)}%` : "0%"
+      totalVotes > 0 ? `${Math.round((o.votes / totalVotes) * 100)}%` : "0%",
     );
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
