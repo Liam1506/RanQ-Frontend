@@ -105,8 +105,20 @@ async function loadUnapprovedPolls() {
   });
 }
 
-function approve(pollId: string) {
-  console.log("approve poll:", pollId);
+async function approve(poll_id: string) {
+  const res = await fetch(API.polls.approvePoll, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id }),
+  });
+  if (!res.ok) {
+    console.error("failed to approve comments");
+    return;
+  }
+  loadUnapprovedPolls();
 }
 
 loadUnapprovedPolls();

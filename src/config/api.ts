@@ -18,5 +18,6 @@ export const API = {
     getAllComments: `${BASE_URL}/api/polls/getAllComments`,
     redditVote: `${BASE_URL}/api/polls/redditVote`,
     redditScore: `${BASE_URL}/api/polls/redditScore`,
+    approvePoll: `${BASE_URL}/api/polls/approvePoll`,
   },
 };
