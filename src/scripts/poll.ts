@@ -63,6 +63,7 @@ async function loadComment(poll_id: string) {
     body: JSON.stringify({ poll_id }),
   });
   if (!res.ok) {
+    console.error("failed to load comments");
     return;
   }
 
@@ -83,20 +84,7 @@ function renderComments(container: HTMLElement, poll_id: string, comments: Comme
   heading.className = "comments-heading";
   heading.textContent = "comments";
 
-  const inputRow = document.createElement("div");
-  inputRow.className = "comment-input-row";
-
-  const input = document.createElement("input");
-  input.className = "comment-input";
-  input.placeholder = "add a comment...";
-  input.maxLength = 280;
-  input.id = "comment-input";
-
-  const submitBtn = document.createElement("button");
-  submitBtn.className = "comment-submit-btn";
-  submitBtn.textContent = "post";
-
-  inputRow.append(input, submitBtn);
+  const inputRow = renderCommentCreation(poll_id);
 
   const list = document.createElement("ul");
   list.className = "comment-list";
@@ -126,6 +114,47 @@ function renderComments(container: HTMLElement, poll_id: string, comments: Comme
 
   section.append(heading, inputRow, list);
   container.append(section);
+}
+
+function renderCommentCreation(poll_id: string): HTMLDivElement {
+  const inputRow = document.createElement("div");
+  inputRow.className = "comment-input-row";
+
+  const input = document.createElement("input");
+  input.className = "comment-input";
+  input.placeholder = "add a comment...";
+  input.maxLength = 280;
+  input.id = "comment-input";
+
+  const submitBtn = document.createElement("button");
+  submitBtn.className = "comment-submit-btn";
+  submitBtn.textContent = "post";
+
+  submitBtn.addEventListener("click", () => {
+    const comment = input.value;
+    createComment(poll_id, comment);
+    input.value = "";
+  });
+
+  inputRow.append(input, submitBtn);
+  return inputRow;
+}
+
+async function createComment(poll_id: string, comment: string) {
+  const res = await fetch(API.polls.comment, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id, comment }),
+  });
+  if (!res.ok) {
+    console.error("comment could not be posted");
+    return;
+  }
+
+  loadComment(poll_id);
 }
 
 function renderPoll(container: HTMLElement, poll: Poll) {
