@@ -80,7 +80,10 @@ async function loadUnapprovedPolls() {
         <p class="poll-question">${poll.question}</p>
         <ul class="poll-options">${optionsHtml}</ul>
         <span class="poll-meta">${meta}</span>
-        <button class="approve-btn" data-poll-id="${poll.id}">Approve</button>
+        <div class="poll-card-actions">
+          <button class="approve-btn" data-poll-id="${poll.id}">Approve</button>
+          <button class="delete-btn" data-poll-id="${poll.id}">Delete</button>
+        </div>
       </a>`;
 
     const card = tmp.firstElementChild as HTMLElement;
@@ -102,6 +105,10 @@ async function loadUnapprovedPolls() {
     card.querySelector<HTMLButtonElement>(".approve-btn")!.addEventListener("click", () => {
       approve(poll.id);
     });
+
+    card.querySelector<HTMLButtonElement>(".delete-btn")!.addEventListener("click", () => {
+      deletePoll(poll.id);
+    });
   });
 }
 
@@ -118,6 +125,11 @@ async function approve(poll_id: string) {
     console.error("failed to approve comments");
     return;
   }
+  loadUnapprovedPolls();
+}
+
+async function deletePoll(poll_id: string) {
+  console.log("deleted poll: " + poll_id);
   loadUnapprovedPolls();
 }
 
