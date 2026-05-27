@@ -68,10 +68,29 @@
   color: var(--color-accent);
   cursor: pointer;
 }
-.approve-btn:hover {
-  color: #27ae60;
-}
 
 .approve-btn:hover {
+  color: #27ae60;
   opacity: 0.7;
+}
+
+.delete-btn {
+  font-size: var(--font-size-sm);
+  padding: 0.25rem 0.75rem;
+  width: fit-content;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--color-option-bg);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  color: red;
+  opacity: 0.7;
+}
+
+.poll-card-actions {
+  display: flex;
+  justify-content: space-between;
 }
