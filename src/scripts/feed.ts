@@ -118,7 +118,7 @@ async function loadFeed() {
     return;
   }
 
-  allPolls = await res.json();
+  allPolls = (await res.json()).filter((p: Poll) => p.approved);
 
   if (allPolls.length === 0) {
     feed.innerHTML = `<p class="feed-empty">no polls yet.</p>`;
