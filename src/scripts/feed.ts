@@ -23,7 +23,11 @@ let showUnvoted = false;
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function totalVotes(poll: Poll): number {
@@ -53,18 +57,17 @@ function renderPoll(poll: Poll): string {
     .filter(Boolean)
     .join(" · ");
 
-  getRedditVotes(poll.id);
-
   return `
     <a class="poll-card" href="/poll?id=${poll.id}">
       <p class="poll-question">${poll.question}</p>
       <ul class="poll-options">${options}</ul>
-      <span class="poll-meta">${meta} <button class="upvote-btn" data-poll-id="${poll.id}">▲ 0</button></span>
+      <span class="poll-meta">${meta} <button class="upvote-btn" data-poll-id="${poll.id}">▲ <span class="reddit-score" data-poll-id="${poll.id}">…</span></button></span>
     </a>`;
 }
 
 function applyFilters() {
-  const sort = (document.getElementById("filter-sort") as HTMLSelectElement).value;
+  const sort = (document.getElementById("filter-sort") as HTMLSelectElement)
+    .value;
 
   const feed = document.getElementById("feed")!;
 
@@ -85,18 +88,18 @@ function applyFilters() {
     return;
   }
 
-  feed.innerHTML = '';
+  feed.innerHTML = "";
 
   polls.forEach((poll, i) => {
-    const tmp = document.createElement('div');
+    const tmp = document.createElement("div");
     tmp.innerHTML = renderPoll(poll);
     const card = tmp.firstElementChild as HTMLElement;
 
     card.style.animationDelay = `${i * 0.06}s`;
 
-    const bars = card.querySelectorAll<HTMLElement>('.poll-option-bar');
+    const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
     const targets = Array.from(bars).map((b) => b.style.width);
-    bars.forEach((b) => (b.style.width = '0'));
+    bars.forEach((b) => (b.style.width = "0"));
 
     feed.appendChild(card);
 
@@ -108,19 +111,21 @@ function applyFilters() {
   });
 }
 
-async function getRedditVotes(poll_id: string) {
-  const res = await fetch(API.polls.redditVote, {
-    method: "GET", // fix
+async function getRedditVotes(poll_id: string): Promise<Number> {
+  const res = await fetch(API.polls.redditScore, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${userId}`,
     },
     body: JSON.stringify({ poll_id }),
   });
-  console.log(res);
-  if (!res.ok) {
+  if (res.ok) {
+    const redditScore = await res.json();
+    return redditScore.total_score;
+  } else {
     console.error("failed to load upvotes");
-    return;
+    return 0;
   }
 }
 
@@ -128,26 +133,34 @@ async function loadFeed() {
   const res = await fetch(API.polls.getAll, {
     headers: { Authorization: `Bearer ${userId}` },
   });
-
   const feed = document.getElementById("feed")!;
-
   if (!res.ok) {
     feed.innerHTML = `<p class="feed-error">failed to load polls.</p>`;
     return;
   }
 
   allPolls = (await res.json()).filter((p: Poll) => p.approved);
-
   if (allPolls.length === 0) {
     feed.innerHTML = `<p class="feed-empty">no polls yet.</p>`;
     return;
   }
-
   applyFilters();
 
-  document.getElementById("filter-sort")?.addEventListener("change", applyFilters);
+  allPolls.forEach(async (poll) => {
+    const score = await getRedditVotes(poll.id);
+    const span = document.querySelector<HTMLElement>(
+      `.reddit-score[data-poll-id="${poll.id}"]`,
+    );
+    if (span) span.textContent = String(score);
+  });
 
-  const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
+  document
+    .getElementById("filter-sort")
+    ?.addEventListener("change", applyFilters);
+
+  const unvotedBtn = document.getElementById(
+    "filter-unvoted",
+  ) as HTMLButtonElement;
   unvotedBtn?.addEventListener("click", () => {
     showUnvoted = !showUnvoted;
     unvotedBtn.classList.toggle("active", showUnvoted);
