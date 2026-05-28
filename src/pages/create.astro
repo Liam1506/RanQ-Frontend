@@ -6,7 +6,7 @@ import "../styles/create.css";
 <BaseLayout>
   <div class="create-wrapper">
     <div class="page-header">
-      <h1 class="page-title">Create</h1>
+      <h1 class="page-title">create</h1>
     </div>
     <form id="create-form">
       <input id="question" type="text" placeholder="your question" required />
@@ -14,7 +14,9 @@ import "../styles/create.css";
         <li><input type="text" placeholder="option 1" required /></li>
         <li><input type="text" placeholder="option 2" required /></li>
       </ul>
-      <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>
+      <button type="button" id="add-option-btn" class="add-option-btn"
+        >+ add option</button
+      >
       <p id="create-error" class="create-error"></p>
       <button type="submit">create</button>
     </form>
