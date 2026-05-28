@@ -59,7 +59,7 @@ function renderPoll(poll: Poll): string {
     <a class="poll-card" href="/poll?id=${poll.id}">
       <p class="poll-question">${poll.question}</p>
       <ul class="poll-options">${options}</ul>
-      <span class="poll-meta">${meta}</span>
+      <span class="poll-meta">${meta} <button class="upvote-btn" data-poll-id="${poll.id}">▲ 0</button></span>
     </a>`;
 }
 
