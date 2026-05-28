@@ -53,6 +53,8 @@ function renderPoll(poll: Poll): string {
     .filter(Boolean)
     .join(" · ");
 
+  getRedditVotes(poll.id);
+
   return `
     <a class="poll-card" href="/poll?id=${poll.id}">
       <p class="poll-question">${poll.question}</p>
@@ -104,6 +106,22 @@ function applyFilters() {
       });
     });
   });
+}
+
+async function getRedditVotes(poll_id: string) {
+  const res = await fetch(API.polls.redditVote, {
+    method: "GET", // fix
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id }),
+  });
+  console.log(res);
+  if (!res.ok) {
+    console.error("failed to load upvotes");
+    return;
+  }
 }
 
 async function loadFeed() {

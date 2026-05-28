@@ -24,7 +24,7 @@ function formatDate(iso: string | null): string {
 }
 
 async function loadUnapprovedPolls() {
-  const res = await fetch(API.polls.getAll, {
+  const res = await fetch(API.polls.getUnapproved, {
     headers: { Authorization: `Bearer ${userId}` },
   });
 
