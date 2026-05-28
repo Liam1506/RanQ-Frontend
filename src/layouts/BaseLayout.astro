@@ -1,6 +1,9 @@
 ---
 import "../styles/baseLayout.css";
 import ThemeToggle from "../components/ThemeToggle.astro";
+
+const { showNav = true } = Astro.props;
+const path = Astro.url.pathname;
 ---
 
 <!doctype html>
@@ -23,9 +26,9 @@ import ThemeToggle from "../components/ThemeToggle.astro";
         <slot />
       </div>
     </main>
-    <footer>
+    {showNav && <footer>
       <nav class="floating-nav">
-        <a href="/start" aria-label="Home">
+        <a href="/start" aria-label="Home" aria-current={path === "/start" ? "page" : undefined}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -42,7 +45,7 @@ import ThemeToggle from "../components/ThemeToggle.astro";
             <polyline points="9 21 9 12 15 12 15 21"></polyline>
           </svg>
         </a>
-        <a href="/search" aria-label="Search">
+        <a href="/search" aria-label="Search" aria-current={path === "/search" ? "page" : undefined}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -58,7 +61,7 @@ import ThemeToggle from "../components/ThemeToggle.astro";
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </a>
-        <a href="/create" aria-label="Add">
+        <a href="/create" aria-label="Add" aria-current={path === "/create" ? "page" : undefined}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -75,7 +78,7 @@ import ThemeToggle from "../components/ThemeToggle.astro";
             <line x1="8" y1="12" x2="16" y2="12"></line>
           </svg>
         </a>
-        <a href="/settings" aria-label="Settings">
+        <a href="/settings" aria-label="Settings" aria-current={path === "/settings" ? "page" : undefined}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -111,6 +114,6 @@ import ThemeToggle from "../components/ThemeToggle.astro";
           </svg>
         </a>
       </nav>
-    </footer>
+    </footer>}
   </body>
 </html>
