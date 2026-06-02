@@ -188,6 +188,8 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       pctSpan.className = "poll-option-pct";
       pctSpan.textContent = `${pct}%`;
       li.append(bar, label, pctSpan);
+      li.style.cursor = "pointer";
+      li.addEventListener("click", () => castVote(poll.id, opt.id));
     } else {
       li.className = "poll-vote-option";
       li.textContent = opt.option;

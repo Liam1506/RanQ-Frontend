@@ -1,6 +1,7 @@
 ---
 import "../styles/baseLayout.css";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import Logo from "../components/Logo.astro";
 
 const { showNav = true } = Astro.props;
 const path = Astro.url.pathname;
@@ -19,6 +20,7 @@ const path = Astro.url.pathname;
   </head>
   <body>
     <header>
+      <Logo />
       <ThemeToggle />
     </header>
     <main>
