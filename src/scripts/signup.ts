@@ -2,6 +2,7 @@ import { API } from "../config/api";
 import { setCookie } from "../utils/cookies";
 
 const form = document.getElementById("signup-form") as HTMLFormElement;
+const errorMsg = document.getElementById("signup-error") as HTMLParagraphElement;
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -23,6 +24,6 @@ form.addEventListener("submit", async (e) => {
     window.location.replace("/verify");
   } else {
     const body = await response.json().catch(() => null);
-    alert(body?.detail ?? "Registration failed");
+    errorMsg.textContent = body?.detail ?? "registration failed.";
   }
 });

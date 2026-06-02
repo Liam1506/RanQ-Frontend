@@ -13,7 +13,7 @@ const response = await fetch(API.polls.getAll, {
 });
 
 if (!response.ok) {
-  postList.innerHTML = `<p>Failed to load posts.</p>`;
+  postList.innerHTML = `<p class="feed-error">failed to load posts.</p>`;
 } else {
   const posts = await response.json();
   postList.innerHTML = posts

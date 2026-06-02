@@ -42,7 +42,6 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // auslagern
   const res = await fetch(API.polls.create, {
     method: "POST",
     headers: {
