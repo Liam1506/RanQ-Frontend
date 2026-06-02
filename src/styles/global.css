@@ -29,6 +29,25 @@ input {
   padding: 0 0.75rem;
   height: 2rem;
   box-shadow: var(--inset-shadow);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-input-bg) inset;
+  -webkit-text-fill-color: var(--color-input-text);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select:focus {
+  outline: none;
 }
 
 button {

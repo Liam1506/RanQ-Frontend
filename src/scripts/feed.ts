@@ -103,6 +103,10 @@ function applyFilters() {
 
     feed.appendChild(card);
 
+    card.addEventListener('click', () => {
+      sessionStorage.setItem('feedScroll', String(window.scrollY));
+    });
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         bars.forEach((b, j) => (b.style.width = targets[j]));
@@ -153,6 +157,12 @@ async function loadFeed() {
     );
     if (span) span.textContent = String(score);
   });
+
+  const savedScroll = sessionStorage.getItem('feedScroll');
+  if (savedScroll) {
+    sessionStorage.removeItem('feedScroll');
+    requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll)));
+  }
 
   document
     .getElementById("filter-sort")

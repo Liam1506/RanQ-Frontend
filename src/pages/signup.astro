@@ -4,12 +4,13 @@ import AuthLayout from "../layouts/AuthLayout.astro";
 
 <AuthLayout title="Sign Up">
   <form id="signup-form">
-    <input id="email" type="email" placeholder="DHBW-Email" required />
-    <input id="username" type="text" placeholder="Username" required />
-    <input id="password" type="password" placeholder="Password" required />
+    <input id="email" type="email" placeholder="dhbw-email" required />
+    <input id="username" type="text" placeholder="username" required />
+    <input id="password" type="password" placeholder="password" required />
     <button type="submit">→</button>
-    <a href="/login">Login</a>
-    <a href="/start" class="skip">Skip →</a>
+    <p id="signup-error" class="create-error"></p>
+    <a href="/login">login</a>
+    <a href="/start" class="skip">skip →</a>
   </form>
   <script src="../scripts/signup.ts"></script>
 </AuthLayout>

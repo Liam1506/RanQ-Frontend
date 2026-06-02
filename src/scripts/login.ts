@@ -3,15 +3,10 @@ import { setCookie } from "../utils/cookies";
 
 const form = document.getElementById("login-form") as HTMLFormElement;
 const btn = document.getElementById("submit-btn") as HTMLButtonElement;
-const toast = document.getElementById("toast") as HTMLDivElement;
+const errorMsg = document.getElementById("login-error") as HTMLParagraphElement;
 
-let toastTimer: ReturnType<typeof setTimeout>;
-
-function showToast(message: string) {
-  clearTimeout(toastTimer);
-  toast.textContent = message;
-  toast.classList.add("toast--visible");
-  toastTimer = setTimeout(() => toast.classList.remove("toast--visible"), 4000);
+function showError(message: string) {
+  errorMsg.textContent = message;
 }
 
 function setLoading(loading: boolean) {
@@ -45,12 +40,12 @@ form.addEventListener("submit", async (e) => {
       if (body?.detail === "Unverified") {
         window.location.replace("/verify");
       } else {
-        showToast(body?.detail ?? "Login failed");
+        showError(body?.detail ?? "login failed.");
         setLoading(false);
       }
     }
   } catch {
-    showToast("Network error — please try again");
+    showError("network error — please try again.");
     setLoading(false);
   }
 });

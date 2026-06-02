@@ -7,6 +7,7 @@ if (!userId) window.location.replace("/login");
 const form = document.getElementById("create-form") as HTMLFormElement;
 const optionsList = document.getElementById("options-list") as HTMLUListElement;
 const addBtn = document.getElementById("add-option-btn") as HTMLButtonElement;
+const removeBtn = document.getElementById("remove-option-btn") as HTMLButtonElement;
 const errorMsg = document.getElementById("create-error") as HTMLParagraphElement;
 
 addBtn.addEventListener("click", () => {
@@ -19,6 +20,12 @@ addBtn.addEventListener("click", () => {
   input.required = true;
   li.append(input);
   optionsList.append(li);
+});
+
+removeBtn.addEventListener("click", () => {
+  if (optionsList.children.length > 2) {
+    optionsList.lastElementChild?.remove();
+  }
 });
 
 form.addEventListener("submit", async (e) => {
@@ -35,7 +42,6 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
-  // auslagern
   const res = await fetch(API.polls.create, {
     method: "POST",
     headers: {
