@@ -23,10 +23,10 @@ type Comment = {
   content: string;
 };
 
-const backBtn = document.createElement("a");
+const backBtn = document.createElement("button");
 backBtn.className = "back-btn";
-backBtn.href = "/start";
 backBtn.textContent = "← back";
+backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
 
 async function loadPoll() {
