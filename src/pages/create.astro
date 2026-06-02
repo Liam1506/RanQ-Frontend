@@ -14,7 +14,10 @@ import "../styles/create.css";
         <li><input type="text" placeholder="option 1" required /></li>
         <li><input type="text" placeholder="option 2" required /></li>
       </ul>
-      <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>
+      <div class="option-btns">
+        <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>
+        <button type="button" id="remove-option-btn" class="add-option-btn">− remove option</button>
+      </div>
       <p id="create-error" class="create-error"></p>
       <button type="submit">create</button>
     </form>

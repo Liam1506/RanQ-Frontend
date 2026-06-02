@@ -24,6 +24,11 @@ form {
   width: 100%;
 }
 
+.option-btns {
+  display: flex;
+  justify-content: space-between;
+}
+
 .add-option-btn {
   background: none;
   border: none;
