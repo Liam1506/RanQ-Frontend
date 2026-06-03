@@ -13,6 +13,7 @@ type Poll = {
   created_by: string;
   approved: boolean;
   voted_option_id: string | null;
+  voted_id: string | null;
   options: Option[];
 };
 
@@ -188,6 +189,14 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       pctSpan.className = "poll-option-pct";
       pctSpan.textContent = `${pct}%`;
       li.append(bar, label, pctSpan);
+      li.style.cursor = "pointer";
+      li.addEventListener("click", () => {
+        if (isVoted) {
+          removeVote(poll.voted_id!);
+        } else {
+          castVote(poll.id, opt.id);
+        }
+      });
     } else {
       li.className = "poll-vote-option";
       li.textContent = opt.option;
@@ -225,6 +234,19 @@ async function castVote(pollId: string, optionId: string) {
       Authorization: `Bearer ${userId}`,
     },
     body: JSON.stringify({ poll_id: pollId, option_id: optionId }),
+  });
+
+  if (res.ok) setTimeout(loadPoll, 400);
+}
+
+async function removeVote(voteId: string) {
+  const res = await fetch(API.polls.deleteVote, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_vote_id: voteId }),
   });
 
   if (res.ok) setTimeout(loadPoll, 400);

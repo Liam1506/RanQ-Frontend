@@ -15,6 +15,7 @@ export const API = {
     create: `${BASE_URL}/api/polls/create`,
     delete: `${BASE_URL}/api/polls/delete`,
     vote: `${BASE_URL}/api/polls/vote`,
+    deleteVote: `${BASE_URL}/api/polls/deleteVote`,
     comment: `${BASE_URL}/api/polls/comment`,
     getAllComments: `${BASE_URL}/api/polls/getAllComments`,
     redditVote: `${BASE_URL}/api/polls/redditVote`,
