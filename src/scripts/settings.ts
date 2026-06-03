@@ -4,8 +4,7 @@ import { getCookie } from "../utils/cookies";
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
-// display account information
-// add functionality to delete account, other settings
+getUserInfo(userId!);
 
 type Poll = {
   id: string;
@@ -21,15 +20,28 @@ type Poll = {
 let allPolls: Poll[] = [];
 let showUnapprovedOnly = false;
 
+function getUserInfo(user_id: string) {
+  const info_user_id = document.getElementById(
+    "info-user-id",
+  ) as HTMLSpanElement;
+  info_user_id.innerHTML = user_id;
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function renderPolls() {
   const feed = document.getElementById("settings-box-polls")!;
-  const polls = showUnapprovedOnly ? allPolls.filter((p) => !p.approved) : allPolls;
+  const polls = showUnapprovedOnly
+    ? allPolls.filter((p) => !p.approved)
+    : allPolls;
 
   if (polls.length === 0) {
     feed.innerHTML = showUnapprovedOnly
@@ -79,7 +91,7 @@ function renderPolls() {
 
     const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
     const targets = poll.options.map((opt) =>
-      total > 0 ? `${Math.round((opt.votes / total) * 100)}%` : "0%"
+      total > 0 ? `${Math.round((opt.votes / total) * 100)}%` : "0%",
     );
 
     feed.appendChild(card);
@@ -90,9 +102,11 @@ function renderPolls() {
       });
     });
 
-    card.querySelector<HTMLButtonElement>(".delete-btn")!.addEventListener("click", () => {
-      deletePoll(poll.id);
-    });
+    card
+      .querySelector<HTMLButtonElement>(".delete-btn")!
+      .addEventListener("click", () => {
+        deletePoll(poll.id);
+      });
   });
 }
 
@@ -115,7 +129,9 @@ async function loadPolls() {
   renderPolls();
 }
 
-const unapprovedBtn = document.getElementById("filter-unapproved") as HTMLButtonElement;
+const unapprovedBtn = document.getElementById(
+  "filter-unapproved",
+) as HTMLButtonElement;
 unapprovedBtn?.addEventListener("click", () => {
   showUnapprovedOnly = !showUnapprovedOnly;
   unapprovedBtn.classList.toggle("active", showUnapprovedOnly);

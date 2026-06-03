@@ -171,6 +171,10 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   const optionsList = document.createElement("ul");
   optionsList.className = "poll-options";
 
+  const unvoteBtn = document.createElement("button");
+  unvoteBtn.className = "unvote-btn";
+  unvoteBtn.textContent = "unvote";
+
   for (const opt of poll.options) {
     const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
     const isVoted = opt.id === poll.voted_option_id;
@@ -190,6 +194,8 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       li.append(bar, label, pctSpan);
       li.style.cursor = "pointer";
       li.addEventListener("click", () => castVote(poll.id, opt.id));
+
+      unvoteBtn.addEventListener("click", () => unvote(poll.id));
     } else {
       li.className = "poll-vote-option";
       li.textContent = opt.option;
@@ -203,7 +209,11 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   meta.className = "poll-meta";
   meta.textContent = `${totalVotes} vote${totalVotes !== 1 ? "s" : ""}`;
 
-  card.append(question, optionsList, meta);
+  const metaRow = document.createElement("div");
+  metaRow.className = "poll-meta-row";
+  metaRow.append(meta, unvoteBtn);
+
+  card.append(question, optionsList, metaRow);
   container.append(card);
 
   if (hasVoted) {
@@ -217,6 +227,11 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       });
     });
   }
+}
+
+async function unvote(pollId: string) {
+  console.log("poll to be unvoted for: " + pollId);
+  
 }
 
 async function castVote(pollId: string, optionId: string) {

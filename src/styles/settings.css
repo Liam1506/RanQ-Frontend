@@ -54,4 +54,17 @@
   color: var(--danger);
 }
 
+.settings-info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
+.settings-info-label {
+  font-size: var(--font-size-md);
+  opacity: 0.5;
+}
+
+.settings-info-value {
+  font-size: var(--font-size-md);
+}
