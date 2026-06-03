@@ -18,37 +18,29 @@ type Poll = {
   options: Array<{ id: string; option: string; votes: number }>;
 };
 
+let allPolls: Poll[] = [];
+let showUnapprovedOnly = false;
+
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
-async function loadUnapprovedPolls() {
-  const res = await fetch(API.polls.getMyPolls, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+function renderPolls() {
   const feed = document.getElementById("settings-box-polls")!;
-  if (!res.ok) {
-    feed.innerHTML = `<p class="feed-error">failed to load polls.</p>`;
-    return;
-  }
+  const polls = showUnapprovedOnly ? allPolls.filter((p) => !p.approved) : allPolls;
 
-  const polls: Poll[] = await res.json();
   if (polls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">no polls yet.</p>`;
-    return;
-  }
-
-  const unapprovedPolls = polls.filter((poll) => !poll.approved);
-  if (unapprovedPolls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">no unapproved polls.</p>`;
+    feed.innerHTML = showUnapprovedOnly
+      ? `<p class="feed-empty">no unapproved polls.</p>`
+      : `<p class="feed-empty">no polls yet.</p>`;
     return;
   }
 
   feed.innerHTML = "";
 
-  unapprovedPolls.forEach((poll, i) => {
+  polls.forEach((poll, i) => {
     const total = poll.options.reduce((s, o) => s + o.votes, 0);
 
     const optionsHtml = poll.options
@@ -106,7 +98,28 @@ async function loadUnapprovedPolls() {
 
 async function deletePoll(poll_id: string) {
   console.log("deleted my poll: " + poll_id);
-  loadUnapprovedPolls();
+  await loadPolls();
 }
 
-loadUnapprovedPolls();
+async function loadPolls() {
+  const res = await fetch(API.polls.getMyPolls, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  const feed = document.getElementById("settings-box-polls")!;
+  if (!res.ok) {
+    feed.innerHTML = `<p class="feed-error">failed to load polls.</p>`;
+    return;
+  }
+
+  allPolls = await res.json();
+  renderPolls();
+}
+
+const unapprovedBtn = document.getElementById("filter-unapproved") as HTMLButtonElement;
+unapprovedBtn?.addEventListener("click", () => {
+  showUnapprovedOnly = !showUnapprovedOnly;
+  unapprovedBtn.classList.toggle("active", showUnapprovedOnly);
+  renderPolls();
+});
+
+loadPolls();

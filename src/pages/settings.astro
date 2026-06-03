@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/settings.css";
+import "../styles/start.css";
 import "../styles/admin.css";
 import "../styles/poll-card.css";
 ---
@@ -33,7 +34,10 @@ import "../styles/poll-card.css";
       </div>
     </div>
     <div class="settings-box">
-      <h2 class="settings-box-title">your polls waiting for approval</h2>
+      <h2 class="settings-box-title">your polls</h2>
+      <div class="filters">
+        <button id="filter-unapproved" class="filter-toggle">unapproved only</button>
+      </div>
       <div id="settings-box-polls" class="feed">
         <p class="feed-loading">loading...</p>
       </div>
