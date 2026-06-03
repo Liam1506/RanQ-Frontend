@@ -1,6 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/settings.css";
+import "../styles/start.css";
+import "../styles/admin.css";
+import "../styles/poll-card.css";
 ---
 
 <BaseLayout>
@@ -28,6 +31,15 @@ import "../styles/settings.css";
         <button class="settings-btn">edit profile</button>
         <button class="settings-btn">change password</button>
         <button class="settings-btn settings-btn-danger">delete account</button>
+      </div>
+    </div>
+    <div class="settings-box">
+      <h2 class="settings-box-title">your polls</h2>
+      <div class="filters">
+        <button id="filter-unapproved" class="filter-toggle">unapproved only</button>
+      </div>
+      <div id="settings-box-polls" class="feed">
+        <p class="feed-loading">loading...</p>
       </div>
     </div>
   </div>
