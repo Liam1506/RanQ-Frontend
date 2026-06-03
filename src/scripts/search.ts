@@ -6,6 +6,7 @@ if (!userId) window.location.replace("/login");
 
 const input = document.getElementById("search-input") as HTMLInputElement;
 const noResults = document.getElementById("no-results") as HTMLParagraphElement;
+const searchHint = document.getElementById("search-hint") as HTMLParagraphElement;
 const postList = document.getElementById("post-list") as HTMLElement;
 
 const response = await fetch(API.polls.getAll, {
@@ -49,8 +50,11 @@ input.addEventListener("input", () => {
   if (query === "") {
     postWrapper.forEach((w) => w.classList.add("hidden"));
     noResults.classList.add("hidden");
+    searchHint.classList.remove("hidden");
     return;
   }
+
+  searchHint.classList.add("hidden");
 
   let foundAny = false;
 
