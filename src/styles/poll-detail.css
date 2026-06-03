@@ -66,8 +66,30 @@
   opacity: 0.75;
 }
 
-.poll-card--detail .poll-meta {
+.poll-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.poll-card--detail .poll-meta {
   display: block;
+}
+
+.unvote-btn {
+  font-size: var(--font-size-sm);
+  padding: 0.25rem 0.75rem;
+  width: fit-content;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--color-option-bg);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.unvote-btn:hover {
+  color: var(--positive);
+  opacity: 0.7;
 }
 
