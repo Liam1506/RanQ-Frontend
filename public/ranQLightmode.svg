@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Mono&amp;display=swap');
   </style>
   <text
     font-family="'Space Mono', 'Courier New', monospace"
-    font-size="64"
+    font-size="100"
     font-weight="400"
     text-anchor="middle"
     dominant-baseline="middle"
-    x="32"
-    y="32"
+    x="150"
+    y="150"
   >
-    <tspan fill="#e2b714">Q</tspan>
+    <tspan fill="#e2b714">ran</tspan><tspan fill="#1e1e1e">Q</tspan>
   </text>
 </svg>
