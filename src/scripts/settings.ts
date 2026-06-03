@@ -7,3 +7,106 @@ if (!userId) window.location.replace("/login");
 // display account information
 // add functionality to delete account, other settings
 
+type Poll = {
+  id: string;
+  question: string;
+  created_by: string;
+  creator_username: string | null;
+  created_at: string | null;
+  approved: boolean;
+  voted_option_id: string | null;
+  options: Array<{ id: string; option: string; votes: number }>;
+};
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+async function loadUnapprovedPolls() {
+  const res = await fetch(API.polls.getMyPolls, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  const feed = document.getElementById("settings-box-polls")!;
+  if (!res.ok) {
+    feed.innerHTML = `<p class="feed-error">failed to load polls.</p>`;
+    return;
+  }
+
+  const polls: Poll[] = await res.json();
+  if (polls.length === 0) {
+    feed.innerHTML = `<p class="feed-empty">no polls yet.</p>`;
+    return;
+  }
+
+  const unapprovedPolls = polls.filter((poll) => !poll.approved);
+  if (unapprovedPolls.length === 0) {
+    feed.innerHTML = `<p class="feed-empty">no unapproved polls.</p>`;
+    return;
+  }
+
+  feed.innerHTML = "";
+
+  unapprovedPolls.forEach((poll, i) => {
+    const total = poll.options.reduce((s, o) => s + o.votes, 0);
+
+    const optionsHtml = poll.options
+      .map((opt) => {
+        const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+        return `
+          <li class="poll-option" non-clickable>
+            <div class="poll-option-bar" style="width:0%"></div>
+            <span class="poll-option-label">${opt.option}</span>
+            <span class="poll-option-pct">${pct}%</span>
+          </li>`;
+      })
+      .join("");
+
+    const meta = [
+      `${total} vote${total !== 1 ? "s" : ""}`,
+      poll.creator_username ? `by ${poll.creator_username}` : "",
+      poll.created_at ? formatDate(poll.created_at) : "",
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    const tmp = document.createElement("div");
+    tmp.innerHTML = `
+      <a class="poll-card" style="cursor:default">
+        <p class="poll-question">${poll.question}</p>
+        <ul class="poll-options">${optionsHtml}</ul>
+        <span class="poll-meta">${meta}</span>
+        <div class="poll-card-actions">
+          <button class="delete-btn" data-poll-id="${poll.id}">Delete</button>
+        </div>
+      </a>`;
+
+    const card = tmp.firstElementChild as HTMLElement;
+    card.style.animationDelay = `${i * 0.06}s`;
+
+    const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
+    const targets = poll.options.map((opt) =>
+      total > 0 ? `${Math.round((opt.votes / total) * 100)}%` : "0%"
+    );
+
+    feed.appendChild(card);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        bars.forEach((b, j) => (b.style.width = targets[j]));
+      });
+    });
+
+    card.querySelector<HTMLButtonElement>(".delete-btn")!.addEventListener("click", () => {
+      deletePoll(poll.id);
+    });
+  });
+}
+
+async function deletePoll(poll_id: string) {
+  console.log("deleted my poll: " + poll_id);
+  loadUnapprovedPolls();
+}
+
+loadUnapprovedPolls();

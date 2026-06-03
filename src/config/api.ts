@@ -12,6 +12,7 @@ export const API = {
     getAll: `${BASE_URL}/api/polls/getAll`,
     get: `${BASE_URL}/api/polls/get`,
     getUnapproved: `${BASE_URL}/api/polls/getUnapproved`,
+    getMyPolls: `${BASE_URL}/api/polls/getMyPolls`,
     create: `${BASE_URL}/api/polls/create`,
     delete: `${BASE_URL}/api/polls/delete`,
     vote: `${BASE_URL}/api/polls/vote`,

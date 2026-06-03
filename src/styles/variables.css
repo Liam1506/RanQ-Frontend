@@ -44,6 +44,9 @@
     --color-option-bar: var(--btn-vote-bar);
     --color-voted-bar: #e2b714;
 
+    --danger: red;
+    --positive: #27ae60;
+
     --color-divider: rgba(0, 0, 0, 0.12);
 }
 

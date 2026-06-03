@@ -17,11 +17,9 @@
 
 .settings-box-title {
   margin: 0;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-md);
   font-weight: 600;
-  opacity: 0.45;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  opacity: 0.5;
 }
 
 .settings-box-buttons {
@@ -49,6 +47,11 @@
 }
 
 .settings-btn-danger {
-  color: #c0392b;
+  color: var(--color-accent);
 }
+
+.settings-btn-danger:hover {
+  color: var(--danger);
+}
+
 
