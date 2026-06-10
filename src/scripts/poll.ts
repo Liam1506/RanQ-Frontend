@@ -76,7 +76,11 @@ async function loadComment(poll_id: string) {
   renderComments(commentContainer, pollId, comments);
 }
 
-function renderComments(container: HTMLElement, poll_id: string, comments: Comment[]) {
+function renderComments(
+  container: HTMLElement,
+  poll_id: string,
+  comments: Comment[],
+) {
   const section = document.createElement("div");
   section.className = "comments-section";
 
@@ -195,7 +199,7 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       li.style.cursor = "pointer";
       li.addEventListener("click", () => castVote(poll.id, opt.id));
 
-      unvoteBtn.addEventListener("click", () => unvote(poll.id));
+      if (userId) unvoteBtn.addEventListener("click", () => unvote(poll.id));
     } else {
       li.className = "poll-vote-option";
       li.textContent = opt.option;
@@ -230,8 +234,18 @@ function renderPoll(container: HTMLElement, poll: Poll) {
 }
 
 async function unvote(pollId: string) {
-  console.log("poll to be unvoted for: " + pollId);
-  
+  const res = await fetch(API.polls.deleteVote, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id: pollId, userId }),
+  });
+  if (!res.ok) {
+    console.error("Failed to delete vote, not implemented");
+    
+  }
 }
 
 async function castVote(pollId: string, optionId: string) {
