@@ -14,6 +14,8 @@ type Poll = {
   created_at: string | null;
   approved: boolean;
   voted_option_id: string | null;
+  total_up_down_score: number;
+  user_vote_up_down: number;
   options: Array<{ id: string; option: string; votes: number }>;
 };
 
@@ -57,11 +59,18 @@ function renderPoll(poll: Poll): string {
     .filter(Boolean)
     .join(" · ");
 
+  const upvoted = poll.user_vote_up_down === 1;
+  const downvoted = poll.user_vote_up_down === -1;
+
   return `
     <a class="poll-card" href="/poll?id=${poll.id}">
       <p class="poll-question">${poll.question}</p>
       <ul class="poll-options">${options}</ul>
-      <span class="poll-meta">${meta} <button class="upvote-btn" data-poll-id="${poll.id}">▲ <span class="reddit-score" data-poll-id="${poll.id}">…</span></button></span>
+      <span class="poll-meta">${meta} <span class="vote-btns">
+        <button class="upvote-btn${upvoted ? " upvoted" : ""}" data-poll-id="${poll.id}">▲</button>
+        <span class="reddit-score" data-poll-id="${poll.id}">${poll.total_up_down_score}</span>
+        <button class="downvote-btn${downvoted ? " downvoted" : ""}" data-poll-id="${poll.id}">▼</button>
+      </span></span>
     </a>`;
 }
 
@@ -107,30 +116,24 @@ function applyFilters() {
       sessionStorage.setItem("feedScroll", String(window.scrollY));
     });
 
+    card.querySelector<HTMLButtonElement>(".upvote-btn")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const poll = allPolls.find((p) => p.id === card.querySelector<HTMLButtonElement>(".upvote-btn")!.dataset.pollId)!;
+      redditVote(poll, poll.user_vote_up_down === 1 ? 0 : 1);
+    });
+
+    card.querySelector<HTMLButtonElement>(".downvote-btn")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const poll = allPolls.find((p) => p.id === card.querySelector<HTMLButtonElement>(".downvote-btn")!.dataset.pollId)!;
+      redditVote(poll, poll.user_vote_up_down === -1 ? 0 : -1);
+    });
+
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         bars.forEach((b, j) => (b.style.width = targets[j]));
       });
     });
   });
-}
-
-async function getRedditVotes(poll_id: string): Promise<Number> {
-  const res = await fetch(API.polls.redditScore, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id }),
-  });
-  if (res.ok) {
-    const redditScore = await res.json();
-    return redditScore.total_score;
-  } else {
-    console.error("failed to load upvotes");
-    return 0;
-  }
 }
 
 async function loadFeed() {
@@ -150,14 +153,6 @@ async function loadFeed() {
   }
   applyFilters();
 
-  allPolls.forEach(async (poll) => {
-    const score = await getRedditVotes(poll.id);
-    const span = document.querySelector<HTMLElement>(
-      `.reddit-score[data-poll-id="${poll.id}"]`,
-    );
-    if (span) span.textContent = String(score);
-  });
-
   const savedScroll = sessionStorage.getItem("feedScroll");
   if (savedScroll) {
     sessionStorage.removeItem("feedScroll");
@@ -176,6 +171,38 @@ async function loadFeed() {
     unvotedBtn.classList.toggle("active", showUnvoted);
     applyFilters();
   });
+}
+
+async function redditVote(poll: Poll, value: number) {
+  const previousVote = poll.user_vote_up_down;
+
+  poll.user_vote_up_down = value;
+  const scoreEl = document.querySelector<HTMLElement>(`.reddit-score[data-poll-id="${poll.id}"]`);
+  const upBtn = document.querySelector<HTMLButtonElement>(`.upvote-btn[data-poll-id="${poll.id}"]`);
+  const downBtn = document.querySelector<HTMLButtonElement>(`.downvote-btn[data-poll-id="${poll.id}"]`);
+  if (upBtn) upBtn.classList.toggle("upvoted", value === 1);
+  if (downBtn) downBtn.classList.toggle("downvoted", value === -1);
+
+  const res = await fetch(API.polls.redditVote, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id: poll.id, user_id: userId, voting_score: value }),
+  });
+
+  if (res.ok) {
+    poll.total_up_down_score += value - previousVote;
+    if (scoreEl) scoreEl.textContent = String(poll.total_up_down_score);
+  } else {
+    poll.user_vote_up_down = previousVote;
+    if (upBtn) upBtn.classList.toggle("upvoted", previousVote === 1);
+    if (downBtn) downBtn.classList.toggle("downvoted", previousVote === -1);
+    if (res.status === 409) {
+      console.warn("already voted on this poll");
+    }
+  }
 }
 
 loadFeed();
