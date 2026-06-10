@@ -21,5 +21,6 @@ export const API = {
     redditVote: `${BASE_URL}/api/polls/redditVote`,
     redditScore: `${BASE_URL}/api/polls/redditScore`,
     approvePoll: `${BASE_URL}/api/polls/approvePoll`,
+    deleteVote: `${BASE_URL}/api/polls/deleteVote`,
   },
 };
