@@ -175,10 +175,6 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   const optionsList = document.createElement("ul");
   optionsList.className = "poll-options";
 
-  const unvoteBtn = document.createElement("button");
-  unvoteBtn.className = "unvote-btn";
-  unvoteBtn.textContent = "unvote";
-
   for (const opt of poll.options) {
     const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
     const isVoted = opt.id === poll.voted_option_id;
@@ -199,7 +195,6 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       li.style.cursor = "pointer";
       li.addEventListener("click", () => castVote(poll.id, opt.id));
 
-      if (userId) unvoteBtn.addEventListener("click", () => unvote(poll.id));
     } else {
       li.className = "poll-vote-option";
       li.textContent = opt.option;
@@ -215,7 +210,7 @@ function renderPoll(container: HTMLElement, poll: Poll) {
 
   const metaRow = document.createElement("div");
   metaRow.className = "poll-meta-row";
-  metaRow.append(meta, unvoteBtn);
+  metaRow.append(meta);
 
   card.append(question, optionsList, metaRow);
   container.append(card);
@@ -230,21 +225,6 @@ function renderPoll(container: HTMLElement, poll: Poll) {
         bars.forEach((b, i) => (b.style.width = targets[i]));
       });
     });
-  }
-}
-
-async function unvote(pollId: string) {
-  const res = await fetch(API.polls.deleteVote, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id: pollId, userId }),
-  });
-  if (!res.ok) {
-    console.error("Failed to delete vote, not implemented");
-    
   }
 }
 
