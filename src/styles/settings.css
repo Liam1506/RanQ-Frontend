@@ -1,70 +1,119 @@
-.settingsWrapper {
+.settings-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2.5rem;
   padding-bottom: 5rem;
 }
 
-.settings-box {
-  background-color: var(--color-bg);
-  border: 2px solid var(--color-option-bg);
-  border-radius: var(--border-radius-card);
-  padding: 1.25rem;
+.settings-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-}
-
-.settings-box-title {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  opacity: 0.5;
-}
-
-.settings-box-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.settings-btn {
-  height: 1.75rem;
-  border: none;
-  border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  font-family: var(--font);
-  padding: 0 0.75rem;
-  text-align: left;
-  cursor: pointer;
-  transition: opacity 0.15s ease;
-}
-
-.settings-btn:hover {
-  opacity: 0.7;
-}
-
-.settings-btn-danger {
-  color: var(--color-accent);
-}
-
-.settings-btn-danger:hover {
-  color: var(--danger);
-}
-
-.settings-info-row {
-  display: flex;
-  align-items: center;
   gap: 0.5rem;
 }
 
-.settings-info-label {
-  font-size: var(--font-size-md);
-  opacity: 0.5;
+.settings-section-title {
+  margin: 0 0 0.75rem 0;
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+  opacity: 0.55;
+  border-bottom: 1px solid var(--color-divider);
+  padding-bottom: 0.4rem;
 }
 
-.settings-info-value {
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
   font-size: var(--font-size-md);
+}
+
+.settings-row-label {
+  opacity: 0.7;
+}
+
+.settings-row-value {
+  font-variant-numeric: tabular-nums;
+  word-break: break-all;
+  text-align: right;
+}
+
+.settings-row-actions {
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+.settings-action {
+  background: none;
+  border: 1px solid var(--color-divider);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.settings-action:hover {
+  border-color: var(--color-text);
+}
+
+.settings-action-danger {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.settings-action-danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Theme toggle row — segmented control */
+.theme-toggle-group {
+  display: flex;
+  border: 1px solid var(--color-divider);
+}
+
+.theme-option {
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.theme-option.active {
+  background: var(--color-accent);
+  color: var(--color-nav-icon);
+}
+
+/* Delete button on owned poll cards */
+.poll-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.delete-btn {
+  background: none;
+  border: 1px solid var(--color-divider);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.delete-btn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }

@@ -52,7 +52,10 @@ select:focus {
 
 button {
   font-family: var(--font);
+  color: inherit;
   cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .hidden {

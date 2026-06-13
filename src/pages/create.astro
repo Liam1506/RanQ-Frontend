@@ -8,20 +8,35 @@ import "../styles/create.css";
     <div class="page-header">
       <h1 class="page-title">create</h1>
     </div>
+
+    <div class="kind-toggle" role="tablist">
+      <button type="button" class="kind-tab active" data-kind="ranking" role="tab" aria-selected="true">ranking</button>
+      <button type="button" class="kind-tab" data-kind="post" role="tab" aria-selected="false">thought</button>
+    </div>
+
     <form id="create-form">
-      <input id="question" type="text" placeholder="your question" required />
-      <ul id="options-list" class="options-list">
-        <li><input type="text" placeholder="option 1" required /></li>
-        <li><input type="text" placeholder="option 2" required /></li>
-      </ul>
-      <div class="option-btns">
-        <button type="button" id="add-option-btn" class="add-option-btn"
-          >+ add option</button
-        >
-        <button type="button" id="remove-option-btn" class="add-option-btn"
-          >− remove option</button
-        >
+      <div class="field">
+        <label class="field-label" for="question" id="question-label">question</label>
+        <input id="question" type="text" placeholder="what's your question?" required />
       </div>
+
+      <div id="ranking-fields" class="field">
+        <span class="field-label">options</span>
+        <ul id="options-list" class="options-list">
+          <li><input type="text" placeholder="option 1" /></li>
+          <li><input type="text" placeholder="option 2" /></li>
+        </ul>
+        <div class="option-btns">
+          <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>
+          <button type="button" id="remove-option-btn" class="add-option-btn">− remove option</button>
+        </div>
+      </div>
+
+      <div id="post-fields" class="field" hidden>
+        <label class="field-label" for="body">body</label>
+        <textarea id="body" placeholder="write your post..." rows="8"></textarea>
+      </div>
+
       <p id="create-error" class="create-error"></p>
       <button type="submit">create</button>
     </form>

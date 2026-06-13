@@ -9,12 +9,18 @@ import "../styles/poll-card.css";
     <h1 class="page-title">feed</h1>
   </div>
   <div class="filters">
+    <div class="type-tabs" role="tablist">
+      <button type="button" class="type-tab active" data-type="all" role="tab">all</button>
+      <button type="button" class="type-tab" data-type="ranking" role="tab">rankings</button>
+      <button type="button" class="type-tab" data-type="post" role="tab">thoughts</button>
+    </div>
+    <button id="filter-unvoted" class="filter-toggle">not voted</button>
     <select id="filter-sort">
       <option value="newest">newest</option>
       <option value="oldest">oldest</option>
       <option value="popular">most votes</option>
+      <option value="discussed">most discussed</option>
     </select>
-    <button id="filter-unvoted" class="filter-toggle">not voted</button>
   </div>
   <div id="feed" class="feed">
     <p class="feed-loading">loading...</p>

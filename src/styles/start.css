@@ -18,6 +18,35 @@
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.type-tabs {
+  display: flex;
+  border: 1px solid var(--color-divider);
+  margin-right: 0.25rem;
+}
+
+.type-tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0.35rem 0.85rem;
+  opacity: 0.6;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.type-tab:hover {
+  opacity: 1;
+}
+
+.type-tab.active {
+  background: var(--color-accent);
+  color: var(--btn-color);
+  opacity: 1;
 }
 
 .filters select {
@@ -31,6 +60,7 @@
   padding: 0 0.75rem;
   box-shadow: var(--inset-shadow);
   cursor: pointer;
+  margin-left: auto;
 }
 
 .filter-toggle {

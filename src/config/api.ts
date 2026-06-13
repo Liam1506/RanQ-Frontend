@@ -7,6 +7,7 @@ export const API = {
     logout: `${BASE_URL}/api/auth/logout`,
     verify: `${BASE_URL}/api/auth/verify`,
     status: `${BASE_URL}/api/auth/status`,
+    devLogin: `${BASE_URL}/api/auth/dev-login`,
   },
   polls: {
     getAll: `${BASE_URL}/api/polls/getAll`,
@@ -22,5 +23,6 @@ export const API = {
     redditScore: `${BASE_URL}/api/polls/redditScore`,
     approvePoll: `${BASE_URL}/api/polls/approvePoll`,
     deleteVote: `${BASE_URL}/api/polls/deleteVote`,
+    like: `${BASE_URL}/api/polls/like`,
   },
 };

@@ -122,14 +122,25 @@ async function approve(poll_id: string) {
     body: JSON.stringify({ poll_id }),
   });
   if (!res.ok) {
-    console.error("failed to approve comments");
+    console.error("failed to approve poll");
     return;
   }
   loadUnapprovedPolls();
 }
 
 async function deletePoll(poll_id: string) {
-  console.log("deleted poll: " + poll_id);
+  const res = await fetch(API.polls.delete, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ id: poll_id }),
+  });
+  if (!res.ok) {
+    console.error("failed to delete poll");
+    return;
+  }
   loadUnapprovedPolls();
 }
 

@@ -9,6 +9,15 @@ const noResults = document.getElementById("no-results") as HTMLParagraphElement;
 const searchHint = document.getElementById("search-hint") as HTMLParagraphElement;
 const postList = document.getElementById("post-list") as HTMLElement;
 
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const response = await fetch(API.polls.getAll, {
   headers: { Authorization: `Bearer ${userId}` },
 });
@@ -26,16 +35,17 @@ if (!response.ok) {
           return `
             <li class="poll-option">
               <div class="poll-option-bar" style="width:${pct}%"></div>
-              <span class="poll-option-label">${opt.option}</span>
+              <span class="poll-option-label">${escapeAttr(opt.option)}</span>
               <span class="poll-option-pct">${pct}%</span>
             </li>`;
         }).join("");
+        const username = post.creator_username ?? "";
         return `
-        <div class="post-wrapper hidden" data-question="${post.question ?? ""}" data-created-by="${post.created_by ?? ""}">
+        <div class="post-wrapper hidden" data-question="${escapeAttr(post.question ?? "")}" data-username="${escapeAttr(username)}">
           <a class="poll-card" href="/poll?id=${post.id}">
-            <p class="poll-question">${post.question}</p>
+            <p class="poll-question">${escapeAttr(post.question)}</p>
             <ul class="poll-options">${options}</ul>
-            <span class="poll-meta">${totalVotes} vote${totalVotes !== 1 ? "s" : ""}</span>
+            <span class="poll-meta">${totalVotes} vote${totalVotes !== 1 ? "s" : ""}${username ? " · @" + escapeAttr(username) : ""}</span>
           </a>
         </div>`;
       },
@@ -45,7 +55,9 @@ if (!response.ok) {
 const postWrapper = postList.querySelectorAll<HTMLElement>(".post-wrapper");
 
 input.addEventListener("input", () => {
-  const query = input.value.toLowerCase();
+  const raw = input.value.trim().toLowerCase();
+  // allow typing "@alice" and still match username "alice"
+  const query = raw.startsWith("@") ? raw.slice(1) : raw;
 
   if (query === "") {
     postWrapper.forEach((w) => w.classList.add("hidden"));
@@ -59,9 +71,9 @@ input.addEventListener("input", () => {
   let foundAny = false;
 
   postWrapper.forEach((wrapper) => {
-    const username = wrapper.dataset.createdBy!.toLowerCase();
-    const questions = wrapper.dataset.question!.toLowerCase();
-    const matches = username.includes(query) || questions.includes(query);
+    const username = (wrapper.dataset.username ?? "").toLowerCase();
+    const question = (wrapper.dataset.question ?? "").toLowerCase();
+    const matches = username.includes(query) || question.includes(query);
     wrapper.classList.toggle("hidden", !matches);
     if (matches) foundAny = true;
   });

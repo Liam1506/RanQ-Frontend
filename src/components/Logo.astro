@@ -23,34 +23,34 @@
     display: none;
   }
 
-  /* light mode default */
-  #logo-light {
+  /* system mode default (light OS) */
+  #site-logo #logo-light {
     display: block;
   }
-  #logo-dark {
+
+  /* system mode + dark OS preference */
+  @media (prefers-color-scheme: dark) {
+    #site-logo #logo-light {
+      display: none;
+    }
+    #site-logo #logo-dark {
+      display: block;
+    }
+  }
+
+  /* forced light */
+  [data-theme="light"] #logo-light {
+    display: block;
+  }
+  [data-theme="light"] #logo-dark {
     display: none;
   }
 
+  /* forced dark */
   [data-theme="dark"] #logo-light {
     display: none;
   }
   [data-theme="dark"] #logo-dark {
     display: block;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    #logo-light {
-      display: none;
-    }
-    #logo-dark {
-      display: block;
-    }
-
-    [data-theme="light"] #logo-light {
-      display: block;
-    }
-    [data-theme="light"] #logo-dark {
-      display: none;
-    }
   }
 </style>

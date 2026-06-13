@@ -7,12 +7,22 @@ if (!userId) window.location.replace("/login");
 const pollId = new URLSearchParams(window.location.search).get("id")!;
 
 type Option = { id: string; option: string; votes: number };
+type Kind = "ranking" | "post";
 type Poll = {
   id: string;
+  kind: Kind;
   question: string;
+  body: string;
   created_by: string;
+  creator_username: string | null;
+  created_at: string | null;
   approved: boolean;
   voted_option_id: string | null;
+  comment_count: number;
+  like_count: number;
+  user_has_liked: boolean;
+  total_up_down_score: number;
+  user_vote_up_down: number | null;  // -1, 0, 1, or null
   options: Option[];
 };
 
@@ -23,34 +33,397 @@ type Comment = {
   content: string;
 };
 
+// in-memory state so vote / comment can update the DOM in place
+// rather than re-fetching and re-rendering (which causes a flash)
+let currentPoll: Poll | null = null;
+let rankingListEl: HTMLUListElement | null = null;
+let rankingMetaEl: HTMLElement | null = null;
+let currentComments: Comment[] = [];
+let commentListEl: HTMLUListElement | null = null;
+let commentHeadingEl: HTMLElement | null = null;
+// Frozen ranking order for the detail page: captured on first render so the
+// user's own vote doesn't visibly shuffle the rows. The feed re-sorts when
+// the user comes back; this only locks the order while on /poll.
+let rankingOrder: string[] | null = null;
+
 const backBtn = document.createElement("button");
 backBtn.className = "back-btn";
 backBtn.textContent = "← back";
 backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
 
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 async function loadPoll() {
   const container = document.getElementById("poll-detail")!;
   container.innerHTML = "";
+  // Drop the frozen order so the next applyRanking() captures fresh from the
+  // server-authoritative state (matters on the post-error refetch path).
+  rankingOrder = null;
 
   const res = await fetch(API.polls.getAll, {
     headers: { Authorization: `Bearer ${userId}` },
   });
 
   if (!res.ok) {
-    container.textContent = "failed to load poll.";
+    container.textContent = "failed to load ranking.";
     return;
   }
 
   const polls: Poll[] = await res.json();
   const poll = polls.find((p) => p.id === pollId);
   if (!poll) {
-    container.textContent = "poll not found.";
+    container.textContent = "ranking not found.";
     return;
   }
 
   renderPoll(container, poll);
   loadComment(pollId);
+}
+
+function renderPoll(container: HTMLElement, poll: Poll) {
+  const card = document.createElement("div");
+  card.className = "poll-card poll-card--detail";
+
+  const byline = document.createElement("p");
+  byline.className = "poll-byline";
+  const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
+  const date = poll.created_at ? formatDate(poll.created_at) : "";
+  byline.textContent = `by ${author}${date ? " · " + date : ""}`;
+
+  const question = document.createElement("p");
+  question.className = "poll-question";
+  question.textContent = poll.question;
+
+  card.append(byline, question);
+
+  if (poll.kind === "post") {
+    const body = document.createElement("p");
+    body.className = "poll-body poll-body--detail";
+    body.textContent = poll.body;
+    card.append(body);
+
+    const likeRow = renderLikeRow(poll);
+    card.append(likeRow);
+
+    container.append(card);
+    return;
+  }
+
+  // ranking
+  currentPoll = poll;
+
+  const optionsList = document.createElement("ul");
+  optionsList.className = "poll-options poll-options--ranked";
+  rankingListEl = optionsList;
+
+  const metaRow = document.createElement("div");
+  metaRow.className = "poll-meta-row";
+  const meta = document.createElement("span");
+  meta.className = "poll-meta";
+  metaRow.append(meta);
+  rankingMetaEl = meta;
+
+  card.append(optionsList, metaRow);
+
+  const upDownRow = renderUpDownRow(poll);
+  card.append(upDownRow);
+
+  container.append(card);
+
+  applyRanking({ animateFromZero: true });
+}
+
+function applyRanking({ animateFromZero = false } = {}) {
+  if (!currentPoll || !rankingListEl || !rankingMetaEl) return;
+  const poll = currentPoll;
+  const list = rankingListEl;
+
+  const total = poll.options.reduce((s, o) => s + o.votes, 0);
+
+  // Capture the ranking order on first render and keep it frozen while the
+  // user is on the detail page. Their own vote should change percentages and
+  // bars, NOT the row order — that re-shuffle is jarring. The feed will
+  // re-sort when they navigate back.
+  if (rankingOrder === null) {
+    rankingOrder = [...poll.options]
+      .sort((a, b) => b.votes - a.votes)
+      .map((o) => o.id);
+  }
+  const byId = new Map(poll.options.map((o) => [o.id, o]));
+  const ranked = rankingOrder
+    .map((id) => byId.get(id))
+    .filter((o): o is typeof poll.options[number] => Boolean(o));
+  // Leader follows the frozen order (the row shown at index 0). The user's
+  // own vote shouldn't suddenly make a different row light up either.
+  const leaderId = rankingOrder[0];
+
+  // index existing rows by option id so we can update in place
+  const existing = new Map<string, HTMLLIElement>();
+  list.querySelectorAll<HTMLLIElement>("li.poll-option").forEach((li) => {
+    if (li.dataset.optId) existing.set(li.dataset.optId, li);
+  });
+
+  const targets: Array<{ bar: HTMLElement; width: string }> = [];
+
+  ranked.forEach((opt) => {
+    const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+    const isVoted = opt.id === poll.voted_option_id;
+    let li = existing.get(opt.id);
+
+    if (!li) {
+      li = document.createElement("li");
+      li.dataset.optId = opt.id;
+      li.style.cursor = "pointer";
+
+      const bar = document.createElement("div");
+      bar.className = "poll-option-bar";
+      bar.style.width = "0";
+
+      const label = document.createElement("span");
+      label.className = "poll-option-label";
+      label.textContent = opt.option;
+
+      const pctSpan = document.createElement("span");
+      pctSpan.className = "poll-option-pct";
+
+      const count = document.createElement("span");
+      count.className = "poll-option-count";
+
+      li.append(bar, label, pctSpan, count);
+      li.addEventListener("click", () => castVote(opt.id));
+    }
+
+    li.className = `poll-option poll-option--ranked${isVoted ? " poll-option--voted" : ""}${opt.id === leaderId ? " poll-option--leader" : ""}`;
+
+    li.querySelector(".poll-option-pct")!.textContent = `${pct}%`;
+    li.querySelector(".poll-option-count")!.textContent = String(opt.votes);
+
+    const bar = li.querySelector<HTMLElement>(".poll-option-bar")!;
+    if (animateFromZero) bar.style.width = "0";
+    targets.push({ bar, width: `${pct}%` });
+
+    // re-append in frozen order; this is a move, not a destroy
+    list.appendChild(li);
+  });
+
+  rankingMetaEl.textContent = `${total} vote${total !== 1 ? "s" : ""}`;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      targets.forEach(({ bar, width }) => (bar.style.width = width));
+    });
+  });
+}
+
+async function castVote(optionId: string) {
+  if (!currentPoll) return;
+  const poll = currentPoll;
+  const previousVoteId = poll.voted_option_id;
+
+  // optimistic update
+  if (previousVoteId === optionId) {
+    // un-vote
+    const prev = poll.options.find((o) => o.id === optionId);
+    if (prev) prev.votes = Math.max(0, prev.votes - 1);
+    poll.voted_option_id = null;
+  } else {
+    if (previousVoteId) {
+      const old = poll.options.find((o) => o.id === previousVoteId);
+      if (old) old.votes = Math.max(0, old.votes - 1);
+    }
+    const next = poll.options.find((o) => o.id === optionId);
+    if (next) next.votes += 1;
+    poll.voted_option_id = optionId;
+  }
+  applyRanking();
+  stagePendingUpdate(poll.id, {
+    voted_option_id: poll.voted_option_id,
+    options: poll.options.map((o) => ({ ...o })),
+  });
+
+  const res = await fetch(API.polls.vote, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id: poll.id, option_id: optionId }),
+  });
+
+  if (!res.ok) {
+    // server rejected — refetch authoritative state
+    loadPoll();
+  }
+}
+
+// Write a partial update to sessionStorage so the feed page can pick it up
+// instantly when the user navigates back, before the silent refetch finishes.
+function renderUpDownRow(poll: Poll): HTMLDivElement {
+  const row = document.createElement("div");
+  row.className = "updown-row";
+
+  const up = document.createElement("button");
+  up.type = "button";
+  up.className = "updown-btn updown-btn--up";
+  up.setAttribute("aria-label", "upvote");
+  up.textContent = "▲";
+
+  const score = document.createElement("span");
+  score.className = "updown-score";
+
+  const down = document.createElement("button");
+  down.type = "button";
+  down.className = "updown-btn updown-btn--down";
+  down.setAttribute("aria-label", "downvote");
+  down.textContent = "▼";
+
+  row.append(up, score, down);
+  syncUpDown(poll, up, score, down);
+
+  up.addEventListener("click", () => castUpDownVote(poll, 1, up, score, down));
+  down.addEventListener("click", () => castUpDownVote(poll, -1, up, score, down));
+
+  return row;
+}
+
+function syncUpDown(
+  poll: Poll,
+  up: HTMLButtonElement,
+  score: HTMLElement,
+  down: HTMLButtonElement,
+) {
+  const v = poll.user_vote_up_down ?? 0;
+  score.textContent = String(poll.total_up_down_score);
+  up.classList.toggle("active", v === 1);
+  down.classList.toggle("active", v === -1);
+}
+
+async function castUpDownVote(
+  poll: Poll,
+  direction: 1 | -1,
+  up: HTMLButtonElement,
+  score: HTMLElement,
+  down: HTMLButtonElement,
+) {
+  const prev = poll.user_vote_up_down ?? 0;
+  // Clicking the already-active direction removes the vote
+  const next: 0 | 1 | -1 = prev === direction ? 0 : direction;
+
+  // Optimistic update
+  poll.total_up_down_score += next - prev;
+  poll.user_vote_up_down = next === 0 ? null : next;
+  syncUpDown(poll, up, score, down);
+
+  const res = await fetch(API.polls.redditVote, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id: poll.id, voting_score: next }),
+  });
+
+  if (!res.ok) {
+    // Roll back
+    poll.total_up_down_score -= next - prev;
+    poll.user_vote_up_down = prev === 0 ? null : prev;
+    syncUpDown(poll, up, score, down);
+    return;
+  }
+  // Stage after server confirms so the feed meta line reflects the right score
+  stagePendingUpdate(poll.id, {
+    total_up_down_score: poll.total_up_down_score,
+  });
+}
+
+function stagePendingUpdate(pollId: string, patch: Record<string, unknown>) {
+  let updates: Record<string, Record<string, unknown>> = {};
+  try {
+    const raw = sessionStorage.getItem("pendingPollUpdates");
+    if (raw) updates = JSON.parse(raw);
+  } catch {
+    /* ignore malformed storage */
+  }
+  updates[pollId] = { ...(updates[pollId] ?? {}), ...patch };
+  sessionStorage.setItem("pendingPollUpdates", JSON.stringify(updates));
+}
+
+function renderLikeRow(poll: Poll): HTMLDivElement {
+  const row = document.createElement("div");
+  row.className = "post-like-row";
+  row.dataset.pollId = poll.id;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `like-btn${poll.user_has_liked ? " liked" : ""}`;
+  button.setAttribute("aria-pressed", String(poll.user_has_liked));
+
+  const count = document.createElement("span");
+  count.className = "like-count";
+  count.textContent = String(poll.like_count);
+
+  const label = document.createElement("span");
+  label.className = "like-label";
+  label.textContent = poll.like_count === 1 ? "like" : "likes";
+
+  button.append(count, label);
+  button.addEventListener("click", () => toggleLike(poll, button, count, label));
+
+  row.append(button);
+  return row;
+}
+
+async function toggleLike(
+  poll: Poll,
+  button: HTMLButtonElement,
+  count: HTMLElement,
+  label: HTMLElement,
+) {
+  const wasLiked = poll.user_has_liked;
+  poll.user_has_liked = !wasLiked;
+  poll.like_count += wasLiked ? -1 : 1;
+  button.classList.toggle("liked", poll.user_has_liked);
+  button.setAttribute("aria-pressed", String(poll.user_has_liked));
+  count.textContent = String(poll.like_count);
+  label.textContent = poll.like_count === 1 ? "like" : "likes";
+
+  const res = await fetch(API.polls.like, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ poll_id: poll.id }),
+  });
+
+  if (!res.ok) {
+    poll.user_has_liked = wasLiked;
+    poll.like_count += wasLiked ? 1 : -1;
+    button.classList.toggle("liked", poll.user_has_liked);
+    button.setAttribute("aria-pressed", String(poll.user_has_liked));
+    count.textContent = String(poll.like_count);
+    label.textContent = poll.like_count === 1 ? "like" : "likes";
+    return;
+  }
+
+  const data = await res.json();
+  poll.like_count = data.like_count;
+  count.textContent = String(poll.like_count);
+  label.textContent = poll.like_count === 1 ? "like" : "likes";
+  // Stage after server confirms so the feed gets the authoritative count
+  stagePendingUpdate(poll.id, {
+    user_has_liked: poll.user_has_liked,
+    like_count: poll.like_count,
+  });
 }
 
 async function loadComment(poll_id: string) {
@@ -68,12 +441,34 @@ async function loadComment(poll_id: string) {
   }
 
   const comments: Comment[] = await res.json();
-  console.log(comments);
+  currentComments = comments;
 
   const commentContainer = document.getElementById("poll-comments")!;
   commentContainer.innerHTML = "";
 
   renderComments(commentContainer, pollId, comments);
+}
+
+function renderCommentItem(c: Comment): HTMLLIElement {
+  const li = document.createElement("li");
+  li.className = "comment-item";
+
+  const author = document.createElement("span");
+  author.className = "comment-author";
+  author.textContent = `@${c.created_by}`;
+
+  const body = document.createElement("span");
+  body.className = "comment-body";
+  body.textContent = c.content;
+
+  li.append(author, body);
+  return li;
+}
+
+function updateCommentHeading() {
+  if (!commentHeadingEl) return;
+  const n = currentComments.length;
+  commentHeadingEl.textContent = `${n} comment${n !== 1 ? "s" : ""}`;
 }
 
 function renderComments(
@@ -86,36 +481,26 @@ function renderComments(
 
   const heading = document.createElement("p");
   heading.className = "comments-heading";
-  heading.textContent = "comments";
+  commentHeadingEl = heading;
 
   const inputRow = renderCommentCreation(poll_id);
 
   const list = document.createElement("ul");
   list.className = "comment-list";
+  commentListEl = list;
 
   if (comments.length === 0) {
     const empty = document.createElement("li");
     empty.className = "comment-empty";
-    empty.textContent = "no comments yet.";
+    empty.textContent = "no comments yet — be the first.";
     list.append(empty);
   } else {
     for (const c of comments) {
-      const li = document.createElement("li");
-      li.className = "comment-item";
-
-      const author = document.createElement("span");
-      author.className = "comment-author";
-      author.textContent = c.created_by;
-
-      const body = document.createElement("span");
-      body.className = "comment-body";
-      body.textContent = c.content;
-
-      li.append(author, body);
-      list.append(li);
+      list.append(renderCommentItem(c));
     }
   }
 
+  updateCommentHeading();
   section.append(heading, inputRow, list);
   container.append(section);
 }
@@ -136,6 +521,7 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
 
   submitBtn.addEventListener("click", () => {
     const comment = input.value;
+    if (!comment.trim()) return;
     createComment(poll_id, comment);
     input.value = "";
   });
@@ -158,87 +544,20 @@ async function createComment(poll_id: string, comment: string) {
     return;
   }
 
-  loadComment(poll_id);
-}
+  const created: Comment = await res.json();
+  currentComments = [created, ...currentComments];
 
-function renderPoll(container: HTMLElement, poll: Poll) {
-  const totalVotes = poll.options.reduce((s, o) => s + o.votes, 0);
-  const hasVoted = poll.voted_option_id !== null;
-
-  const card = document.createElement("div");
-  card.className = "poll-card poll-card--detail";
-
-  const question = document.createElement("p");
-  question.className = "poll-question";
-  question.textContent = poll.question;
-
-  const optionsList = document.createElement("ul");
-  optionsList.className = "poll-options";
-
-  for (const opt of poll.options) {
-    const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
-    const isVoted = opt.id === poll.voted_option_id;
-    const li = document.createElement("li");
-
-    if (hasVoted) {
-      li.className = `poll-option${isVoted ? " poll-option--voted" : ""}`;
-      const bar = document.createElement("div");
-      bar.className = "poll-option-bar";
-      bar.style.width = "0";
-      const label = document.createElement("span");
-      label.className = "poll-option-label";
-      label.textContent = opt.option;
-      const pctSpan = document.createElement("span");
-      pctSpan.className = "poll-option-pct";
-      pctSpan.textContent = `${pct}%`;
-      li.append(bar, label, pctSpan);
-      li.style.cursor = "pointer";
-      li.addEventListener("click", () => castVote(poll.id, opt.id));
-
-    } else {
-      li.className = "poll-vote-option";
-      li.textContent = opt.option;
-      li.addEventListener("click", () => castVote(poll.id, opt.id));
-    }
-
-    optionsList.append(li);
+  if (commentListEl) {
+    // wipe the "no comments yet" placeholder if present
+    const empty = commentListEl.querySelector(".comment-empty");
+    if (empty) empty.remove();
+    commentListEl.prepend(renderCommentItem(created));
   }
-
-  const meta = document.createElement("span");
-  meta.className = "poll-meta";
-  meta.textContent = `${totalVotes} vote${totalVotes !== 1 ? "s" : ""}`;
-
-  const metaRow = document.createElement("div");
-  metaRow.className = "poll-meta-row";
-  metaRow.append(meta);
-
-  card.append(question, optionsList, metaRow);
-  container.append(card);
-
-  if (hasVoted) {
-    const bars = optionsList.querySelectorAll<HTMLElement>(".poll-option-bar");
-    const targets = poll.options.map((o) =>
-      totalVotes > 0 ? `${Math.round((o.votes / totalVotes) * 100)}%` : "0%",
-    );
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        bars.forEach((b, i) => (b.style.width = targets[i]));
-      });
-    });
+  updateCommentHeading();
+  if (currentPoll) {
+    currentPoll.comment_count = currentComments.length;
+    stagePendingUpdate(poll_id, { comment_count: currentPoll.comment_count });
   }
-}
-
-async function castVote(pollId: string, optionId: string) {
-  const res = await fetch(API.polls.vote, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id: pollId, option_id: optionId }),
-  });
-
-  if (res.ok) setTimeout(loadPoll, 400);
 }
 
 loadPoll();
