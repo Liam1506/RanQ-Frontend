@@ -1,6 +1,7 @@
 import { getCookie } from "../utils/cookies";
 
 const POLL_INTERVAL = 15000;
+let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
 async function requestNotificationPermission(): Promise<boolean> {
   if (!("Notification" in window)) return false;
@@ -33,13 +34,11 @@ async function pollNotifications() {
 
 export function startNotificationPolling() {
   const token = getCookie("userId");
-  console.log("token:", token);
   if (!token) return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-  requestNotificationPermission().then((granted) => {
-    console.log("notification permission granted:", granted);
-    if (!granted) return;
-    pollNotifications();
-    setInterval(pollNotifications, POLL_INTERVAL);
-  });
+  if (pollingInterval) clearInterval(pollingInterval);
+
+  pollNotifications();
+  pollingInterval = setInterval(pollNotifications, POLL_INTERVAL);
 }
