@@ -21,6 +21,10 @@ const path = Astro.url.pathname;
       const t = localStorage.getItem("theme");
       if (t) document.documentElement.setAttribute("data-theme", t);
     </script>
+    <script>
+      import { startNotificationPolling } from "../scripts/notifications";
+      startNotificationPolling();
+    </script>
   </head>
   <body>
     <header>

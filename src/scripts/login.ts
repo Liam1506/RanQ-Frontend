@@ -34,6 +34,10 @@ form.addEventListener("submit", async (e) => {
       const { token } = await response.json();
       setCookie("userId", token);
       setCookie("verified", "true");
+      if ("Notification" in window && Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
+
       window.location.replace("/");
     } else {
       const body = await response.json().catch(() => null);
