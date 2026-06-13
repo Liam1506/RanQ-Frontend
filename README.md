@@ -1,3 +1,5 @@
+### 🔗 [Backend Repository & Issues](https://github.com/HaiTzung/RanQ/issues)
+
 # ranq
 
 A web-based polling platform for the DHBW community. Users can create polls, vote, search, and browse a feed of community polls. Admins can approve submitted polls before they go live.
