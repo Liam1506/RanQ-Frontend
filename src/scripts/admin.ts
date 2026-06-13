@@ -17,6 +17,17 @@ type Poll = {
   options: Array<{ id: string; option: string; votes: number }>;
 };
 
+// Security fix: escapeHtml function to prevent stored XSS by sanitizing user-controlled data
+function escapeHtml(s: string | null | undefined): string {
+  if (!s) return '';
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -60,7 +71,7 @@ async function loadUnapprovedPolls() {
         return `
           <li class="poll-option" non-clickable>
             <div class="poll-option-bar" style="width:0%"></div>
-            <span class="poll-option-label">${opt.option}</span>
+            <span class="poll-option-label">${escapeHtml(opt.option)}</span>
             <span class="poll-option-pct">${pct}%</span>
           </li>`;
       })
@@ -68,7 +79,7 @@ async function loadUnapprovedPolls() {
 
     const meta = [
       `${total} vote${total !== 1 ? "s" : ""}`,
-      poll.creator_username ? `by ${poll.creator_username}` : "",
+      poll.creator_username ? `by ${escapeHtml(poll.creator_username)}` : "",
       poll.created_at ? formatDate(poll.created_at) : "",
     ]
       .filter(Boolean)
@@ -77,12 +88,12 @@ async function loadUnapprovedPolls() {
     const tmp = document.createElement("div");
     tmp.innerHTML = `
       <a class="poll-card" style="cursor:default">
-        <p class="poll-question">${poll.question}</p>
+        <p class="poll-question">${escapeHtml(poll.question)}</p>
         <ul class="poll-options">${optionsHtml}</ul>
-        <span class="poll-meta">${meta}</span>
+        <span class="poll-meta">${escapeHtml(meta)}</span>
         <div class="poll-card-actions">
-          <button class="approve-btn" data-poll-id="${poll.id}">Approve</button>
-          <button class="delete-btn" data-poll-id="${poll.id}">Delete</button>
+          <button class="approve-btn" data-poll-id="${escapeHtml(poll.id)}">Approve</button>
+          <button class="delete-btn" data-poll-id="${escapeHtml(poll.id)}">Delete</button>
         </div>
       </a>`;
 
