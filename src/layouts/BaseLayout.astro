@@ -1,6 +1,5 @@
 ---
 import "../styles/baseLayout.css";
-import ThemeToggle from "../components/ThemeToggle.astro";
 import Logo from "../components/Logo.astro";
 import HomeIcon from "../components/icons/HomeIcon.astro";
 import SearchIcon from "../components/icons/SearchIcon.astro";
@@ -26,7 +25,6 @@ const path = Astro.url.pathname;
   <body>
     <header>
       <Logo />
-      <ThemeToggle />
     </header>
     <main>
       <div class="scroll-wrapper">
@@ -36,18 +34,18 @@ const path = Astro.url.pathname;
     {showNav && <footer>
       <nav class="floating-nav">
         <a href="/start" aria-label="Home" aria-current={path === "/start" ? "page" : undefined}>
-          <HomeIcon />
+          <HomeIcon filled={path === "/start"} />
         </a>
         <a href="/search" aria-label="Search" aria-current={path === "/search" ? "page" : undefined}>
-          <SearchIcon />
+          <SearchIcon filled={path === "/search"} />
         </a>
         <a href="/create" aria-label="Add" aria-current={path === "/create" ? "page" : undefined}>
-          <AddIcon />
+          <AddIcon filled={path === "/create"} />
         </a>
         <a href="/settings" aria-label="Settings" aria-current={path === "/settings" ? "page" : undefined}>
-          <SettingsIcon />
+          <SettingsIcon filled={path === "/settings"} />
         </a>
-        <a href="/login" aria-label="Logout">
+        <a href="/logout" aria-label="Logout">
           <LogoutIcon />
         </a>
       </nav>

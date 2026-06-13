@@ -2,7 +2,6 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/settings.css";
 import "../styles/start.css";
-import "../styles/admin.css";
 import "../styles/poll-card.css";
 ---
 
@@ -10,39 +9,51 @@ import "../styles/poll-card.css";
   <div class="page-header">
     <h1 class="page-title">settings</h1>
   </div>
-  <div class="settingsWrapper">
-    <div class="settings-box">
-      <h2 class="settings-box-title">other settings</h2>
-      <div class="settings-box-buttons">
-        <button class="settings-btn">...</button>
-        <button class="settings-btn">...</button>
-        <button class="settings-btn settings-btn-danger">...</button>
+
+  <div class="settings-wrapper">
+
+    <section class="settings-section">
+      <h2 class="settings-section-title">appearance</h2>
+      <div class="settings-row">
+        <span class="settings-row-label">theme</span>
+        <div class="theme-toggle-group" role="tablist">
+          <button type="button" class="theme-option" data-theme-choice="light" role="tab">light</button>
+          <button type="button" class="theme-option" data-theme-choice="dark" role="tab">dark</button>
+          <button type="button" class="theme-option" data-theme-choice="system" role="tab">system</button>
+        </div>
       </div>
-    </div>
-    <div class="settings-box">
-      <h2 class="settings-box-title">account information</h2>
-      <div class="settings-info-row">
-        <span class="settings-info-label">user-id: </span>
-        <span id="info-user-id" class="settings-info-value"></span>
+    </section>
+
+    <section class="settings-section">
+      <h2 class="settings-section-title">account</h2>
+      <div class="settings-row">
+        <span class="settings-row-label">username</span>
+        <span id="info-username" class="settings-row-value">—</span>
       </div>
-    </div>
-    <div class="settings-box">
-      <h2 class="settings-box-title">account</h2>
-      <div class="settings-box-buttons">
-        <button class="settings-btn">edit profile</button>
-        <button class="settings-btn">change password</button>
-        <button class="settings-btn settings-btn-danger">delete account</button>
+      <div class="settings-row">
+        <span class="settings-row-label">email</span>
+        <span id="info-email" class="settings-row-value">—</span>
       </div>
-    </div>
-    <div class="settings-box">
-      <h2 class="settings-box-title">your polls</h2>
+      <div class="settings-row settings-row-actions">
+        <a class="settings-action settings-action-danger" href="/logout">log out</a>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2 class="settings-section-title">my posts</h2>
       <div class="filters">
+        <div class="type-tabs" role="tablist">
+          <button type="button" class="type-tab active" data-type="all" role="tab">all</button>
+          <button type="button" class="type-tab" data-type="ranking" role="tab">rankings</button>
+          <button type="button" class="type-tab" data-type="post" role="tab">thoughts</button>
+        </div>
         <button id="filter-unapproved" class="filter-toggle">unapproved only</button>
       </div>
       <div id="settings-box-polls" class="feed">
         <p class="feed-loading">loading...</p>
       </div>
-    </div>
+    </section>
+
   </div>
 </BaseLayout>
 

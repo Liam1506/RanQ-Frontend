@@ -31,8 +31,8 @@ form.addEventListener("submit", async (e) => {
     });
 
     if (response.ok) {
-      const userId = await response.json();
-      setCookie("userId", userId);
+      const { token } = await response.json();
+      setCookie("userId", token);
       setCookie("verified", "true");
       window.location.replace("/");
     } else {

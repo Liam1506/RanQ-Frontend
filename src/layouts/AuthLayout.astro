@@ -1,6 +1,5 @@
 ---
 import "../styles/auth.css";
-import ThemeToggle from "../components/ThemeToggle.astro";
 import Logo from "../components/Logo.astro";
 
 interface Props {
@@ -23,7 +22,6 @@ const { title } = Astro.props;
   </head>
   <body>
     <Logo />
-    <ThemeToggle />
     <div class="auth-wrapper">
       <slot />
     </div>
