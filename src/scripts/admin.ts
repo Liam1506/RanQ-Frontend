@@ -38,7 +38,7 @@ async function loadUnapprovedPolls() {
   const polls: Poll[] = await res.json();
 
   if (polls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">no polls yet.</p>`;
+    feed.innerHTML = `<p class="feed-empty">currently no polls to approve.</p>`;
     return;
   }
 
@@ -91,7 +91,7 @@ async function loadUnapprovedPolls() {
 
     const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
     const targets = poll.options.map((opt) =>
-      total > 0 ? `${Math.round((opt.votes / total) * 100)}%` : "0%"
+      total > 0 ? `${Math.round((opt.votes / total) * 100)}%` : "0%",
     );
 
     feed.appendChild(card);
@@ -144,4 +144,45 @@ async function deletePoll(poll_id: string) {
   loadUnapprovedPolls();
 }
 
+async function updateSetting(data: Record<string, unknown>) {
+  await fetch(API.siteSettings.update, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify(data),
+  });
+}
+
+async function loadSettings() {
+  const res = await fetch(API.siteSettings.get, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (!res.ok) return;
+  const s = await res.json();
+
+  (document.getElementById("setting-auto-approve") as HTMLInputElement).checked = s.auto_approve;
+  (document.getElementById("setting-allow-registration") as HTMLInputElement).checked =
+    s.allow_registration;
+  (document.getElementById("setting-maintenance-mode") as HTMLInputElement).checked =
+    s.maintenance_mode;
+  (document.getElementById("setting-max-options") as HTMLInputElement).value =
+    s.max_options_per_poll;
+}
+
+document.getElementById("setting-auto-approve")!.addEventListener("change", (e) => {
+  updateSetting({ auto_approve: (e.target as HTMLInputElement).checked });
+});
+document.getElementById("setting-allow-registration")!.addEventListener("change", (e) => {
+  updateSetting({ allow_registration: (e.target as HTMLInputElement).checked });
+});
+document.getElementById("setting-maintenance-mode")!.addEventListener("change", (e) => {
+  updateSetting({ maintenance_mode: (e.target as HTMLInputElement).checked });
+});
+document.getElementById("setting-max-options")!.addEventListener("change", (e) => {
+  updateSetting({ max_options_per_poll: parseInt((e.target as HTMLInputElement).value) });
+});
+
 loadUnapprovedPolls();
+loadSettings();

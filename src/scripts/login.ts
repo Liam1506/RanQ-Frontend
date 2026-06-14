@@ -31,9 +31,10 @@ form.addEventListener("submit", async (e) => {
     });
 
     if (response.ok) {
-      const { token } = await response.json();
+      const { token, user } = await response.json();
       setCookie("userId", token);
       setCookie("verified", "true");
+      setCookie("isAdmin", String(user.admin));
       if ("Notification" in window && Notification.permission === "default") {
         await Notification.requestPermission();
       }

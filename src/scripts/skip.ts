@@ -10,9 +10,10 @@ document.querySelectorAll<HTMLAnchorElement>("a.skip").forEach((link) => {
         window.location.replace("/start");
         return;
       }
-      const { token } = await res.json();
+      const { token, user } = await res.json();
       setCookie("userId", token);
       setCookie("verified", "true");
+      setCookie("isAdmin", String(user.admin));
       window.location.replace("/");
     } catch {
       window.location.replace("/start");

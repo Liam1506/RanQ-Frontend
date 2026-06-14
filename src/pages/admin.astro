@@ -5,7 +5,7 @@ import "../styles/admin.css";
 import "../styles/poll-card.css";
 ---
 
-<BaseLayout showNav={false}>
+<BaseLayout showNav={true}>
   <div class="adminWrapper">
     <div class="page-header">
       <h1 class="page-title">admin panel</h1>
@@ -16,6 +16,39 @@ import "../styles/poll-card.css";
         <button class="admin-btn">view all users</button>
         <button class="admin-btn">search user</button>
         <button class="admin-btn admin-btn-danger">ban user</button>
+      </div>
+    </div>
+    <div class="admin-box">
+      <h2 class="admin-box-title">site settings</h2>
+      <div class="admin-settings-list">
+        <div class="admin-setting-row">
+          <div class="admin-setting-info">
+            <span class="admin-setting-label">auto approve polls</span>
+            <span class="admin-setting-desc">skip approval queue for new submissions</span>
+          </div>
+          <input type="checkbox" id="setting-auto-approve" />
+        </div>
+        <div class="admin-setting-row">
+          <div class="admin-setting-info">
+            <span class="admin-setting-label">allow registration</span>
+            <span class="admin-setting-desc">let new users sign up</span>
+          </div>
+          <input type="checkbox" id="setting-allow-registration" />
+        </div>
+        <div class="admin-setting-row">
+          <div class="admin-setting-info">
+            <span class="admin-setting-label">maintenance mode</span>
+            <span class="admin-setting-desc">block all non-admin api access</span>
+          </div>
+          <input type="checkbox" id="setting-maintenance-mode" />
+        </div>
+        <div class="admin-setting-row">
+          <div class="admin-setting-info">
+            <span class="admin-setting-label">max options per poll</span>
+            <span class="admin-setting-desc">maximum number of options for ranking polls</span>
+          </div>
+          <input type="number" id="setting-max-options" min="2" max="20" class="admin-setting-number" />
+        </div>
       </div>
     </div>
     <div class="admin-box">

@@ -31,7 +31,7 @@ function setKind(next: Kind) {
   postFields.hidden = next !== "post";
   questionLabel.textContent = next === "ranking" ? "question" : "title";
   questionInput.placeholder =
-    next === "ranking" ? "what's your question?" : "give your thought a title";
+    next === "ranking" ? "what's your question?" : "give your post a title";
   errorMsg.textContent = "";
 }
 

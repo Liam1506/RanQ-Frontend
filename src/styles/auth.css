@@ -1,5 +1,10 @@
 @import './global.css';
 
+:root {
+  --width-register: 45rem;
+  --width-login: 25rem;
+}
+
 body {
   display: flex;
   justify-content: center;
@@ -19,13 +24,18 @@ form {
   gap: 0.5rem;
 }
 
-input {
-  width: 20rem;
+#login-form input,
+#login-form button {
+  width: var(--width-login);
+}
+
+#signup-form input,
+#signup-form button {
+  width: var(--width-register);
 }
 
 form button {
   height: 2rem;
-  width: 20rem;
   border: none;
   border-radius: var(--btn-radius);
   background-color: var(--btn-bg);

@@ -6,6 +6,7 @@ import SearchIcon from "../components/icons/SearchIcon.astro";
 import AddIcon from "../components/icons/AddIcon.astro";
 import SettingsIcon from "../components/icons/SettingsIcon.astro";
 import LogoutIcon from "../components/icons/LogoutIcon.astro";
+import AdminIcon from "../components/icons/AdminIcon.astro";
 
 const { showNav = true } = Astro.props;
 const path = Astro.url.pathname;
@@ -52,7 +53,16 @@ const path = Astro.url.pathname;
         <a href="/logout" aria-label="Logout">
           <LogoutIcon />
         </a>
+        <a href="/admin" aria-label="Admin" id="admin-nav-link" style="display:none" aria-current={path === "/admin" ? "page" : undefined}>
+          <SettingsIcon filled={path === "/admin"} />
+        </a>
       </nav>
     </footer>}
+    <script is:inline>
+      const isAdmin = document.cookie.split("; ").find(c => c.startsWith("isAdmin="))?.split("=")[1];
+      if (isAdmin === "true") {
+        document.getElementById("admin-nav-link").style.display = "";
+      }
+    </script>
   </body>
 </html>
