@@ -31,7 +31,7 @@
   height: 2.75rem;
   background: var(--btn-bg);
   color: var(--btn-color);
-  border: 2px solid var(--color-text);
+  border: none;
   border-radius: var(--btn-radius);
   padding: 0 1.25rem;
   font-family: var(--font);
