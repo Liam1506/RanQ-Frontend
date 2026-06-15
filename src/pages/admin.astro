@@ -52,6 +52,21 @@ import "../styles/poll-card.css";
       </div>
     </div>
     <div class="admin-box">
+      <h2 class="admin-box-title">statistics</h2>
+      <div class="admin-stats">
+        <div class="admin-chart-info">
+          <span class="admin-setting-label">totals</span>
+          <span class="admin-setting-desc">overall counts across all users, polls, votes, likes and comments</span>
+        </div>
+        <canvas id="stats-totals" width="600" height="200"></canvas>
+        <div class="admin-chart-info">
+          <span class="admin-setting-label">7-day activity</span>
+          <span class="admin-setting-desc">all events combined per day: Registrations, posts, comments, votes, likes</span>
+        </div>
+        <canvas id="stats-activity" width="600" height="200"></canvas>
+      </div>
+    </div>
+    <div class="admin-box">
       <h2 class="admin-box-title">maintenance</h2>
       <div class="admin-settings-list">
         <div class="admin-setting-row">
@@ -60,9 +75,6 @@ import "../styles/poll-card.css";
             <span class="admin-setting-desc">delete unverified users, orphaned waitlist entries, and excess notifications</span>
           </div>
           <button class="admin-action-btn" id="cleanup-btn">run</button>
-        </div>
-        <div class="admin-setting-row" style="border-bottom:none">
-          <p id="cleanup-result" class="admin-cleanup-result"></p>
         </div>
       </div>
     </div>

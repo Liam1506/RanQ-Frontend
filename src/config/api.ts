@@ -29,5 +29,6 @@ export const API = {
     get: `${BASE_URL}/api/settings/`,
     update: `${BASE_URL}/api/settings/update/`,
     cleanup: `${BASE_URL}/api/settings/cleanup/`,
+    stats: `${BASE_URL}/api/settings/stats/`,
   },
 };

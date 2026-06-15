@@ -22,7 +22,7 @@ type Poll = {
   like_count: number;
   user_has_liked: boolean;
   total_up_down_score: number;
-  user_vote_up_down: number | null;  // -1, 0, 1, or null
+  user_vote_up_down: number | null; // -1, 0, 1, or null
   options: Option[];
 };
 
@@ -154,14 +154,12 @@ function applyRanking({ animateFromZero = false } = {}) {
   // bars, NOT the row order — that re-shuffle is jarring. The feed will
   // re-sort when they navigate back.
   if (rankingOrder === null) {
-    rankingOrder = [...poll.options]
-      .sort((a, b) => b.votes - a.votes)
-      .map((o) => o.id);
+    rankingOrder = [...poll.options].sort((a, b) => b.votes - a.votes).map((o) => o.id);
   }
   const byId = new Map(poll.options.map((o) => [o.id, o]));
   const ranked = rankingOrder
     .map((id) => byId.get(id))
-    .filter((o): o is typeof poll.options[number] => Boolean(o));
+    .filter((o): o is (typeof poll.options)[number] => Boolean(o));
   // Leader follows the frozen order (the row shown at index 0). The user's
   // own vote shouldn't suddenly make a different row light up either.
   const leaderId = rankingOrder[0];
@@ -374,11 +372,29 @@ function renderLikeRow(poll: Poll): HTMLDivElement {
   const label = document.createElement("span");
   label.className = "like-label";
   label.textContent = poll.like_count === 1 ? "like" : "likes";
-
   button.append(count, label);
   button.addEventListener("click", () => toggleLike(poll, button, count, label));
 
   row.append(button);
+
+  if (navigator.share) {
+    const shareBtn = document.createElement("button");
+    shareBtn.type = "button";
+    shareBtn.className = "share-btn";
+    shareBtn.textContent = "share";
+    shareBtn.addEventListener("click", () => {
+      const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
+      const date = poll.created_at ? formatDate(poll.created_at) : "";
+      const url = `${window.location.origin}/poll?id=${poll.id}`;
+      navigator.share({
+        title: poll.question,
+        text: `# ${poll.question}\n\n${poll.body}\n${author} · ${date}`,
+        url,
+      });
+    });
+    row.append(shareBtn);
+  }
+
   return row;
 }
 
@@ -471,11 +487,7 @@ function updateCommentHeading() {
   commentHeadingEl.textContent = `${n} comment${n !== 1 ? "s" : ""}`;
 }
 
-function renderComments(
-  container: HTMLElement,
-  poll_id: string,
-  comments: Comment[],
-) {
+function renderComments(container: HTMLElement, poll_id: string, comments: Comment[]) {
   const section = document.createElement("div");
   section.className = "comments-section";
 

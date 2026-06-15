@@ -54,6 +54,23 @@
 
 .admin-box-polls {}
 
+.admin-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-stats canvas {
+  width: 100%;
+  height: auto;
+}
+
+.admin-chart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
 .admin-settings-list {
   display: flex;
   flex-direction: column;

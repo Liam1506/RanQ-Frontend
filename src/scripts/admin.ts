@@ -186,6 +186,115 @@ document.getElementById("setting-max-options")!.addEventListener("change", (e) =
 
 loadUnapprovedPolls();
 loadSettings();
+loadStats();
+
+async function loadStats() {
+  const res = await fetch(API.siteSettings.stats, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (!res.ok) return;
+  const { totals, daily } = await res.json();
+
+  drawBarChart(document.getElementById("stats-totals") as HTMLCanvasElement, {
+    users: totals.users,
+    verified: totals.verified_users,
+    polls: totals.polls,
+    posts: totals.posts,
+    votes: totals.votes,
+    likes: totals.likes,
+    comments: totals.comments,
+  });
+
+  drawLineChart(document.getElementById("stats-activity") as HTMLCanvasElement, daily);
+}
+
+function drawBarChart(canvas: HTMLCanvasElement, data: Record<string, number>) {
+  const ctx = canvas.getContext("2d")!;
+  const labels = Object.keys(data);
+  const values = Object.values(data);
+  const max = Math.max(...values, 1);
+  const padding = 40;
+  const barWidth = (canvas.width - padding * 2) / labels.length;
+  const chartHeight = canvas.height - padding * 2;
+  const textColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--color-text")
+    .trim();
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "14px monospace";
+  ctx.textAlign = "center";
+
+  labels.forEach((label, i) => {
+    const barHeight = (values[i] / max) * chartHeight;
+    const x = padding + i * barWidth + barWidth * 0.1;
+    const y = padding + chartHeight - barHeight;
+    const w = barWidth * 0.8;
+
+    ctx.fillStyle = "#e2b714";
+    ctx.fillRect(x, y, w, barHeight);
+
+    ctx.fillStyle = textColor;
+    ctx.fillText(label, x + w / 2, canvas.height - 10);
+    ctx.fillText(String(values[i]), x + w / 2, y - 5);
+  });
+}
+
+function drawLineChart(
+  canvas: HTMLCanvasElement,
+  daily: Array<{ day: string; event_type: string; count: number }>,
+) {
+  const ctx = canvas.getContext("2d")!;
+
+  const days: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
+  }
+
+  const counts: Record<string, number> = {};
+  days.forEach((d) => (counts[d] = 0));
+  daily.forEach((entry) => {
+    if (counts[entry.day] !== undefined) counts[entry.day] += entry.count;
+  });
+
+  const values = days.map((d) => counts[d]);
+  const max = Math.max(...values, 1);
+  const padding = 40;
+  const chartHeight = canvas.height - padding * 2;
+  const stepX = (canvas.width - padding * 2) / (days.length - 1);
+  const textColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--color-text")
+    .trim();
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#e2b714";
+  ctx.lineWidth = 2;
+  values.forEach((val, i) => {
+    const x = padding + i * stepX;
+    const y = padding + chartHeight - (val / max) * chartHeight;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  ctx.font = "12px monospace";
+  ctx.textAlign = "center";
+  values.forEach((val, i) => {
+    const x = padding + i * stepX;
+    const y = padding + chartHeight - (val / max) * chartHeight;
+
+    ctx.fillStyle = "#e2b714";
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = textColor;
+    ctx.fillText(days[i].slice(5), x, canvas.height - 10);
+    if (val > 0) ctx.fillText(String(val), x, y - 8);
+  });
+}
 
 document.getElementById("cleanup-btn")!.addEventListener("click", async () => {
   const btn = document.getElementById("cleanup-btn") as HTMLButtonElement;
