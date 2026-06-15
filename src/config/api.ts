@@ -28,5 +28,6 @@ export const API = {
   siteSettings: {
     get: `${BASE_URL}/api/settings/`,
     update: `${BASE_URL}/api/settings/update/`,
+    cleanup: `${BASE_URL}/api/settings/cleanup/`,
   },
 };

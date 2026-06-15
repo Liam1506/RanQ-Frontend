@@ -186,3 +186,29 @@ document.getElementById("setting-max-options")!.addEventListener("change", (e) =
 
 loadUnapprovedPolls();
 loadSettings();
+
+document.getElementById("cleanup-btn")!.addEventListener("click", async () => {
+  const btn = document.getElementById("cleanup-btn") as HTMLButtonElement;
+  const result = document.getElementById("cleanup-result")!;
+  btn.disabled = true;
+  btn.textContent = "running...";
+  result.textContent = "";
+
+  try {
+    const res = await fetch(API.siteSettings.cleanup, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${userId}` },
+    });
+    if (!res.ok) {
+      result.textContent = "cleanup failed.";
+      return;
+    }
+    const data = await res.json();
+    result.textContent = `users: ${data.deleted_unverified_users} · waitlist: ${data.deleted_verifies} · notifications: ${data.deleted_notifications}`;
+  } catch {
+    result.textContent = "network error.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "run";
+  }
+});

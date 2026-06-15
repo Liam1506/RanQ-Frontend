@@ -52,6 +52,21 @@ import "../styles/poll-card.css";
       </div>
     </div>
     <div class="admin-box">
+      <h2 class="admin-box-title">maintenance</h2>
+      <div class="admin-settings-list">
+        <div class="admin-setting-row">
+          <div class="admin-setting-info">
+            <span class="admin-setting-label">run cleanup</span>
+            <span class="admin-setting-desc">delete unverified users, orphaned waitlist entries, and excess notifications</span>
+          </div>
+          <button class="admin-action-btn" id="cleanup-btn">run</button>
+        </div>
+        <div class="admin-setting-row" style="border-bottom:none">
+          <p id="cleanup-result" class="admin-cleanup-result"></p>
+        </div>
+      </div>
+    </div>
+    <div class="admin-box">
       <h2 class="admin-box-title">polls for approval</h2>
       <div id="admin-box-polls" class="feed">
         <p class="feed-loading">loading...</p>
