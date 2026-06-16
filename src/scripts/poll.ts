@@ -31,6 +31,7 @@ type Comment = {
   poll_id: string;
   created_by: string;
   content: string;
+  created_at: string | null;
 };
 
 // in-memory state so vote / comment can update the DOM in place
@@ -469,15 +470,38 @@ function renderCommentItem(c: Comment): HTMLLIElement {
   const li = document.createElement("li");
   li.className = "comment-item";
 
+  const header = document.createElement("div");
+  header.className = "comment-header";
+
   const author = document.createElement("span");
   author.className = "comment-author";
   author.textContent = `@${c.created_by}`;
+
+  const date = document.createElement("span");
+  date.className = "comment-date";
+  date.textContent = c.created_at ? formatDate(c.created_at) : "";
+
+  header.append(author, date);
 
   const body = document.createElement("span");
   body.className = "comment-body";
   body.textContent = c.content;
 
-  li.append(author, body);
+  li.append(header, body);
+
+  if (getCookie("isAdmin") === "true") {
+    const actions = document.createElement("div");
+    actions.className = "comment-actions";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "comment-delete-btn";
+    deleteBtn.textContent = "delete";
+    deleteBtn.addEventListener("click", () => deleteComment(c.id, li));
+
+    actions.append(deleteBtn);
+    li.append(actions);
+  }
+
   return li;
 }
 
@@ -521,11 +545,32 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
   const inputRow = document.createElement("div");
   inputRow.className = "comment-input-row";
 
-  const input = document.createElement("input");
+  const max = 280;
+  const input = document.createElement("textarea");
   input.className = "comment-input";
   input.placeholder = "add a comment...";
-  input.maxLength = 280;
+  input.maxLength = max;
   input.id = "comment-input";
+  input.rows = 1;
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = input.scrollHeight + "px";
+  });
+
+  const counter = document.createElement("span");
+  counter.className = "comment-counter";
+  counter.style.display = "none";
+
+  input.addEventListener("input", () => {
+    const remaining = max - input.value.length;
+    if (remaining < 50) {
+      counter.style.display = "";
+      counter.textContent = String(remaining);
+      counter.classList.toggle("comment-counter--low", remaining < 20);
+    } else {
+      counter.style.display = "none";
+    }
+  });
 
   const submitBtn = document.createElement("button");
   submitBtn.className = "comment-submit-btn";
@@ -536,9 +581,18 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
     if (!comment.trim()) return;
     createComment(poll_id, comment);
     input.value = "";
+    counter.style.display = "none";
   });
 
-  inputRow.append(input, submitBtn);
+  const wrapper = document.createElement("div");
+  wrapper.className = "comment-input-wrapper";
+
+  const buttonRow = document.createElement("div");
+  buttonRow.className = "comment-input-row";
+  buttonRow.append(input, submitBtn);
+
+  wrapper.append(buttonRow, counter);
+  inputRow.append(wrapper);
   return inputRow;
 }
 
@@ -570,6 +624,24 @@ async function createComment(poll_id: string, comment: string) {
     currentPoll.comment_count = currentComments.length;
     stagePendingUpdate(poll_id, { comment_count: currentPoll.comment_count });
   }
+}
+
+async function deleteComment(commentId: string, li: HTMLLIElement) {
+  const res = await fetch(API.polls.deleteComment, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${userId}`,
+    },
+    body: JSON.stringify({ id: commentId }),
+  });
+  if (!res.ok) {
+    console.error("failed to delete comment");
+    return;
+  }
+  li.remove();
+  currentComments = currentComments.filter((c) => c.id !== commentId);
+  updateCommentHeading();
 }
 
 loadPoll();

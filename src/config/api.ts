@@ -24,6 +24,7 @@ export const API = {
     approvePoll: `${BASE_URL}/api/polls/approvePoll`,
     deleteVote: `${BASE_URL}/api/polls/deleteVote`,
     like: `${BASE_URL}/api/polls/like`,
+    deleteComment: `${BASE_URL}/api/polls/delete_comment`,
   },
   siteSettings: {
     get: `${BASE_URL}/api/settings/`,

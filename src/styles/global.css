@@ -18,7 +18,8 @@ a {
   color: var(--color-link);
 }
 
-input {
+input,
+textarea {
   border: none;
   outline: none;
   font-family: var(--font);
@@ -31,6 +32,13 @@ input {
   box-shadow: var(--inset-shadow);
   -webkit-appearance: none;
   appearance: none;
+}
+
+textarea {
+  height: auto;
+  padding: 0.5rem 0.75rem;
+  box-shadow: none;
+  line-height: 1.5;
 }
 
 input:-webkit-autofill,

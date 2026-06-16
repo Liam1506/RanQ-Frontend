@@ -5,6 +5,9 @@ const userId = getCookie("userId");
 if (!userId) {
   window.location.replace("/login");
 }
+if (getCookie("isAdmin") !== "true") {
+  window.location.replace("/start");
+}
 
 type Poll = {
   id: string;
