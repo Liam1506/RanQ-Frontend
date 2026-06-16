@@ -34,6 +34,31 @@ import "../styles/poll-card.css";
         <span class="settings-row-label">email</span>
         <span id="info-email" class="settings-row-value">—</span>
       </div>
+      <div class="settings-row settings-row--form">
+        <span class="settings-row-label">change username</span>
+        <div class="settings-inline-form">
+          <input type="text" id="input-new-username" class="settings-input" placeholder="new username" autocomplete="off" />
+          <button class="settings-action" id="btn-change-username">save</button>
+        </div>
+      </div>
+      <p id="username-feedback" class="settings-feedback"></p>
+      <div class="settings-row settings-row--form">
+        <span class="settings-row-label">change password</span>
+        <div class="settings-inline-form">
+          <input type="password" id="input-current-password" class="settings-input" placeholder="current" />
+          <input type="password" id="input-new-password" class="settings-input" placeholder="new" />
+          <button class="settings-action" id="btn-change-password">save</button>
+        </div>
+      </div>
+      <p id="password-feedback" class="settings-feedback"></p>
+      <div class="settings-row settings-row--form">
+        <span class="settings-row-label">delete account</span>
+        <div class="settings-inline-form">
+          <input type="text" id="input-delete-confirm" class="settings-input" placeholder='type "DELETE ACCOUNT"' autocomplete="off" />
+          <button class="settings-action settings-action--red" id="btn-delete-account">delete</button>
+        </div>
+      </div>
+      <p id="delete-feedback" class="settings-feedback"></p>
       <div class="settings-row settings-row-actions">
         <a class="settings-action settings-action-danger" href="/logout">log out</a>
       </div>

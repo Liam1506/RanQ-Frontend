@@ -8,6 +8,9 @@ export const API = {
     verify: `${BASE_URL}/api/auth/verify`,
     status: `${BASE_URL}/api/auth/status`,
     devLogin: `${BASE_URL}/api/auth/dev-login`,
+    changeUsername: `${BASE_URL}/api/auth/profile/username`,
+    changePassword: `${BASE_URL}/api/auth/profile/password`,
+    deleteAccount: `${BASE_URL}/api/auth/profile/delete`,
   },
   polls: {
     getAll: `${BASE_URL}/api/polls/getAll`,

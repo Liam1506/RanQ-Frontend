@@ -101,3 +101,12 @@ form.addEventListener("submit", async (e) => {
     errorMsg.textContent = body?.detail ?? "failed to create.";
   }
 });
+
+const pasteBtn = document.getElementById("paste-btn") as HTMLButtonElement;
+pasteBtn.addEventListener("click", async () => {
+  if (!navigator.clipboard) return;
+  const text = await navigator.clipboard.readText().catch(() => null);
+  if (text === null) return;
+  const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
+  bodyInput.value = text;
+});

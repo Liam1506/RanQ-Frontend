@@ -1,5 +1,6 @@
 ---
 import AuthLayout from "../layouts/AuthLayout.astro";
+const isDev = import.meta.env.DEV;
 ---
 
 <AuthLayout title="Login">
@@ -19,8 +20,8 @@ import AuthLayout from "../layouts/AuthLayout.astro";
     <button id="submit-btn">→</button>
     <p id="login-error" class="create-error"></p>
     <a href="/signup">sign up</a>
-    <a href="/start" class="skip">skip →</a>
+    {isDev && <a href="/start" class="skip">skip →</a>}
   </form>
   <script src="../scripts/login.ts"></script>
-  <script src="../scripts/skip.ts"></script>
+  {isDev && <script src="../scripts/skip.ts"></script>}
 </AuthLayout>

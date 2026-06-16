@@ -127,7 +127,8 @@ form button[type="submit"]:hover {
   box-sizing: border-box;
 }
 
-#body:focus {
-  outline: 1px solid var(--color-accent);
-  outline-offset: -1px;
+#paste-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }

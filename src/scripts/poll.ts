@@ -30,6 +30,7 @@ type Comment = {
   id: string;
   poll_id: string;
   created_by: string;
+  creator_id: string | null;
   content: string;
   created_at: string | null;
 };
@@ -444,13 +445,11 @@ async function toggleLike(
 }
 
 async function loadComment(poll_id: string) {
-  const res = await fetch(API.polls.getAllComments, {
-    method: "POST",
+  const res = await fetch(`${API.polls.getAllComments}?poll_id=${poll_id}`, {
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${userId}`,
     },
-    body: JSON.stringify({ poll_id }),
   });
   if (!res.ok) {
     console.error("failed to load comments");
@@ -489,7 +488,7 @@ function renderCommentItem(c: Comment): HTMLLIElement {
 
   li.append(header, body);
 
-  if (getCookie("isAdmin") === "true") {
+  if (getCookie("isAdmin") === "true" || c.creator_id === getCookie("userId")) {
     const actions = document.createElement("div");
     actions.className = "comment-actions";
 
@@ -582,6 +581,18 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
     createComment(poll_id, comment);
     input.value = "";
     counter.style.display = "none";
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const comment = input.value;
+      if (!comment.trim()) return;
+      createComment(poll_id, comment);
+      input.value = "";
+      input.style.height = "";
+      counter.style.display = "none";
+    }
   });
 
   const wrapper = document.createElement("div");

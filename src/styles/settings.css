@@ -95,7 +95,36 @@
   color: var(--color-nav-icon);
 }
 
-/* Delete button on owned poll cards */
+.settings-row--form {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings-inline-form {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.settings-input {
+  flex: 1;
+  min-width: 0;
+  height: auto;
+  padding: 0.45rem 0.75rem;
+  box-sizing: border-box;
+}
+
+.settings-feedback {
+  font-size: var(--font-size-sm);
+  min-height: 1.2rem;
+  margin: 0;
+}
+
+.settings-action--red {
+  color: var(--danger);
+}
+
 .poll-card-actions {
   display: flex;
   justify-content: flex-end;

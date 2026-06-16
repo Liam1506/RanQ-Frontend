@@ -254,3 +254,75 @@ document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
 
 loadUserInfo();
 loadPolls();
+
+// ---- account edit ----
+
+const feedbackEl = document.getElementById("username-feedback") as HTMLElement;
+const passwordFeedbackEl = document.getElementById("password-feedback") as HTMLElement;
+
+function showFeedback(el: HTMLElement, msg: string, isError: boolean) {
+  el.textContent = msg;
+  el.style.color = isError ? "var(--danger)" : "var(--positive)";
+  setTimeout(() => (el.textContent = ""), 3000);
+}
+
+document.getElementById("btn-change-username")!.addEventListener("click", async () => {
+  const newUsername = (document.getElementById("input-new-username") as HTMLInputElement).value.trim();
+  if (!newUsername) return;
+  const res = await fetch(API.auth.changeUsername, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
+    body: JSON.stringify({ username: newUsername }),
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showFeedback(feedbackEl, "username updated", false);
+    (document.getElementById("input-new-username") as HTMLInputElement).value = "";
+    loadUserInfo();
+  } else {
+    showFeedback(feedbackEl, data.detail ?? "failed", true);
+  }
+});
+
+document.getElementById("btn-change-password")!.addEventListener("click", async () => {
+  const current = (document.getElementById("input-current-password") as HTMLInputElement).value;
+  const next = (document.getElementById("input-new-password") as HTMLInputElement).value;
+  if (!current || !next) return;
+  const res = await fetch(API.auth.changePassword, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
+    body: JSON.stringify({ current_password: current, new_password: next }),
+  });
+  const data = await res.json();
+  if (res.ok) {
+    showFeedback(passwordFeedbackEl, "password updated", false);
+    (document.getElementById("input-current-password") as HTMLInputElement).value = "";
+    (document.getElementById("input-new-password") as HTMLInputElement).value = "";
+  } else {
+    showFeedback(passwordFeedbackEl, data.detail ?? "failed", true);
+  }
+});
+
+document.getElementById("btn-delete-account")!.addEventListener("click", async () => {
+  const confirmText = (document.getElementById("input-delete-confirm") as HTMLInputElement).value.trim();
+  const deleteFeedback = document.getElementById("delete-feedback") as HTMLElement;
+  if (confirmText !== "DELETE ACCOUNT") {
+    deleteFeedback.textContent = 'type "DELETE ACCOUNT" to confirm';
+    deleteFeedback.style.color = "var(--danger)";
+    return;
+  }
+  deleteFeedback.textContent = "";
+  const res = await fetch(API.auth.deleteAccount, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (res.ok) {
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+    });
+    window.location.replace("/login");
+  } else {
+    const data = await res.json();
+    showFeedback(data.detail ?? "failed", true);
+  }
+});
