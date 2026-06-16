@@ -37,12 +37,6 @@
   opacity: 1;
 }
 
-.poll-byline {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  opacity: 0.7;
-}
-
 .poll-question {
   margin: 0;
   font-size: 1.15rem;
@@ -240,14 +234,6 @@
   padding: 0.45rem 0.75rem;
   border: 1px solid var(--color-divider);
   transition: border-color 0.15s ease;
-}
-
-.updown-row--inline {
-  border: none;
-  padding: 0;
-  margin: 0;
-  gap: 0.5rem;
-  justify-content: flex-start;
 }
 
 .poll-card-footer--ranking {

@@ -105,6 +105,10 @@ form.addEventListener("submit", async (e) => {
       errorMsg.textContent = "thought body required.";
       return;
     }
+    if (body.length > MAX_BODY) {
+      errorMsg.textContent = `post too long (max ${MAX_BODY} characters).`;
+      return;
+    }
     payload.body = body;
   }
 
@@ -122,6 +126,20 @@ form.addEventListener("submit", async (e) => {
   } else {
     const body = await res.json().catch(() => null);
     errorMsg.textContent = body?.detail ?? "failed to create.";
+  }
+});
+
+const MAX_BODY = 3500;
+const bodyCounter = document.getElementById("body-counter") as HTMLSpanElement;
+
+bodyInput.addEventListener("input", () => {
+  const remaining = MAX_BODY - bodyInput.value.length;
+  if (remaining < 500) {
+    bodyCounter.style.display = "";
+    bodyCounter.textContent = String(remaining);
+    bodyCounter.classList.toggle("body-counter--low", remaining < 200);
+  } else {
+    bodyCounter.style.display = "none";
   }
 });
 

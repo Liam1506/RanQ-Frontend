@@ -137,3 +137,19 @@ form button[type="submit"]:hover {
   align-items: center;
   gap: 0.35rem;
 }
+
+.post-field-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.body-counter {
+  font-size: var(--font-size-sm);
+  opacity: 0.5;
+}
+
+.body-counter--low {
+  color: var(--danger);
+  opacity: 1;
+}
