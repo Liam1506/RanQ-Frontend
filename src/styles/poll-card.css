@@ -89,8 +89,14 @@
   transition: outline-color 0.15s ease;
 }
 
-.poll-option--ranked:hover {
+.poll-option--ranked:hover,
+.poll-option--ranked:focus-visible {
   outline-color: var(--color-text);
+}
+
+.poll-option--voted:focus-visible {
+  outline-color: var(--color-accent);
+  outline-offset: 1px;
 }
 
 .poll-option-bar {
@@ -157,9 +163,35 @@
 .poll-meta {
   font-size: var(--font-size-sm);
   opacity: 0.65;
+}
+
+.poll-card-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.poll-card-header .poll-question {
+  margin: 0;
+  flex: 1;
+}
+
+.poll-meta-date {
+  font-size: var(--font-size-sm);
+  opacity: 0.65;
+}
+
+.poll-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.poll-meta-author {
+  opacity: 0.65;
+  font-size: var(--font-size-sm);
 }
 
 .poll-option--voted .poll-option-bar {
@@ -191,16 +223,35 @@
   margin-top: 0.5rem;
 }
 
-/* Up/down vote row on ranking detail */
-.updown-row {
+.poll-action-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 0.85rem 0;
-  border-top: 1px solid var(--color-divider);
-  border-bottom: 1px solid var(--color-divider);
-  margin-top: 0.75rem;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* Up/down vote row on ranking detail */
+.updown-row {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--color-divider);
+  transition: border-color 0.15s ease;
+}
+
+.updown-row--inline {
+  border: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.poll-card-footer--ranking {
+  margin-top: 0.5rem;
 }
 
 .updown-btn {
@@ -208,10 +259,7 @@
   border: none;
   color: var(--color-text);
   font: inherit;
-  font-size: 1.2rem;
-  /* large tap target — min 44×44px */
-  min-width: 2.75rem;
-  min-height: 2.75rem;
+  font-size: var(--font-size-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -219,6 +267,7 @@
   opacity: 0.45;
   transition: opacity 0.15s ease, color 0.15s ease;
   line-height: 1;
+  padding: 0;
 }
 
 .updown-btn:hover {

@@ -95,23 +95,34 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   const card = document.createElement("div");
   card.className = "poll-card poll-card--detail";
 
-  const byline = document.createElement("p");
-  byline.className = "poll-byline";
-  const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
-  const date = poll.created_at ? formatDate(poll.created_at) : "";
-  byline.textContent = `by ${author}${date ? " · " + date : ""}`;
+  const header = document.createElement("div");
+  header.className = "poll-card-header";
 
   const question = document.createElement("p");
   question.className = "poll-question";
   question.textContent = poll.question;
 
-  card.append(byline, question);
+  const dateSpan = document.createElement("span");
+  dateSpan.className = "poll-meta-date";
+  dateSpan.textContent = poll.created_at ? formatDate(poll.created_at) : "";
+
+  header.append(question, dateSpan);
+  card.append(header);
 
   if (poll.kind === "post") {
     const body = document.createElement("p");
     body.className = "poll-body poll-body--detail";
     body.textContent = poll.body;
     card.append(body);
+
+    const footer = document.createElement("div");
+    footer.className = "poll-card-footer";
+    footer.append(document.createElement("span"));
+    const authorSpan = document.createElement("span");
+    authorSpan.className = "poll-meta poll-meta-author";
+    authorSpan.textContent = poll.creator_username ? `@${poll.creator_username}` : "anon";
+    footer.append(authorSpan);
+    card.append(footer);
 
     const likeRow = renderLikeRow(poll);
     card.append(likeRow);
@@ -128,16 +139,49 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   rankingListEl = optionsList;
 
   const metaRow = document.createElement("div");
-  metaRow.className = "poll-meta-row";
+  metaRow.className = "poll-card-footer poll-card-footer--ranking";
+
   const meta = document.createElement("span");
   meta.className = "poll-meta";
-  metaRow.append(meta);
   rankingMetaEl = meta;
 
-  card.append(optionsList, metaRow);
+  const authorSpan = document.createElement("span");
+  authorSpan.className = "poll-meta poll-meta-author";
+  authorSpan.textContent = poll.creator_username ? `@${poll.creator_username}` : "anon";
+
+  metaRow.append(meta, authorSpan);
 
   const upDownRow = renderUpDownRow(poll);
-  card.append(upDownRow);
+
+  const actionRow = document.createElement("div");
+  actionRow.className = "poll-action-row";
+  actionRow.append(upDownRow);
+
+  if (navigator.share) {
+    const shareBtn = document.createElement("button");
+    shareBtn.type = "button";
+    shareBtn.className = "share-btn";
+    shareBtn.textContent = "share";
+    shareBtn.addEventListener("click", () => {
+      const url = `${window.location.origin}/poll?id=${poll.id}`;
+      const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
+      const date = poll.created_at ? formatDate(poll.created_at) : "";
+      const total = poll.options.reduce((s, o) => s + o.votes, 0);
+      const sorted = [...poll.options].sort((a, b) => b.votes - a.votes);
+      const bars = sorted.map((o) => {
+        const pct = total > 0 ? Math.round((o.votes / total) * 100) : 0;
+        const filled = Math.round(pct / 10);
+        const bar = "█".repeat(filled) + "░".repeat(10 - filled);
+        return `${bar} ${pct}%  ${o.option}`;
+      }).join("\n");
+      navigator.share({
+        text: `# ${poll.question}\n\n${bars}\n\n${total} votes · ${author} · ${date}\n${url}`,
+      });
+    });
+    actionRow.append(shareBtn);
+  }
+
+  card.append(optionsList, metaRow, actionRow);
 
   container.append(card);
 
@@ -200,6 +244,14 @@ function applyRanking({ animateFromZero = false } = {}) {
 
       li.append(bar, label, pctSpan, count);
       li.addEventListener("click", () => castVote(opt.id));
+      li.setAttribute("tabindex", "0");
+      li.setAttribute("role", "button");
+      li.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          castVote(opt.id);
+        }
+      });
     }
 
     li.className = `poll-option poll-option--ranked${isVoted ? " poll-option--voted" : ""}${opt.id === leaderId ? " poll-option--leader" : ""}`;

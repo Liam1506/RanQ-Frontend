@@ -5,8 +5,14 @@ import "../styles/poll-card.css";
 ---
 
 <BaseLayout>
-  <div class="page-header">
+  <div class="page-header feed-header">
     <h1 class="page-title">feed</h1>
+    <select class="filter-sort feed-sort-mobile">
+      <option value="newest">newest</option>
+      <option value="oldest">oldest</option>
+      <option value="popular">most votes</option>
+      <option value="discussed">most discussed</option>
+    </select>
   </div>
   <div class="filters">
     <div class="type-tabs" role="tablist">
@@ -15,7 +21,7 @@ import "../styles/poll-card.css";
       <button type="button" class="type-tab" data-type="post" role="tab">posts</button>
     </div>
     <button id="filter-unvoted" class="filter-toggle">not voted</button>
-    <select id="filter-sort">
+    <select id="filter-sort" class="filter-sort feed-sort-desktop">
       <option value="newest">newest</option>
       <option value="oldest">oldest</option>
       <option value="popular">most votes</option>

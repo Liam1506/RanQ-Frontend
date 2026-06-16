@@ -61,6 +61,11 @@ form {
   opacity: 0.7;
 }
 
+.add-option-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 form button[type="submit"] {
   background: var(--btn-bg);
   color: var(--btn-color);

@@ -56,30 +56,6 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function rankingMeta(poll: Poll): string {
-  const total = totalVotes(poll);
-  return [
-    `${total} vote${total !== 1 ? "s" : ""}`,
-    `▲ ${poll.total_up_down_score}`,
-    `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`,
-    poll.creator_username ? `@${poll.creator_username}` : "",
-    poll.created_at ? formatDate(poll.created_at) : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-function postMeta(poll: Poll): string {
-  return [
-    `${poll.like_count} like${poll.like_count !== 1 ? "s" : ""}`,
-    `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`,
-    poll.creator_username ? `@${poll.creator_username}` : "",
-    poll.created_at ? formatDate(poll.created_at) : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
 // Render the inner content (everything except the outer <a>) so we can swap
 // it on an existing card without losing the element reference.
 function rankingInner(poll: Poll): string {
@@ -106,9 +82,9 @@ function rankingInner(poll: Poll): string {
     : "";
 
   return `
-    <p class="poll-question">${escapeHtml(poll.question)}</p>
+    <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <ul class="poll-options">${options}${overflowLine}</ul>
-    <span class="poll-meta">${rankingMeta(poll)}</span>`;
+    <div class="poll-card-footer"><span class="poll-meta">${[`▲ ${poll.total_up_down_score} ▼`, `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`, `${total} vote${total !== 1 ? "s" : ""}`].join(" · ")}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function postInner(poll: Poll): string {
@@ -117,9 +93,9 @@ function postInner(poll: Poll): string {
     ? poll.body.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…"
     : poll.body;
   return `
-    <p class="poll-question">${escapeHtml(poll.question)}</p>
+    <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <p class="poll-body">${escapeHtml(preview)}</p>
-    <span class="poll-meta">${postMeta(poll)}</span>`;
+    <div class="poll-card-footer"><span class="poll-meta">${`${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function buildCard(poll: Poll): HTMLAnchorElement {
@@ -155,7 +131,6 @@ function patchCard(card: HTMLAnchorElement, poll: Poll) {
 
 function applyFilters() {
   const sort = (document.getElementById("filter-sort") as HTMLSelectElement).value;
-  const feed = document.getElementById("feed")!;
 
   let polls = [...allPolls];
 
@@ -272,7 +247,13 @@ async function loadFeed() {
     requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll)));
   }
 
-  document.getElementById("filter-sort")?.addEventListener("change", applyFilters);
+  document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
+    sel.addEventListener("change", (e) => {
+      const val = (e.target as HTMLSelectElement).value;
+      document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => (s.value = val));
+      applyFilters();
+    });
+  });
 
   const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
   unvotedBtn?.addEventListener("click", () => {

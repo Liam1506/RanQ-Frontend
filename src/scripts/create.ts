@@ -39,19 +39,42 @@ tabs.forEach((tab) => {
   tab.addEventListener("click", () => setKind(tab.dataset.kind as Kind));
 });
 
+let maxOptions = 10;
+
+async function loadMaxOptions() {
+  const res = await fetch(API.siteSettings.get, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (res.ok) {
+    const data = await res.json();
+    maxOptions = data.max_options_per_poll ?? 10;
+  }
+  updateAddBtn();
+}
+
+function updateAddBtn() {
+  const count = optionsList.children.length;
+  addBtn.disabled = count >= maxOptions;
+  addBtn.title = count >= maxOptions ? `max ${maxOptions} options allowed` : "";
+  removeBtn.disabled = count <= 2;
+}
+
 addBtn.addEventListener("click", () => {
   const count = optionsList.children.length;
+  if (count >= maxOptions) return;
   const li = document.createElement("li");
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = `option ${count + 1}`;
   li.append(input);
   optionsList.append(li);
+  updateAddBtn();
 });
 
 removeBtn.addEventListener("click", () => {
   if (optionsList.children.length > 2) {
     optionsList.lastElementChild?.remove();
+    updateAddBtn();
   }
 });
 
@@ -110,3 +133,5 @@ pasteBtn.addEventListener("click", async () => {
   const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
   bodyInput.value = text;
 });
+
+loadMaxOptions();
