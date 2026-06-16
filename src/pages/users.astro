@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/admin.css";
+import "../styles/start.css";
+---
+
+<BaseLayout>
+  <div class="page-header">
+    <h1 class="page-title">users</h1>
+  </div>
+  <div class="filters">
+    <input id="user-search" type="text" placeholder="search username or id..." autocomplete="off" style="height:2rem; font-size:var(--font-size-md); flex:1" />
+    <button id="filter-unverified" class="filter-toggle">unverified</button>
+  </div>
+  <p id="users-empty" class="feed-empty hidden">no users found.</p>
+  <div id="users-list" class="feed"></div>
+</BaseLayout>
+
+<script src="../scripts/users.ts"></script>

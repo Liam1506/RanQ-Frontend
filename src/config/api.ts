@@ -32,4 +32,10 @@ export const API = {
     cleanup: `${BASE_URL}/api/settings/cleanup/`,
     stats: `${BASE_URL}/api/settings/stats/`,
   },
+  users: {
+    list: `${BASE_URL}/api/auth/users`,
+    toggleAdmin: `${BASE_URL}/api/auth/users/toggle-admin`,
+    toggleVerified: `${BASE_URL}/api/auth/users/toggle-verified`,
+    delete: `${BASE_URL}/api/auth/users/delete`,
+  },
 };

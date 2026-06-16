@@ -216,6 +216,123 @@
   cursor: not-allowed;
 }
 
+.admin-btn-users {
+  background: var(--color-accent);
+  color: #1e1e1e;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.admin-btn-users:hover {
+  opacity: 0.8;
+}
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-option-bg);
+}
+
+.admin-user-row:last-child {
+  border-bottom: none;
+}
+
+.admin-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-user-info .admin-setting-desc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-user-badges {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.admin-badge {
+  font-size: var(--font-size-sm);
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--border-radius);
+  background: var(--color-option-bg);
+  opacity: 0.5;
+}
+
+.admin-badge--verified {
+  opacity: 1;
+  color: var(--positive);
+}
+
+.admin-badge--admin {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.admin-action-btn--danger {
+  color: var(--danger) !important;
+}
+
+.user-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.user-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-card-name {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+.user-card-meta {
+  font-size: var(--font-size-sm);
+  opacity: 0.4;
+}
+
+.user-card-badges {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.user-card-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
 .poll-card-actions {
   display: flex;
   justify-content: space-between;
