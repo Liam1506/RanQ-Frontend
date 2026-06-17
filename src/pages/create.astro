@@ -17,14 +17,15 @@ import "../styles/create.css";
     <form id="create-form">
       <div class="field">
         <label class="field-label" for="question" id="question-label">question</label>
-        <input id="question" type="text" placeholder="what's your question?" required />
+        <input id="question" type="text" placeholder="what's your question?" required maxlength="200" />
+        <span id="question-counter" class="body-counter" style="display:none"></span>
       </div>
 
       <div id="ranking-fields" class="field">
         <span class="field-label">options</span>
         <ul id="options-list" class="options-list">
-          <li><input type="text" placeholder="option 1" /></li>
-          <li><input type="text" placeholder="option 2" /></li>
+          <li><input type="text" placeholder="option 1" maxlength="100" /><span class="option-counter body-counter" style="display:none"></span></li>
+          <li><input type="text" placeholder="option 2" maxlength="100" /><span class="option-counter body-counter" style="display:none"></span></li>
         </ul>
         <div class="option-btns">
           <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>

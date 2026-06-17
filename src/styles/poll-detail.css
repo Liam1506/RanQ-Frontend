@@ -36,7 +36,7 @@
 }
 
 .poll-card--detail .poll-option {
-  height: 2.75rem;
+  min-height: 2.75rem;
   font-size: var(--font-size-base);
 }
 

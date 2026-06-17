@@ -278,6 +278,9 @@ function applyRanking({ animateFromZero = false } = {}) {
 
     // re-append in frozen order; this is a move, not a destroy
     list.appendChild(li);
+    // sync explicit height so the absolutely positioned bar fills it correctly
+    li.style.height = "";
+    li.style.height = `${li.scrollHeight}px`;
   });
 
   rankingMetaEl.textContent = `${total} vote${total !== 1 ? "s" : ""}`;

@@ -66,17 +66,16 @@
 .poll-option {
   position: relative;
   display: flex;
-  align-items: center;
-  height: 1.75rem;
+  align-items: flex-start;
+  min-height: 1.75rem;
   border-radius: var(--border-radius);
-  overflow: hidden;
   background: var(--color-option-bg);
-  padding: 0 0.75rem;
+  padding: 0.35rem 0.75rem;
 }
 
 .poll-option--ranked {
-  height: 2.25rem;
-  padding: 0 0.85rem;
+  min-height: 2.25rem;
+  padding: 0.45rem 0.85rem;
   gap: 0.6rem;
   outline: 1px solid transparent;
   outline-offset: -1px;
@@ -130,6 +129,7 @@
   font-size: var(--font-size-sm);
   opacity: 0.75;
   font-variant-numeric: tabular-nums;
+  align-self: center;
 }
 
 .poll-option-pct--feed {
@@ -145,6 +145,7 @@
   font-variant-numeric: tabular-nums;
   min-width: 2ch;
   text-align: right;
+  align-self: center;
 }
 
 .poll-option-overflow {

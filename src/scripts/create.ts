@@ -71,8 +71,12 @@ addBtn.addEventListener("click", () => {
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = `option ${count + 1}`;
-  li.append(input);
+  const counter = document.createElement("span");
+  counter.className = "option-counter body-counter";
+  counter.style.display = "none";
+  li.append(input, counter);
   optionsList.append(li);
+  attachOptionCounter(li);
   updateAddBtn();
 });
 
@@ -135,7 +139,33 @@ form.addEventListener("submit", async (e) => {
 });
 
 const MAX_BODY = 3500;
+const MAX_QUESTION = 200;
+const MAX_OPTION = 100;
+
 const bodyCounter = document.getElementById("body-counter") as HTMLSpanElement;
+const questionCounter = document.getElementById("question-counter") as HTMLSpanElement;
+
+function attachCounter(input: HTMLInputElement, counter: HTMLSpanElement, max: number) {
+  input.addEventListener("input", () => {
+    const remaining = max - input.value.length;
+    if (remaining < 30) {
+      counter.style.display = "";
+      counter.textContent = String(remaining);
+      counter.classList.toggle("body-counter--low", remaining < 10);
+    } else {
+      counter.style.display = "none";
+    }
+  });
+}
+
+attachCounter(questionInput, questionCounter, MAX_QUESTION);
+
+function attachOptionCounter(li: HTMLLIElement) {
+  const input = li.querySelector<HTMLInputElement>("input")!;
+  const counter = li.querySelector<HTMLSpanElement>(".option-counter")!;
+  input.maxLength = MAX_OPTION;
+  attachCounter(input, counter, MAX_OPTION);
+}
 
 bodyInput.addEventListener("input", () => {
   const remaining = MAX_BODY - bodyInput.value.length;
@@ -156,5 +186,8 @@ pasteBtn.addEventListener("click", async () => {
   const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
   bodyInput.value = text;
 });
+
+// attach counters to initial option inputs
+Array.from(optionsList.querySelectorAll<HTMLLIElement>("li")).forEach(attachOptionCounter);
 
 loadMaxOptions();
