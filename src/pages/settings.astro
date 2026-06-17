@@ -62,6 +62,9 @@ import "../styles/poll-card.css";
       <div class="settings-row settings-row-actions">
         <a class="settings-action settings-action-danger" href="/logout">log out</a>
       </div>
+      <p id="notification-hint" class="settings-feedback" style="display:none">
+        please allow notifications for this site to get updates about your posts. <br>notifications include updates about new comments, likes, and when admins show off who's truly the boss! <br>and there are no ads - yet ;)
+      </p>
     </section>
 
     <section class="settings-section">
@@ -71,6 +74,7 @@ import "../styles/poll-card.css";
           <button type="button" class="type-tab active" data-type="all" role="tab">all</button>
           <button type="button" class="type-tab" data-type="ranking" role="tab">rankings</button>
           <button type="button" class="type-tab" data-type="post" role="tab">thoughts</button>
+          <button type="button" class="type-tab" data-type="quote" role="tab">quotes</button>
         </div>
         <button id="filter-unapproved" class="filter-toggle">unapproved only</button>
       </div>

@@ -36,10 +36,11 @@ function renderCard(post: any): string {
   </div>`;
 
   let middle = "";
-  if (post.kind === "post") {
+  if (post.kind === "post" || post.kind === "quote") {
     const truncated = post.body?.length > POST_PREVIEW_CHARS;
     const preview = truncated ? post.body.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : (post.body ?? "");
-    middle = `<p class="poll-body">${escapeHtml(preview)}</p>`;
+    const cls = post.kind === "quote" ? "poll-body poll-body--quote" : "poll-body";
+    middle = `<p class="${cls}">${escapeHtml(preview)}</p>`;
   } else {
     const total = post.options.reduce((s: number, o: any) => s + o.votes, 0);
     const visible = [...post.options].sort((a: any, b: any) => b.votes - a.votes).slice(0, MAX_OPTIONS_IN_FEED);
@@ -58,7 +59,7 @@ function renderCard(post: any): string {
   }
 
   const total = post.options.reduce((s: number, o: any) => s + o.votes, 0);
-  const left = post.kind === "post"
+  const left = post.kind === "post" || post.kind === "quote"
     ? `${post.like_count ?? 0} like${post.like_count !== 1 ? "s" : ""} · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
     : `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""} · ${total} vote${total !== 1 ? "s" : ""}`;
 
@@ -67,9 +68,11 @@ function renderCard(post: any): string {
     <span class="poll-meta poll-meta-author">${author}</span>
   </div>`;
 
-  const cardClass = post.kind === "post" ? "poll-card poll-card--post" : "poll-card";
+  const optionsText = (post.options ?? []).map((o: any) => o.option).join(" ");
 
-  return `<div class="post-wrapper" data-question="${escapeHtml(post.question ?? "")}" data-username="${escapeHtml(username)}">
+  const cardClass = post.kind === "post" ? "poll-card poll-card--post" : post.kind === "quote" ? "poll-card poll-card--quote" : "poll-card";
+
+  return `<div class="post-wrapper" data-question="${escapeHtml(post.question ?? "")}" data-username="${escapeHtml(username)}" data-body="${escapeHtml(post.body ?? "")}" data-options="${escapeHtml(optionsText)}">
     <a class="${cardClass}" href="/poll?id=${post.id}">
       ${header}${middle}${footer}
     </a>
@@ -105,7 +108,9 @@ input.addEventListener("input", () => {
   postWrapper.forEach((wrapper) => {
     const username = (wrapper.dataset.username ?? "").toLowerCase();
     const question = (wrapper.dataset.question ?? "").toLowerCase();
-    const matches = username.includes(query) || question.includes(query);
+    const body = (wrapper.dataset.body ?? "").toLowerCase();
+    const options = (wrapper.dataset.options ?? "").toLowerCase();
+    const matches = username.includes(query) || question.includes(query) || body.includes(query) || options.includes(query);
     wrapper.classList.toggle("hidden", !matches);
     if (matches) foundAny = true;
   });

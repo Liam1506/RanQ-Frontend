@@ -19,6 +19,7 @@ import "../styles/poll-card.css";
       <button type="button" class="type-tab active" data-type="all" role="tab">all</button>
       <button type="button" class="type-tab" data-type="ranking" role="tab">polls</button>
       <button type="button" class="type-tab" data-type="post" role="tab">posts</button>
+      <button type="button" class="type-tab" data-type="quote" role="tab">quotes</button>
     </div>
     <button id="filter-unvoted" class="filter-toggle">not voted</button>
     <select id="filter-sort" class="filter-sort feed-sort-desktop">
@@ -28,6 +29,7 @@ import "../styles/poll-card.css";
       <option value="discussed">most discussed</option>
     </select>
   </div>
+  <button id="new-posts-banner" class="new-posts-banner" hidden>↑ new posts</button>
   <div id="feed" class="feed">
     <p class="feed-loading">loading...</p>
   </div>

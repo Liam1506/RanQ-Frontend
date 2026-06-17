@@ -12,6 +12,7 @@ import "../styles/create.css";
     <div class="kind-toggle" role="tablist">
       <button type="button" class="kind-tab active" data-kind="ranking" role="tab" aria-selected="true">poll</button>
       <button type="button" class="kind-tab" data-kind="post" role="tab" aria-selected="false">post</button>
+      <button type="button" class="kind-tab" data-kind="quote" role="tab" aria-selected="false">quote</button>
     </div>
 
     <form id="create-form">
@@ -45,6 +46,15 @@ import "../styles/create.css";
             paste
           </button>
           <span id="body-counter" class="body-counter" style="display:none"></span>
+        </div>
+      </div>
+
+      <div id="quote-fields" class="field" hidden>
+        <label class="field-label" for="quote-body">quote</label>
+        <textarea id="quote-body" placeholder={`"quote"\n- speaker, date`} rows="4" maxlength="512"></textarea>
+        <div class="post-field-footer">
+          <span></span>
+          <span id="quote-counter" class="body-counter" style="display:none"></span>
         </div>
       </div>
 

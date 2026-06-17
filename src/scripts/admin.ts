@@ -77,11 +77,17 @@ async function loadUnapprovedPolls() {
       .filter(Boolean)
       .join(" · ");
 
+    const contentHtml = poll.kind === "post"
+      ? `<p class="poll-body">${poll.body ?? ""}</p>`
+      : poll.kind === "quote"
+        ? `<p class="poll-body poll-body--quote">${poll.body ?? ""}</p>`
+        : `<ul class="poll-options">${optionsHtml}</ul>`;
+
     const tmp = document.createElement("div");
     tmp.innerHTML = `
       <a class="poll-card" style="cursor:default">
         <p class="poll-question">${poll.question}</p>
-        <ul class="poll-options">${optionsHtml}</ul>
+        ${contentHtml}
         <span class="poll-meta">${meta}</span>
         <div class="poll-card-actions">
           <button class="approve-btn" data-poll-id="${poll.id}">Approve</button>

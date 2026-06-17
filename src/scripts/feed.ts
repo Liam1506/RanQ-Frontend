@@ -6,7 +6,7 @@ if (!userId) {
   window.location.replace("/login");
 }
 
-type Kind = "ranking" | "post";
+type Kind = "ranking" | "post" | "quote";
 
 type Poll = {
   id: string;
@@ -98,13 +98,20 @@ function postInner(poll: Poll): string {
     <div class="poll-card-footer"><span class="poll-meta">${`${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
+function quoteInner(poll: Poll): string {
+  return `
+    <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
+    <p class="poll-body poll-body--quote">${escapeHtml(poll.body)}</p>
+    <div class="poll-card-footer"><span class="poll-meta">${`${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+}
+
 function buildCard(poll: Poll): HTMLAnchorElement {
   const a = document.createElement("a");
-  a.className = poll.kind === "post" ? "poll-card poll-card--post" : "poll-card";
+  a.className = poll.kind === "post" ? "poll-card poll-card--post" : poll.kind === "quote" ? "poll-card poll-card--quote" : "poll-card";
   a.href = `/poll?id=${poll.id}`;
   a.dataset.pollId = poll.id;
   a.dataset.kind = poll.kind;
-  a.innerHTML = poll.kind === "post" ? postInner(poll) : rankingInner(poll);
+  a.innerHTML = poll.kind === "post" ? postInner(poll) : poll.kind === "quote" ? quoteInner(poll) : rankingInner(poll);
   a.addEventListener("click", () => {
     sessionStorage.setItem("feedScroll", String(window.scrollY));
   });
@@ -114,7 +121,7 @@ function buildCard(poll: Poll): HTMLAnchorElement {
 // Patch an existing card to match the new poll state without re-creating it.
 // For rankings: the bar widths transition smoothly from old to new.
 function patchCard(card: HTMLAnchorElement, poll: Poll) {
-  card.innerHTML = poll.kind === "post" ? postInner(poll) : rankingInner(poll);
+  card.innerHTML = poll.kind === "post" ? postInner(poll) : poll.kind === "quote" ? quoteInner(poll) : rankingInner(poll);
   card.dataset.kind = poll.kind;
   // Re-trigger the bar transition: start at 0 in the next frame, then to target.
   if (poll.kind === "ranking") {
@@ -273,7 +280,7 @@ async function loadFeed() {
         .forEach((t) => t.classList.toggle("active", t === tab));
       // 'not voted' only makes sense for rankings — hide it on thoughts and
       // turn it off so the filter state doesn't linger when switching back.
-      if (typeFilter === "post") {
+      if (typeFilter === "post" || typeFilter === "quote") {
         unvotedBtn.hidden = true;
         if (showUnvoted) {
           showUnvoted = false;
@@ -316,3 +323,27 @@ document.addEventListener("visibilitychange", () => {
 });
 
 loadFeed();
+
+const newPostsBanner = document.getElementById("new-posts-banner") as HTMLButtonElement;
+const POLL_INTERVAL = 30_000;
+
+newPostsBanner.addEventListener("click", () => {
+  newPostsBanner.hidden = true;
+  refreshFeed();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+async function checkForNewPosts() {
+  if (allPolls.length === 0) return;
+  const result = await fetchPolls();
+  if (typeof result === "string") return;
+  const latestKnown = allPolls[0]?.created_at;
+  const latestFetched = result[0]?.created_at;
+  if (latestFetched && latestKnown && latestFetched > latestKnown) {
+    newPostsBanner.hidden = false;
+  }
+}
+
+setInterval(() => {
+  if (document.visibilityState === "visible") checkForNewPosts();
+}, POLL_INTERVAL);

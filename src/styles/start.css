@@ -104,3 +104,27 @@
   background: var(--btn-bg);
   color: var(--btn-color);
 }
+
+.new-posts-banner {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: var(--color-accent);
+  color: var(--btn-color);
+  border: none;
+  font: inherit;
+  font-size: var(--font-size-sm);
+  padding: 0.5rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+
+.new-posts-banner:hover {
+  opacity: 1;
+}
+
+.new-posts-banner[hidden] {
+  display: none;
+}

@@ -111,9 +111,11 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   header.append(question, dateSpan);
   card.append(header);
 
-  if (poll.kind === "post") {
+  if (poll.kind === "post" || poll.kind === "quote") {
     const body = document.createElement("p");
-    body.className = "poll-body poll-body--detail";
+    body.className = poll.kind === "quote"
+      ? "poll-body poll-body--detail poll-body--quote"
+      : "poll-body poll-body--detail";
     body.textContent = poll.body;
     card.append(body);
 

@@ -272,6 +272,10 @@ loadUserInfo();
 loadPolls();
 checkMaintenance();
 
+if ("Notification" in window && Notification.permission !== "granted") {
+  (document.getElementById("notification-hint") as HTMLElement).style.display = "";
+}
+
 // ---- account edit ----
 
 const feedbackEl = document.getElementById("username-feedback") as HTMLElement;

@@ -4,7 +4,7 @@ import { getCookie } from "../utils/cookies";
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
-type Kind = "ranking" | "post";
+type Kind = "ranking" | "post" | "quote";
 
 const form = document.getElementById("create-form") as HTMLFormElement;
 const optionsList = document.getElementById("options-list") as HTMLUListElement;
@@ -14,8 +14,10 @@ const errorMsg = document.getElementById("create-error") as HTMLParagraphElement
 const questionInput = document.getElementById("question") as HTMLInputElement;
 const questionLabel = document.getElementById("question-label") as HTMLLabelElement;
 const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
+const quoteBodyInput = document.getElementById("quote-body") as HTMLTextAreaElement;
 const rankingFields = document.getElementById("ranking-fields") as HTMLDivElement;
 const postFields = document.getElementById("post-fields") as HTMLDivElement;
+const quoteFields = document.getElementById("quote-fields") as HTMLDivElement;
 const tabs = document.querySelectorAll<HTMLButtonElement>(".kind-tab");
 
 let kind: Kind = "ranking";
@@ -29,9 +31,10 @@ function setKind(next: Kind) {
   });
   rankingFields.hidden = next !== "ranking";
   postFields.hidden = next !== "post";
-  questionLabel.textContent = next === "ranking" ? "question" : "title";
+  quoteFields.hidden = next !== "quote";
+  questionLabel.textContent = next === "ranking" ? "question" : next === "quote" ? "lecture" : "title";
   questionInput.placeholder =
-    next === "ranking" ? "what's your question?" : "give your post a title";
+    next === "ranking" ? "what's your question?" : next === "quote" ? "e.g. Web Engineering" : "give your post a title";
   errorMsg.textContent = "";
 }
 
@@ -108,6 +111,17 @@ form.addEventListener("submit", async (e) => {
       return;
     }
     payload.options = options;
+  } else if (kind === "quote") {
+    const body = quoteBodyInput.value.trim();
+    if (!body) {
+      errorMsg.textContent = "quote body required.";
+      return;
+    }
+    if (body.length > MAX_QUOTE) {
+      errorMsg.textContent = `quote too long (max ${MAX_QUOTE} characters).`;
+      return;
+    }
+    payload.body = body;
   } else {
     const body = bodyInput.value.trim();
     if (!body) {
@@ -141,9 +155,11 @@ form.addEventListener("submit", async (e) => {
 const MAX_BODY = 3500;
 const MAX_QUESTION = 200;
 const MAX_OPTION = 100;
+const MAX_QUOTE = 512;
 
 const bodyCounter = document.getElementById("body-counter") as HTMLSpanElement;
 const questionCounter = document.getElementById("question-counter") as HTMLSpanElement;
+const quoteCounter = document.getElementById("quote-counter") as HTMLSpanElement;
 
 function attachCounter(input: HTMLInputElement, counter: HTMLSpanElement, max: number) {
   input.addEventListener("input", () => {
@@ -159,6 +175,17 @@ function attachCounter(input: HTMLInputElement, counter: HTMLSpanElement, max: n
 }
 
 attachCounter(questionInput, questionCounter, MAX_QUESTION);
+
+quoteBodyInput.addEventListener("input", () => {
+  const remaining = MAX_QUOTE - quoteBodyInput.value.length;
+  if (remaining < 100) {
+    quoteCounter.style.display = "";
+    quoteCounter.textContent = String(remaining);
+    quoteCounter.classList.toggle("body-counter--low", remaining < 30);
+  } else {
+    quoteCounter.style.display = "none";
+  }
+});
 
 function attachOptionCounter(li: HTMLLIElement) {
   const input = li.querySelector<HTMLInputElement>("input")!;
