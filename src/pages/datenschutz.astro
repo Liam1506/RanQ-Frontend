@@ -1,0 +1,156 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout>
+  <div class="page-header">
+    <h1 class="page-title">datenschutzerklärung</h1>
+  </div>
+  <div class="datenschutz">
+
+    <section>
+      <p class="notice">
+        Diese Plattform ist ein privates Universitätsprojekt im Rahmen des Studiums an der DHBW und richtet sich ausschließlich an einen geschlossenen Freundeskreis. Es handelt sich um kein kommerzielles Angebot.
+      </p>
+    </section>
+
+    <section>
+      <h2>1. Verantwortlicher</h2>
+      <p>
+        Joscha Freßdorf<br />
+        Sophienstraße 4<br />
+        76133 Karlsruhe<br />
+        E-Mail: <a href="mailto:joscha_fressdorf.dev@icloud.com">joscha_fressdorf.dev@icloud.com</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>2. Hosting</h2>
+      <p>
+        Das Backend dieser Anwendung wird auf einem privaten Server (Raspberry Pi) in Karlsruhe, Deutschland betrieben
+        und ist über einen Cloudflare-Tunnel erreichbar. Dabei werden durch Cloudflare technisch notwendige
+        Verbindungsdaten (IP-Adressen, Zeitstempel) verarbeitet. Weitere Informationen findest du in der
+        <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von Cloudflare</a>.
+      </p>
+      <p>
+        Das Frontend wird über GitHub Pages bereitgestellt. Dabei können durch GitHub technische Verbindungsdaten
+        verarbeitet werden. Weitere Informationen findest du in der
+        <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von GitHub</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>3. Erhobene Daten</h2>
+      <p>Bei der Registrierung und Nutzung von ranq werden folgende Daten gespeichert:</p>
+      <ul>
+        <li><strong>E-Mail-Adresse</strong> — zur Kontoerstellung und Verifikation</li>
+        <li><strong>Benutzername</strong> — zur Identifikation innerhalb der Plattform</li>
+        <li><strong>Passwort</strong> — gespeichert als sicherer Hash, nicht im Klartext</li>
+        <li><strong>Erstellte Inhalte</strong> — Beiträge, Umfragen, Kommentare und Abstimmungen</li>
+        <li><strong>Zeitstempel</strong> — Erstellungszeitpunkte von Inhalten</li>
+      </ul>
+      <p>Es werden keine Tracking-Daten, Werbeprofile oder Verhaltensdaten erhoben.</p>
+    </section>
+
+    <section>
+      <h2>4. Lokale Speicherung (Cookies & localStorage)</h2>
+      <p>Die Anwendung speichert folgende Daten lokal in deinem Browser:</p>
+      <ul>
+        <li><strong>Authentifizierungstoken</strong> — zur Aufrechterhaltung der Anmeldesitzung (Cookie)</li>
+        <li><strong>Benutzer-ID</strong> — zur Identifikation gegenüber der API (Cookie)</li>
+        <li><strong>Theme-Einstellung</strong> — zur Speicherung deiner Farbschema-Präferenz (localStorage)</li>
+      </ul>
+      <p>Es werden keine Tracking-Cookies oder Cookies von Drittanbietern gesetzt.</p>
+    </section>
+
+    <section>
+      <h2>5. Rechtsgrundlage</h2>
+      <p>
+        Die Verarbeitung deiner Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO
+        (Vertragserfüllung) zur Bereitstellung der Plattformfunktionen sowie Art. 6 Abs. 1 lit. f DSGVO
+        (berechtigtes Interesse) für den sicheren Betrieb des Dienstes.
+      </p>
+    </section>
+
+    <section>
+      <h2>6. Deine Rechte</h2>
+      <p>Du hast nach DSGVO folgende Rechte bezüglich deiner gespeicherten Daten:</p>
+      <ul>
+        <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
+        <li>Recht auf Berichtigung (Art. 16 DSGVO)</li>
+        <li>Recht auf Löschung (Art. 17 DSGVO) — du kannst dein Konto jederzeit in den Einstellungen löschen</li>
+        <li>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</li>
+        <li>Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</li>
+        <li>Beschwerderecht bei einer Aufsichtsbehörde (Art. 77 DSGVO)</li>
+      </ul>
+      <p>
+        Zur Ausübung deiner Rechte wende dich an:
+        <a href="mailto:joscha_fressdorf.dev@icloud.com">joscha_fressdorf.dev@icloud.com</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>7. Datensicherheit</h2>
+      <p>
+        Die Übertragung zwischen Browser und Server erfolgt verschlüsselt über HTTPS.
+        Passwörter werden ausschließlich als kryptografische Hashes gespeichert.
+        Der Zugriff auf den Server ist auf autorisierte Personen beschränkt.
+      </p>
+    </section>
+
+    <section>
+      <h2>8. Drittanbieter</h2>
+      <p>
+        Diese Anwendung lädt keine externen Schriften, Skripte oder sonstige Ressourcen von Drittanbietern.
+        Alle Inhalte werden ausschließlich vom eigenen Server ausgeliefert, mit Ausnahme des unter
+        Abschnitt 2 genannten Hostings.
+      </p>
+    </section>
+
+  </div>
+</BaseLayout>
+
+<style>
+  .datenschutz {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .datenschutz h2 {
+    font-size: var(--font-size-sm);
+    opacity: 0.5;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    margin: 0 0 0.5rem;
+    font-weight: normal;
+  }
+
+  .datenschutz p,
+  .datenschutz li {
+    margin: 0 0 0.4rem;
+    line-height: 1.6;
+    font-size: var(--font-size-md);
+  }
+
+  .datenschutz ul {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .datenschutz a {
+    color: var(--color-link);
+  }
+
+  .notice {
+    font-size: var(--font-size-sm);
+    opacity: 0.6;
+    border-left: 2px solid var(--color-divider);
+    padding-left: 0.75rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+</style>

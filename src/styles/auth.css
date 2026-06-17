@@ -29,9 +29,9 @@ form {
   width: var(--width-login);
 }
 
-#signup-form input,
+#signup-form input:not([type="checkbox"]),
 #signup-form button {
-  width: var(--width-register);
+  width: min(var(--width-register), calc(100vw - 3rem));
 }
 
 form button {
@@ -73,6 +73,33 @@ form button:disabled {
 .skip {
   font-size: var(--font-size-sm);
   opacity: 0.4;
+}
+
+.datenschutz-check {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  width: min(var(--width-register), calc(100vw - 3rem));
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+  cursor: pointer;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.datenschutz-check input[type="checkbox"] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  cursor: pointer;
+}
+
+.datenschutz-check a {
+  color: var(--color-link);
 }
 
 /* toast */

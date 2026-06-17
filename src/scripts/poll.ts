@@ -5,6 +5,8 @@ const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
 const pollId = new URLSearchParams(window.location.search).get("id")!;
+const isAdmin = getCookie("isAdmin") === "true";
+
 
 type Option = { id: string; option: string; votes: number };
 type Kind = "ranking" | "post";
@@ -125,6 +127,11 @@ function renderPoll(container: HTMLElement, poll: Poll) {
     card.append(footer);
 
     const likeRow = renderLikeRow(poll);
+    if (isAdmin) {
+      const spacer = document.createElement("span");
+      spacer.style.flex = "1";
+      likeRow.append(spacer, renderAdminDeleteBtn(poll.id));
+    }
     card.append(likeRow);
 
     container.append(card);
@@ -179,6 +186,12 @@ function renderPoll(container: HTMLElement, poll: Poll) {
       });
     });
     actionRow.append(shareBtn);
+  }
+
+  if (isAdmin) {
+    const spacer = document.createElement("span");
+    spacer.style.flex = "1";
+    actionRow.append(spacer, renderAdminDeleteBtn(poll.id));
   }
 
   card.append(optionsList, metaRow, actionRow);
@@ -407,6 +420,25 @@ function stagePendingUpdate(pollId: string, patch: Record<string, unknown>) {
   }
   updates[pollId] = { ...(updates[pollId] ?? {}), ...patch };
   sessionStorage.setItem("pendingPollUpdates", JSON.stringify(updates));
+}
+
+function renderAdminDeleteBtn(id: string): HTMLButtonElement {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "admin-delete-btn";
+  btn.textContent = "delete post";
+  btn.addEventListener("click", async () => {
+    const res = await fetch(API.polls.delete, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userId}`,
+      },
+      body: JSON.stringify({ id }),
+    });
+    if (res.ok) history.back();
+  });
+  return btn;
 }
 
 function renderLikeRow(poll: Poll): HTMLDivElement {

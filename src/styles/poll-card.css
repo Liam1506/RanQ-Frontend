@@ -320,3 +320,22 @@
 .share-btn:hover {
   border-color: var(--color-text);
 }
+
+.admin-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: 1px solid var(--color-divider);
+  color: var(--danger);
+  font: inherit;
+  font-size: var(--font-size-md);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.admin-delete-btn:hover {
+  opacity: 1;
+  border-color: var(--danger);
+}

@@ -8,6 +8,10 @@ const isDev = import.meta.env.DEV;
     <input id="email" type="email" placeholder="dhbw-email" required />
     <input id="username" type="text" placeholder="username" required />
     <input id="password" type="password" placeholder="password" required />
+    <label class="datenschutz-check">
+      <input type="checkbox" id="datenschutz" required />
+      <span>Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und akzeptiere sie.</span>
+    </label>
     <button type="submit">→</button>
     <p id="signup-error" class="create-error"></p>
     <a href="/login">login</a>

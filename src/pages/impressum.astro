@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout>
+  <div class="page-header">
+    <h1 class="page-title">impressum</h1>
+  </div>
+  <div class="impressum">
+    <section>
+      <p class="notice">
+        Diese Plattform ist ein privates Universitätsprojekt im Rahmen des Studiums an der DHBW und richtet sich ausschließlich an einen geschlossenen Freundeskreis. Es handelt sich um kein kommerzielles Angebot.
+      </p>
+    </section>
+    <section>
+      <h2>Angaben gemäß § 5 TMG</h2>
+      <p>
+        Joscha Freßdorf<br />
+        Sophienstraße 4<br />
+        76133 Karlsruhe
+      </p>
+    </section>
+    <section>
+      <h2>Kontakt</h2>
+      <p>E-Mail: <a href="mailto:joscha_fressdorf.dev@icloud.com">joscha_fressdorf.dev@icloud.com</a></p>
+    </section>
+    <section>
+      <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+      <p>
+        Joscha Freßdorf<br />
+        Sophienstraße 4<br />
+        76133 Karlsruhe
+      </p>
+    </section>
+    <section>
+      <h2>Haftungsausschluss</h2>
+      <p>
+        Die Inhalte dieser Seite wurden mit größter Sorgfalt erstellt. Für die Richtigkeit,
+        Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.
+      </p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .impressum {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .impressum h2 {
+    font-size: var(--font-size-sm);
+    opacity: 0.5;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    margin: 0 0 0.5rem;
+    font-weight: normal;
+  }
+
+  .impressum p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: var(--font-size-md);
+  }
+
+  .impressum a {
+    color: var(--color-link);
+  }
+
+  .notice {
+    font-size: var(--font-size-sm);
+    opacity: 0.6;
+    border-left: 2px solid var(--color-divider);
+    padding-left: 0.75rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+</style>
