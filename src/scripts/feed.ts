@@ -217,23 +217,26 @@ function applyPendingUpdates() {
   }
 }
 
-async function fetchPolls(): Promise<Poll[] | null> {
+async function fetchPolls(): Promise<Poll[] | string> {
   const res = await fetch(API.polls.getAll, {
     headers: { Authorization: `Bearer ${userId}` },
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return body?.detail ?? "failed to load.";
+  }
   return (await res.json()).filter((p: Poll) => p.approved);
 }
 
 async function loadFeed() {
-  const polls = await fetchPolls();
+  const result = await fetchPolls();
   const feed = document.getElementById("feed")!;
-  if (polls === null) {
-    feed.innerHTML = `<p class="feed-error">failed to load.</p>`;
+  if (typeof result === "string") {
+    feed.innerHTML = `<p class="feed-error">${result}</p>`;
     return;
   }
 
-  allPolls = polls;
+  allPolls = result;
   applyPendingUpdates();
   if (allPolls.length === 0) {
     feed.innerHTML = `<p class="feed-empty">nothing yet.</p>`;
@@ -289,9 +292,9 @@ async function refreshFeed() {
   applyPendingUpdates(); // patch local state first for instant feedback
   applyFilters();
 
-  const polls = await fetchPolls();
-  if (polls === null) return;
-  allPolls = polls;
+  const result = await fetchPolls();
+  if (typeof result === "string") return;
+  allPolls = result;
   applyPendingUpdates(); // re-apply pendings in case server lags
   applyFilters();
 }

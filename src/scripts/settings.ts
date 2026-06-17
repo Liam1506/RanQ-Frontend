@@ -63,6 +63,21 @@ async function loadUserInfo() {
   }
 }
 
+async function checkMaintenance() {
+  const res = await fetch(API.siteSettings.get, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (!res.ok) return;
+  const data = await res.json();
+  if (data.maintenance_mode) {
+    const ids = ["input-new-username", "btn-change-username", "input-current-password", "input-new-password", "btn-change-password", "input-delete-confirm", "btn-delete-account"];
+    ids.forEach((id) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLButtonElement | null;
+      if (el) el.disabled = true;
+    });
+  }
+}
+
 // ---- appearance section ----
 
 function currentTheme(): "light" | "dark" | "system" {
@@ -226,7 +241,8 @@ async function loadPolls() {
   });
   const feed = document.getElementById("settings-box-polls")!;
   if (!res.ok) {
-    feed.innerHTML = `<p class="feed-error">failed to load polls.</p>`;
+    const body = await res.json().catch(() => null);
+    feed.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load polls."}</p>`;
     return;
   }
   allPolls = await res.json();
@@ -254,6 +270,7 @@ document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
 
 loadUserInfo();
 loadPolls();
+checkMaintenance();
 
 // ---- account edit ----
 

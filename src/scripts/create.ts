@@ -48,6 +48,11 @@ async function loadMaxOptions() {
   if (res.ok) {
     const data = await res.json();
     maxOptions = data.max_options_per_poll ?? 10;
+    if (data.maintenance_mode) {
+      errorMsg.textContent = "site is under maintenance — posting is currently disabled.";
+      form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLButtonElement>("input, textarea, button").forEach((el) => el.disabled = true);
+      return;
+    }
   }
   updateAddBtn();
 }

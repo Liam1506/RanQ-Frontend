@@ -81,7 +81,8 @@ const response = await fetch(API.polls.getAll, {
 });
 
 if (!response.ok) {
-  postList.innerHTML = `<p class="feed-error">failed to load posts.</p>`;
+  const body = await response.json().catch(() => null);
+  postList.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load posts."}</p>`;
 } else {
   const posts = await response.json();
   postList.innerHTML = posts.map(renderCard).join("");

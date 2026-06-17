@@ -63,6 +63,18 @@
   border-color: var(--color-text);
 }
 
+.settings-action:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--color-divider);
+  color: var(--color-text);
+}
+
+.settings-input:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .settings-action-danger {
   color: var(--color-accent);
   border-color: var(--color-accent);

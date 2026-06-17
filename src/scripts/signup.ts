@@ -24,6 +24,13 @@ form.addEventListener("submit", async (e) => {
     window.location.replace("/verify");
   } else {
     const body = await response.json().catch(() => null);
-    errorMsg.textContent = body?.detail ?? "registration failed.";
+    if (body?.detail) {
+      errorMsg.textContent = body.detail;
+    } else if (body) {
+      const first = Object.values(body).flat()[0];
+      errorMsg.textContent = typeof first === "string" ? first : "registration failed.";
+    } else {
+      errorMsg.textContent = "registration failed.";
+    }
   }
 });
