@@ -29,8 +29,8 @@ import "../styles/create.css";
           <li><input type="text" placeholder="option 2" maxlength="100" /><span class="option-counter body-counter" style="display:none"></span></li>
         </ul>
         <div class="option-btns">
-          <button type="button" id="add-option-btn" class="add-option-btn">+ add option</button>
-          <button type="button" id="remove-option-btn" class="add-option-btn">− remove option</button>
+          <button type="button" id="add-option-btn" class="add-option-btn" aria-label="add option">+ add option</button>
+          <button type="button" id="remove-option-btn" class="add-option-btn" aria-label="remove last option">− remove option</button>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ import "../styles/create.css";
         <label class="field-label" for="body">body</label>
         <textarea id="body" placeholder="write your post..." rows="8"></textarea>
         <div class="post-field-footer">
-          <button type="button" id="paste-btn" class="add-option-btn">
+          <button type="button" id="paste-btn" class="add-option-btn" aria-label="paste from clipboard">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="2" width="6" height="4" rx="1"/>
               <rect x="4" y="6" width="16" height="16" rx="2"/>

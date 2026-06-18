@@ -541,7 +541,6 @@ async function loadComment(poll_id: string) {
     },
   });
   if (!res.ok) {
-    console.error("failed to load comments");
     return;
   }
 
@@ -706,7 +705,6 @@ async function createComment(poll_id: string, comment: string) {
     body: JSON.stringify({ poll_id, comment }),
   });
   if (!res.ok) {
-    console.error("comment could not be posted");
     return;
   }
 
@@ -736,7 +734,6 @@ async function deleteComment(commentId: string, li: HTMLLIElement) {
     body: JSON.stringify({ id: commentId }),
   });
   if (!res.ok) {
-    console.error("failed to delete comment");
     return;
   }
   li.remove();

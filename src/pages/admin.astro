@@ -2,89 +2,94 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "../styles/start.css";
 import "../styles/admin.css";
+import "../styles/settings.css";
 import "../styles/poll-card.css";
 ---
 
 <BaseLayout showNav={true}>
-  <div class="adminWrapper">
+  <div class="settings-wrapper">
     <div class="page-header">
       <h1 class="page-title">admin panel</h1>
     </div>
-    <div class="admin-box">
-      <h2 class="admin-box-title">users</h2>
-      <div class="admin-box-buttons">
-        <a href="/users" class="btn-secondary">manage users →</a>
-      </div>
-    </div>
-    <div class="admin-box">
-      <h2 class="admin-box-title">site settings</h2>
-      <div class="admin-settings-list">
-        <div class="admin-setting-row">
-          <div class="admin-setting-info">
-            <span class="admin-setting-label">auto approve polls</span>
-            <span class="admin-setting-desc">skip approval queue for new submissions</span>
+    <section class="settings-section">
+      <h2 class="settings-section-title">users</h2>
+      <a href="/users" class="btn-secondary">manage users →</a>
+    </section>
+    <section class="settings-section">
+      <h2 class="settings-section-title">site settings</h2>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-row-label">auto approve polls</span>
+            <span class="settings-row-desc">skip approval queue for new submissions</span>
           </div>
-          <input type="checkbox" id="setting-auto-approve" />
-        </div>
-        <div class="admin-setting-row">
-          <div class="admin-setting-info">
-            <span class="admin-setting-label">allow registration</span>
-            <span class="admin-setting-desc">let new users sign up</span>
+          <div class="settings-row-control">
+            <input type="checkbox" id="setting-auto-approve" />
           </div>
-          <input type="checkbox" id="setting-allow-registration" />
         </div>
-        <div class="admin-setting-row">
-          <div class="admin-setting-info">
-            <span class="admin-setting-label">maintenance mode</span>
-            <span class="admin-setting-desc">block all non-admin api access</span>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-row-label">allow registration</span>
+            <span class="settings-row-desc">let new users sign up</span>
           </div>
-          <input type="checkbox" id="setting-maintenance-mode" />
-        </div>
-        <div class="admin-setting-row">
-          <div class="admin-setting-info">
-            <span class="admin-setting-label">max options per poll</span>
-            <span class="admin-setting-desc">maximum number of options for ranking polls</span>
+          <div class="settings-row-control">
+            <input type="checkbox" id="setting-allow-registration" />
           </div>
-          <input type="number" id="setting-max-options" min="2" max="20" class="admin-setting-number" />
         </div>
-      </div>
-    </div>
-    <div class="admin-box">
-      <h2 class="admin-box-title">statistics</h2>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-row-label">maintenance mode</span>
+            <span class="settings-row-desc">block all non-admin api access</span>
+          </div>
+          <div class="settings-row-control">
+            <input type="checkbox" id="setting-maintenance-mode" />
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-row-label">max options per poll</span>
+            <span class="settings-row-desc">maximum number of options for ranking polls</span>
+          </div>
+          <div class="settings-row-control">
+            <input type="number" id="setting-max-options" min="2" max="20" class="admin-setting-number" />
+          </div>
+        </div>
+    </section>
+    <section class="settings-section">
+      <h2 class="settings-section-title">statistics</h2>
       <div class="admin-stats">
         <div class="admin-chart-info">
-          <span class="admin-setting-label">totals</span>
-          <span class="admin-setting-desc">overall counts across all users, polls, votes, likes and comments</span>
+          <span class="settings-row-label">totals</span>
+          <span class="settings-row-desc">overall counts across all users, polls, votes, likes and comments</span>
         </div>
         <canvas id="stats-totals" width="600" height="200"></canvas>
         <div class="admin-chart-info">
-          <span class="admin-setting-label">7-day activity</span>
-          <span class="admin-setting-desc">all events combined per day: Registrations, posts, comments, votes, likes</span>
+          <span class="settings-row-label">7-day activity</span>
+          <span class="settings-row-desc">all events combined per day: Registrations, posts, comments, votes, likes</span>
         </div>
         <canvas id="stats-activity" width="600" height="200"></canvas>
       </div>
-    </div>
-    <div class="admin-box">
-      <h2 class="admin-box-title">maintenance</h2>
-      <div class="admin-settings-list">
-        <div class="admin-setting-row">
-          <div class="admin-setting-info">
-            <span class="admin-setting-label">run cleanup</span>
-            <span class="admin-setting-desc">delete unverified users, orphaned waitlist entries, and excess notifications</span>
+    </section>
+    <section class="settings-section">
+      <h2 class="settings-section-title">maintenance</h2>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-row-label">run cleanup</span>
+            <span class="settings-row-desc">delete unverified users, orphaned waitlist entries, and excess notifications</span>
           </div>
-          <button class="btn" id="cleanup-btn">run</button>
+          <div class="settings-row-control">
+            <button class="btn" id="cleanup-btn">run</button>
+          </div>
         </div>
-        <div class="admin-setting-row" style="border-bottom:none; padding-top:0">
+        <div class="settings-row" style="border-bottom:none; padding-top:0">
           <p id="cleanup-result" class="admin-cleanup-result"></p>
         </div>
-      </div>
-    </div>
-    <div class="admin-box">
-      <h2 class="admin-box-title">polls for approval</h2>
+    </section>
+    <section class="settings-section">
+      <h2 class="settings-section-title">polls for approval</h2>
       <div id="admin-box-polls" class="feed">
         <p class="feed-loading">loading...</p>
       </div>
-    </div>
+    </section>
   </div>
 </BaseLayout>
 

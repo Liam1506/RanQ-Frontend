@@ -5,14 +5,17 @@ const isDev = import.meta.env.DEV;
 
 <AuthLayout title="Sign Up">
   <form id="signup-form">
+    <label for="email" class="sr-only">dhbw email</label>
     <input id="email" type="email" placeholder="dhbw-email" required />
+    <label for="username" class="sr-only">username</label>
     <input id="username" type="text" placeholder="username" required />
+    <label for="password" class="sr-only">password</label>
     <input id="password" type="password" placeholder="password" required />
     <label class="datenschutz-check">
       <input type="checkbox" id="datenschutz" required />
       <span>Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und akzeptiere sie.</span>
     </label>
-    <button type="submit" class="btn">→</button>
+    <button type="submit" class="btn" aria-label="sign up">→</button>
     <p id="signup-error" class="create-error"></p>
     <a href="/login">login</a>
     {isDev && <a href="/start" class="skip">skip →</a>}

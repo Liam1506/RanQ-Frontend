@@ -5,19 +5,21 @@ const isDev = import.meta.env.DEV;
 
 <AuthLayout title="Login">
   <form id="login-form">
+    <label for="identifier" class="sr-only">username</label>
     <input
       id="identifier"
       type="text"
       placeholder="username"
       autocomplete="username"
     />
+    <label for="password" class="sr-only">password</label>
     <input
       id="password"
       type="password"
       placeholder="password"
       autocomplete="current-password"
     />
-    <button id="submit-btn" class="btn">→</button>
+    <button id="submit-btn" class="btn" aria-label="log in">→</button>
     <p id="login-error" class="create-error"></p>
     <a href="/signup">sign up</a>
     {isDev && <a href="/start" class="skip">skip →</a>}

@@ -228,7 +228,6 @@ async function deletePoll(poll_id: string) {
     body: JSON.stringify({ id: poll_id }),
   });
   if (!res.ok) {
-    console.error("failed to delete poll");
     return;
   }
   allPolls = allPolls.filter((p) => p.id !== poll_id);

@@ -22,15 +22,6 @@
   opacity: 0.5;
 }
 
-.admin-box-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-
-.admin-box-polls {}
-
 .admin-stats {
   display: flex;
   flex-direction: column;
@@ -48,39 +39,6 @@
   gap: 0.1rem;
 }
 
-.admin-settings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0rem;
-}
-
-.admin-setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid var(--color-option-bg);
-}
-
-.admin-setting-row:last-child {
-  border-bottom: none;
-}
-
-.admin-setting-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-}
-
-.admin-setting-label {
-  font-size: var(--font-size-md);
-}
-
-.admin-setting-desc {
-  font-size: var(--font-size-sm);
-  opacity: 0.4;
-}
-
 .admin-setting-number {
   width: 3.5rem;
   background: var(--color-option-bg);
@@ -92,7 +50,7 @@
   text-align: center;
 }
 
-.admin-setting-row input[type="checkbox"] {
+.settings-row input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   width: 2.5rem;
@@ -105,7 +63,7 @@
   transition: background 0.2s;
 }
 
-.admin-setting-row input[type="checkbox"]::after {
+.settings-row input[type="checkbox"]::after {
   content: "";
   position: absolute;
   width: 1rem;
@@ -117,11 +75,11 @@
   transition: left 0.2s, background 0.2s;
 }
 
-.admin-setting-row input[type="checkbox"]:checked {
+.settings-row input[type="checkbox"]:checked {
   background: var(--color-accent);
 }
 
-.admin-setting-row input[type="checkbox"]:checked::after {
+.settings-row input[type="checkbox"]:checked::after {
   left: 1.3rem;
   background: var(--color-bg);
 }
@@ -132,22 +90,6 @@
 }
 
 
-.delete-btn {
-  font-size: var(--font-size-sm);
-  padding: 0.25rem 0.75rem;
-  width: fit-content;
-  border: none;
-  border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-accent);
-  cursor: pointer;
-}
-
-.delete-btn:hover {
-  color: var(--danger);
-  opacity: 0.7;
-}
-
 .admin-cleanup-result {
   margin: 0;
   font-size: var(--font-size-sm);
@@ -156,6 +98,7 @@
 }
 
 
+.admin-user-row {
   display: flex;
   align-items: center;
   justify-content: space-between;

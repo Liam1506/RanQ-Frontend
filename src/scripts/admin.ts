@@ -131,7 +131,6 @@ async function approve(poll_id: string) {
     body: JSON.stringify({ poll_id }),
   });
   if (!res.ok) {
-    console.error("failed to approve poll");
     return;
   }
   loadUnapprovedPolls();
@@ -147,7 +146,6 @@ async function deletePoll(poll_id: string) {
     body: JSON.stringify({ id: poll_id }),
   });
   if (!res.ok) {
-    console.error("failed to delete poll");
     return;
   }
   loadUnapprovedPolls();
