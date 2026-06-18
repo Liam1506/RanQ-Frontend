@@ -26,7 +26,7 @@ form {
 
 #login-form input,
 #login-form button {
-  width: var(--width-login);
+  width: min(var(--width-login), calc(100vw - 2rem));
 }
 
 #signup-form input:not([type="checkbox"]),
@@ -100,7 +100,8 @@ form {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: calc(100vw - 2rem);
   z-index: 200;
 }
 

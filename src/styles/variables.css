@@ -98,3 +98,21 @@
     --color-voted-bar: #e2b714;
     --color-divider: rgba(255, 255, 255, 0.1);
 }
+
+@media (max-width: 900px) {
+  :root {
+    --font-size-lg: 1.5rem;
+    --btn-padding: 0.55rem 1.2rem;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --font-size-sm: 0.9rem;
+    --font-size-md: 1rem;
+    --font-size-base: 1.1rem;
+    --font-size-lg: 1.3rem;
+    --btn-padding: 0.5rem 1rem;
+    --btn-font-size: var(--font-size-base);
+  }
+}

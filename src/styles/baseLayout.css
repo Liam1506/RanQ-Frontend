@@ -92,3 +92,20 @@ footer {
 .copyright a {
   color: inherit;
 }
+
+@media (max-width: 900px) {
+  .scroll-wrapper {
+    margin: 5rem auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .floating-nav {
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .copyright {
+    display: none;
+  }
+}

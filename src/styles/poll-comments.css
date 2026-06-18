@@ -133,3 +133,14 @@
   color: var(--danger);
   opacity: 1;
 }
+
+@media (max-width: 600px) {
+  .comment-input-row {
+    flex-direction: column;
+  }
+
+  .comment-input-row .btn,
+  .comment-submit-btn {
+    width: 100%;
+  }
+}

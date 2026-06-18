@@ -119,5 +119,22 @@
   margin: 0;
 }
 
+@media (max-width: 600px) {
+  .settings-wrapper {
+    gap: 1.5rem;
+  }
 
+  .settings-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 
+  .settings-inline-form {
+    flex-wrap: wrap;
+  }
+
+  .settings-inline-form .btn,
+  .settings-inline-form .btn-secondary {
+    width: 100%;
+  }
+}

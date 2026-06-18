@@ -142,3 +142,10 @@ form {
   color: var(--danger);
   opacity: 1;
 }
+
+@media (max-width: 600px) {
+  #body,
+  #quote-body {
+    min-height: 6rem;
+  }
+}

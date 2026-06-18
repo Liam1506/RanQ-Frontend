@@ -361,3 +361,13 @@
   opacity: 1;
   border-color: var(--danger);
 }
+
+@media (max-width: 600px) {
+  .poll-card {
+    padding: 1rem 0;
+  }
+
+  .poll-options {
+    gap: 0.25rem;
+  }
+}
