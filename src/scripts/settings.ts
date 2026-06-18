@@ -144,7 +144,7 @@ function renderRankingCard(poll: Poll): string {
       <ul class="poll-options">${optionsHtml}</ul>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary" data-poll-id="${poll.id}">delete</button>
       </div>
     </a>`;
 }
@@ -170,7 +170,7 @@ function renderPostCard(poll: Poll): string {
       <p class="poll-body">${escapeHtml(preview)}</p>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary" data-poll-id="${poll.id}">delete</button>
       </div>
     </a>`;
 }

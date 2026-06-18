@@ -34,23 +34,6 @@ form {
   width: min(var(--width-register), calc(100vw - 3rem));
 }
 
-form button {
-  height: 2rem;
-  border: none;
-  border-radius: var(--btn-radius);
-  background-color: var(--btn-bg);
-  color: var(--btn-color);
-  font-family: var(--font);
-  font-size: var(--btn-font-size);
-  cursor: pointer;
-  position: relative;
-}
-
-form button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .btn--loading::after {
   content: "";
   display: block;

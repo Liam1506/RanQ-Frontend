@@ -46,43 +46,9 @@
   padding-top: 0.5rem;
 }
 
-.settings-action {
-  background: none;
-  border: 1px solid var(--color-divider);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--font-size-sm);
-  padding: 0.45rem 0.9rem;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.settings-action:hover {
-  border-color: var(--color-text);
-}
-
-.settings-action:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  border-color: var(--color-divider);
-  color: var(--color-text);
-}
-
 .settings-input:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-}
-
-.settings-action-danger {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-.settings-action-danger:hover {
-  color: var(--danger);
-  border-color: var(--danger);
 }
 
 /* Theme toggle row — segmented control */
@@ -131,10 +97,6 @@
   font-size: var(--font-size-sm);
   min-height: 1.2rem;
   margin: 0;
-}
-
-.settings-action--red {
-  color: var(--danger);
 }
 
 .poll-card-actions {

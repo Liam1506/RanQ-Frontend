@@ -90,8 +90,8 @@ async function loadUnapprovedPolls() {
         ${contentHtml}
         <span class="poll-meta">${meta}</span>
         <div class="poll-card-actions">
-          <button class="approve-btn" data-poll-id="${poll.id}">Approve</button>
-          <button class="delete-btn" data-poll-id="${poll.id}">Delete</button>
+          <button class="btn-secondary" data-action="approve" data-poll-id="${poll.id}">Approve</button>
+          <button class="btn-secondary" data-action="delete" data-poll-id="${poll.id}">Delete</button>
         </div>
       </a>`;
 
@@ -111,11 +111,11 @@ async function loadUnapprovedPolls() {
       });
     });
 
-    card.querySelector<HTMLButtonElement>(".approve-btn")!.addEventListener("click", () => {
+    card.querySelector<HTMLButtonElement>('.btn-secondary[data-action="approve"]')!.addEventListener("click", () => {
       approve(poll.id);
     });
 
-    card.querySelector<HTMLButtonElement>(".delete-btn")!.addEventListener("click", () => {
+    card.querySelector<HTMLButtonElement>('.btn-secondary[data-action="delete"]')!.addEventListener("click", () => {
       deletePoll(poll.id);
     });
   });

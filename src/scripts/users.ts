@@ -98,17 +98,17 @@ function renderUsers(users: User[]) {
     actions.className = "user-card-actions";
 
     const verifyBtn = document.createElement("button");
-    verifyBtn.className = "admin-action-btn";
+    verifyBtn.className = "btn-secondary";
     verifyBtn.textContent = user.verified ? "unverify" : "verify";
     verifyBtn.addEventListener("click", () => toggleVerified(user.id));
 
     const adminBtn = document.createElement("button");
-    adminBtn.className = "admin-action-btn";
+    adminBtn.className = "btn-secondary";
     adminBtn.textContent = user.admin ? "demote" : "promote";
     adminBtn.addEventListener("click", () => toggleAdmin(user.id));
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.className = "admin-action-btn admin-action-btn--danger";
+    deleteBtn.className = "btn-secondary";
     deleteBtn.textContent = "delete";
     deleteBtn.addEventListener("click", () => deleteUser(user.id));
 

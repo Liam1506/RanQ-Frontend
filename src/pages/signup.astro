@@ -12,7 +12,7 @@ const isDev = import.meta.env.DEV;
       <input type="checkbox" id="datenschutz" required />
       <span>Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und akzeptiere sie.</span>
     </label>
-    <button type="submit">→</button>
+    <button type="submit" class="btn">→</button>
     <p id="signup-error" class="create-error"></p>
     <a href="/login">login</a>
     {isDev && <a href="/start" class="skip">skip →</a>}

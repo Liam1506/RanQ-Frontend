@@ -28,29 +28,6 @@
   gap: 0.5rem;
 }
 
-.admin-btn {
-  height: 1.75rem;
-  border: none;
-  border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-text);
-  font-size: var(--font-size-md);
-  padding: 0 0.75rem;
-  text-align: left;
-  cursor: pointer;
-}
-
-.admin-btn:hover {
-  opacity: 0.7;
-}
-
-.admin-btn-danger {
-  color: var(--color-accent);
-}
-
-.admin-btn-danger:hover {
-  color: var(--danger);
-}
 
 .admin-box-polls {}
 
@@ -154,21 +131,6 @@
   opacity: 1;
 }
 
-.approve-btn {
-  font-size: var(--font-size-sm);
-  padding: 0.25rem 0.75rem;
-  width: fit-content;
-  border: none;
-  border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-accent);
-  cursor: pointer;
-}
-
-.approve-btn:hover {
-  color: var(--positive);
-  opacity: 0.7;
-}
 
 .delete-btn {
   font-size: var(--font-size-sm);
@@ -193,41 +155,6 @@
   min-height: 1.2rem;
 }
 
-.admin-action-btn {
-  height: 1.75rem;
-  padding: 0 1rem;
-  border: none;
-  border-radius: var(--border-radius);
-  background: var(--color-accent);
-  color: #1e1e1e;
-  font-family: var(--font);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.15s;
-}
-
-.admin-action-btn:hover {
-  opacity: 0.8;
-}
-
-.admin-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.admin-btn-users {
-  background: var(--color-accent);
-  color: #1e1e1e;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.admin-btn-users:hover {
-  opacity: 0.8;
-}
 
   display: flex;
   align-items: center;
@@ -285,9 +212,6 @@
   flex-shrink: 0;
 }
 
-.admin-action-btn--danger {
-  color: var(--danger) !important;
-}
 
 .user-card {
   display: flex;

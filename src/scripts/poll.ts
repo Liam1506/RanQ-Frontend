@@ -51,7 +51,7 @@ let commentHeadingEl: HTMLElement | null = null;
 let rankingOrder: string[] | null = null;
 
 const backBtn = document.createElement("button");
-backBtn.className = "back-btn";
+backBtn.className = "back-btn btn-secondary";
 backBtn.textContent = "← back";
 backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
@@ -661,7 +661,7 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
   });
 
   const submitBtn = document.createElement("button");
-  submitBtn.className = "comment-submit-btn";
+  submitBtn.className = "comment-submit-btn btn";
   submitBtn.textContent = "post";
 
   submitBtn.addEventListener("click", () => {
