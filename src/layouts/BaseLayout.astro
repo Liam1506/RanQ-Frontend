@@ -34,9 +34,9 @@ const path = Astro.url.pathname;
     <main>
       <div class="scroll-wrapper">
         <slot />
+        <p class="copyright">© {new Date().getFullYear()} ranq · <a href="/impressum">impressum</a> · <a href="/datenschutz">datenschutz</a></p>
       </div>
     </main>
-    <p class="copyright">© {new Date().getFullYear()} ranq · <a href="/impressum">impressum</a> · <a href="/datenschutz">datenschutz</a></p>
     {showNav && <footer>
       <nav class="floating-nav">
         <a href="/start" aria-label="Home" aria-current={path === "/start" ? "page" : undefined}>

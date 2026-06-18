@@ -79,14 +79,10 @@ footer {
 }
 
 .copyright {
-  position: fixed;
-  bottom: 0.75rem;
-  left: 1rem;
   font-size: var(--font-size-sm);
   opacity: 0.3;
-  margin: 0;
-  z-index: 50;
-  pointer-events: auto;
+  margin: 3rem 0 0;
+  text-align: center;
 }
 
 .copyright a {
@@ -103,9 +99,5 @@ footer {
   .floating-nav {
     gap: 1rem;
     padding: 0.6rem 1rem;
-  }
-
-  .copyright {
-    display: none;
   }
 }
