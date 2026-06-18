@@ -26,7 +26,7 @@
 }
 
 .poll-card--detail .poll-question {
-  font-size: 1.5rem;
+  font-size: var(--font-size-base);
   margin-bottom: 0.25rem;
 }
 

@@ -39,7 +39,7 @@
 
 .poll-question {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: var(--font-size-md);
   font-weight: bold;
   line-height: 1.4;
 }
@@ -133,7 +133,7 @@
 }
 
 .poll-option-pct--feed {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   opacity: 0.55;
   margin-left: 0.5rem;
 }
