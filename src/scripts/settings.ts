@@ -139,14 +139,14 @@ function renderRankingCard(poll: Poll): string {
     .join(" · ");
 
   return `
-    <a class="poll-card" style="cursor:default">
+    <div class="poll-card poll-card--static">
       <p class="poll-question">${escapeHtml(poll.question)}</p>
       <ul class="poll-options">${optionsHtml}</ul>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn btn-secondary" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary btn--danger" data-poll-id="${poll.id}">delete</button>
       </div>
-    </a>`;
+    </div>`;
 }
 
 function renderPostCard(poll: Poll): string {
@@ -165,14 +165,14 @@ function renderPostCard(poll: Poll): string {
     .join(" · ");
 
   return `
-    <a class="poll-card poll-card--post" style="cursor:default">
+    <div class="poll-card poll-card--post poll-card--static">
       <p class="poll-question">${escapeHtml(poll.question)}</p>
       <p class="poll-body">${escapeHtml(preview)}</p>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn btn-secondary" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary btn--danger" data-poll-id="${poll.id}">delete</button>
       </div>
-    </a>`;
+    </div>`;
 }
 
 function renderPolls() {

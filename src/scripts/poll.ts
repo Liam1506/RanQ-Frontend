@@ -430,7 +430,7 @@ function stagePendingUpdate(pollId: string, patch: Record<string, unknown>) {
 function renderAdminDeleteBtn(id: string): HTMLButtonElement {
   const btn = document.createElement("button");
   btn.type = "button";
-  btn.className = "admin-delete-btn";
+  btn.className = "btn-secondary btn--danger";
   btn.textContent = "delete post";
   btn.addEventListener("click", async () => {
     const res = await fetch(API.polls.delete, {
@@ -581,7 +581,7 @@ function renderCommentItem(c: Comment): HTMLLIElement {
     actions.className = "comment-actions";
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.className = "comment-delete-btn";
+    deleteBtn.className = "comment-delete-btn btn--danger";
     deleteBtn.textContent = "delete";
     deleteBtn.addEventListener("click", () => deleteComment(c.id, li));
 

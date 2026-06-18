@@ -85,10 +85,6 @@
 }
 
 
-.admin-box .poll-card:hover {
-  opacity: 1;
-}
-
 
 .admin-cleanup-result {
   margin: 0;
@@ -203,4 +199,5 @@
 .poll-card-actions {
   display: flex;
   justify-content: space-between;
+  gap: 0.5rem;
 }

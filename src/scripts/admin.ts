@@ -85,15 +85,15 @@ async function loadUnapprovedPolls() {
 
     const tmp = document.createElement("div");
     tmp.innerHTML = `
-      <a class="poll-card" style="cursor:default">
+      <div class="poll-card poll-card--static">
         <p class="poll-question">${poll.question}</p>
         ${contentHtml}
         <span class="poll-meta">${meta}</span>
         <div class="poll-card-actions">
-          <button class="btn-secondary" data-action="approve" data-poll-id="${poll.id}">Approve</button>
-          <button class="btn-secondary" data-action="delete" data-poll-id="${poll.id}">Delete</button>
+          <button class="btn-secondary" data-action="approve" data-poll-id="${poll.id}">approve</button>
+          <button class="btn-secondary btn--danger" data-action="delete" data-poll-id="${poll.id}">delete</button>
         </div>
-      </a>`;
+      </div>`;
 
     const card = tmp.firstElementChild as HTMLElement;
     card.style.animationDelay = `${i * 0.06}s`;

@@ -124,6 +124,8 @@ a:focus-visible {
 .btn-secondary:hover { border-color: var(--color-text); color: var(--color-text); }
 .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
+.btn--danger:hover { border-color: var(--danger) !important; color: var(--danger) !important; }
+
 .hidden {
   display: none;
 }

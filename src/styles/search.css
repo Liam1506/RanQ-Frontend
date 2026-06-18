@@ -29,6 +29,14 @@
   width: 100%;
 }
 
+.post-list .poll-option {
+  pointer-events: none;
+}
+
+.post-list .poll-card {
+  pointer-events: auto;
+}
+
 .no-results {
   opacity: 0.5;
   font-size: var(--font-size-md);

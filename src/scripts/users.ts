@@ -108,7 +108,7 @@ function renderUsers(users: User[]) {
     adminBtn.addEventListener("click", () => toggleAdmin(user.id));
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn-secondary";
+    deleteBtn.className = "btn-secondary btn--danger";
     deleteBtn.textContent = "delete";
     deleteBtn.addEventListener("click", () => deleteUser(user.id));
 

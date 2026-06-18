@@ -79,10 +79,14 @@ footer {
 }
 
 .copyright {
-  text-align: center;
+  position: fixed;
+  bottom: 0.75rem;
+  left: 1rem;
   font-size: var(--font-size-sm);
   opacity: 0.3;
-  margin: 2rem 0 0;
+  margin: 0;
+  z-index: 50;
+  pointer-events: auto;
 }
 
 .copyright a {

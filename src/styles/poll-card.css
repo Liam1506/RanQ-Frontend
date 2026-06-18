@@ -33,6 +33,20 @@
   padding: 0.5rem 0 1.5rem;
 }
 
+.poll-card--static {
+  cursor: default;
+}
+
+.poll-card--static:hover {
+  opacity: 1;
+}
+
+.poll-card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .poll-card--detail:hover {
   opacity: 1;
 }
