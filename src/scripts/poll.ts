@@ -581,7 +581,7 @@ function renderCommentItem(c: Comment): HTMLLIElement {
     actions.className = "comment-actions";
 
     const deleteBtn = document.createElement("button");
-    deleteBtn.className = "comment-delete-btn btn--danger";
+    deleteBtn.className = "btn-secondary btn--danger btn--sm";
     deleteBtn.textContent = "delete";
     deleteBtn.addEventListener("click", () => deleteComment(c.id, li));
 

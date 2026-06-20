@@ -26,8 +26,8 @@
     --btn-bg: var(--color-accent);
     --btn-color: #1e1e1e;
     --btn-radius: var(--border-radius);
-    --btn-padding: 0.65rem 1.5rem;
-    --btn-font-size: var(--font-size-base);
+    --btn-padding: 0.45rem 0.9rem;
+    --btn-font-size: 1.2rem;
 
     --btn-ghost-color: var(--color-accent);
     --btn-ghost-font-size: var(--font-size-sm);
@@ -102,7 +102,7 @@
 @media (max-width: 900px) {
   :root {
     --font-size-lg: 1.5rem;
-    --btn-padding: 0.55rem 1.2rem;
+    --btn-padding: 0.4rem 0.8rem;
   }
 }
 
@@ -112,7 +112,7 @@
     --font-size-md: 1rem;
     --font-size-base: 1.1rem;
     --font-size-lg: 1.3rem;
-    --btn-padding: 0.5rem 1rem;
+    --btn-padding: 0.35rem 0.75rem;
     --btn-font-size: var(--font-size-base);
   }
 }

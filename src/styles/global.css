@@ -124,7 +124,9 @@ a:focus-visible {
 .btn-secondary:hover { border-color: var(--color-text); color: var(--color-text); }
 .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.btn--danger:hover { border-color: var(--danger) !important; color: var(--danger) !important; }
+.btn--danger { border-color: var(--danger) !important; color: var(--danger) !important; }
+.btn--danger:hover { border-color: var(--danger) !important; color: var(--danger) !important; box-shadow: 0 0 0 1px var(--danger); }
+.btn--sm { font-size: var(--font-size-sm); padding: 0.2rem 0.5rem; }
 
 .hidden {
   display: none;
