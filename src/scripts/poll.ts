@@ -69,11 +69,9 @@ function formatDate(iso: string | null): string {
 async function loadPoll() {
   const container = document.getElementById("poll-detail")!;
   container.innerHTML = "";
-  // Drop the frozen order so the next applyRanking() captures fresh from the
-  // server-authoritative state (matters on the post-error refetch path).
   rankingOrder = null;
 
-  const res = await fetch(API.polls.getAll, {
+  const res = await fetch(`${API.polls.getById}?id=${pollId}`, {
     headers: { Authorization: `Bearer ${userId}` },
   });
 
@@ -82,13 +80,7 @@ async function loadPoll() {
     return;
   }
 
-  const polls: Poll[] = await res.json();
-  const poll = polls.find((p) => p.id === pollId);
-  if (!poll) {
-    container.textContent = "ranking not found.";
-    return;
-  }
-
+  const poll: Poll = await res.json();
   renderPoll(container, poll);
   loadComment(pollId);
 }

@@ -7,9 +7,17 @@ if (!userId) window.location.replace("/login");
 const input = document.getElementById("search-input") as HTMLInputElement;
 const noResults = document.getElementById("no-results") as HTMLParagraphElement;
 const postList = document.getElementById("post-list") as HTMLElement;
+const sentinel = document.getElementById("search-sentinel") as HTMLDivElement;
 
 const POST_PREVIEW_CHARS = 200;
 const MAX_OPTIONS_IN_FEED = 3;
+const LIMIT = 10;
+const DEBOUNCE_MS = 300;
+
+let currentQuery = "";
+let offset = 0;
+let hasMore = false;
+let isLoading = false;
 
 function escapeHtml(s: string): string {
   return s
@@ -68,52 +76,73 @@ function renderCard(post: any): string {
     <span class="poll-meta poll-meta-author">${author}</span>
   </div>`;
 
-  const optionsText = (post.options ?? []).map((o: any) => o.option).join(" ");
-
   const cardClass = post.kind === "post" ? "poll-card poll-card--post" : post.kind === "quote" ? "poll-card poll-card--quote" : "poll-card";
 
-  return `<div class="post-wrapper" data-question="${escapeHtml(post.question ?? "")}" data-username="${escapeHtml(username)}" data-body="${escapeHtml(post.body ?? "")}" data-options="${escapeHtml(optionsText)}">
-    <a class="${cardClass}" href="/poll?id=${post.id}">
-      ${header}${middle}${footer}
-    </a>
-  </div>`;
+  return `<a class="${cardClass}" href="/poll?id=${post.id}">${header}${middle}${footer}</a>`;
 }
 
-const response = await fetch(API.polls.getAll, {
-  headers: { Authorization: `Bearer ${userId}` },
-});
-
-if (!response.ok) {
-  const body = await response.json().catch(() => null);
-  postList.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load posts."}</p>`;
-} else {
-  const posts = await response.json();
-  postList.innerHTML = posts.map(renderCard).join("");
+async function fetchResults(q: string, off: number): Promise<{ polls: any[]; has_more: boolean } | null> {
+  const params = new URLSearchParams({ q, limit: String(LIMIT), offset: String(off) });
+  const res = await fetch(`${API.polls.search}?${params}`, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    postList.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load."}</p>`;
+    return null;
+  }
+  return res.json();
 }
 
-const postWrapper = postList.querySelectorAll<HTMLElement>(".post-wrapper");
+async function search(q: string) {
+  currentQuery = q;
+  offset = 0;
+  hasMore = false;
+  noResults.classList.add("hidden");
 
-input.addEventListener("input", () => {
-  const raw = input.value.trim().toLowerCase();
-  const query = raw.startsWith("@") ? raw.slice(1) : raw;
+  postList.innerHTML = `<p class="feed-loading">searching...</p>`;
 
-  if (query === "") {
-    postWrapper.forEach((w) => w.classList.remove("hidden"));
-    noResults.classList.add("hidden");
+  const data = await fetchResults(q, 0);
+  if (!data || currentQuery !== q) return;
+
+  postList.innerHTML = "";
+
+  if (data.polls.length === 0) {
+    noResults.classList.remove("hidden");
     return;
   }
 
-  let foundAny = false;
+  postList.innerHTML = data.polls.map(renderCard).join("");
+  offset = data.polls.length;
+  hasMore = data.has_more;
+}
 
-  postWrapper.forEach((wrapper) => {
-    const username = (wrapper.dataset.username ?? "").toLowerCase();
-    const question = (wrapper.dataset.question ?? "").toLowerCase();
-    const body = (wrapper.dataset.body ?? "").toLowerCase();
-    const options = (wrapper.dataset.options ?? "").toLowerCase();
-    const matches = username.includes(query) || question.includes(query) || body.includes(query) || options.includes(query);
-    wrapper.classList.toggle("hidden", !matches);
-    if (matches) foundAny = true;
-  });
+async function loadMore() {
+  if (!hasMore || isLoading || !currentQuery) return;
+  isLoading = true;
 
-  noResults.classList.toggle("hidden", foundAny);
+  const data = await fetchResults(currentQuery, offset);
+  if (!data) { isLoading = false; return; }
+
+  postList.insertAdjacentHTML("beforeend", data.polls.map(renderCard).join(""));
+  offset += data.polls.length;
+  hasMore = data.has_more;
+  isLoading = false;
+}
+
+// Debounced input handler
+let debounceTimer: ReturnType<typeof setTimeout>;
+input.addEventListener("input", () => {
+  clearTimeout(debounceTimer);
+  const q = input.value.trim();
+  debounceTimer = setTimeout(() => search(q), DEBOUNCE_MS);
 });
+
+// IntersectionObserver for auto load more
+const observer = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) loadMore();
+}, { rootMargin: "200px" });
+observer.observe(sentinel);
+
+// Load default feed on page load
+search("");

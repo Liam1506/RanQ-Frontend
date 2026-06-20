@@ -25,22 +25,38 @@ type Poll = {
   options: Array<{ id: string; option: string; votes: number }>;
 };
 
+type FeedResponse = {
+  polls: Poll[];
+  next_cursor: string | null;
+  has_more: boolean;
+};
+
 let allPolls: Poll[] = [];
+let nextCursor: string | null = null;
+let hasMore = false;
+let isLoading = false;
 let showUnvoted = false;
 let typeFilter: "all" | Kind = "all";
+let sort = "newest";
 let initialRender = true;
 
+const LIMIT = 10;
 const MAX_OPTIONS_IN_FEED = 5;
 const POST_PREVIEW_CHARS = 240;
+
+const feed = document.getElementById("feed")!;
+const newPostsBanner = document.getElementById("new-posts-banner") as HTMLButtonElement;
+const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
+
+// Sentinel element at the bottom of the feed for IntersectionObserver
+const sentinel = document.createElement("div");
+sentinel.id = "feed-sentinel";
+feed.after(sentinel);
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }
 
 function totalVotes(poll: Poll): number {
@@ -56,158 +72,239 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-// Render the inner content (everything except the outer <a>) so we can swap
-// it on an existing card without losing the element reference.
 function rankingInner(poll: Poll): string {
   const total = totalVotes(poll);
   const ranked = [...poll.options].sort((a, b) => b.votes - a.votes);
   const visible = ranked.slice(0, MAX_OPTIONS_IN_FEED);
   const overflow = ranked.length - visible.length;
 
-  const options = visible
-    .map((opt) => {
-      const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
-      const isVoted = opt.id === poll.voted_option_id;
-      return `
-        <li class="poll-option${isVoted ? " poll-option--voted" : ""}" data-option-id="${opt.id}">
-          <div class="poll-option-bar" style="width:${pct}%"></div>
-          <span class="poll-option-label">${escapeHtml(opt.option)}</span>
-          <span class="poll-option-pct poll-option-pct--feed">${pct}%</span>
-        </li>`;
-    })
-    .join("");
+  const options = visible.map((opt) => {
+    const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+    const isVoted = opt.id === poll.voted_option_id;
+    return `
+      <li class="poll-option${isVoted ? " poll-option--voted" : ""}" data-option-id="${opt.id}">
+        <div class="poll-option-bar" style="width:${pct}%"></div>
+        <span class="poll-option-label">${escapeHtml(opt.option)}</span>
+        <span class="poll-option-pct poll-option-pct--feed">${pct}%</span>
+      </li>`;
+  }).join("");
 
-  const overflowLine = overflow > 0
-    ? `<li class="poll-option-overflow">+ ${overflow} more →</li>`
-    : "";
+  const overflowLine = overflow > 0 ? `<li class="poll-option-overflow">+ ${overflow} more →</li>` : "";
 
   return `
     <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <ul class="poll-options">${options}${overflowLine}</ul>
-    <div class="poll-card-footer"><span class="poll-meta">${[`▲ ${poll.total_up_down_score} ▼`, `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`, `${total} vote${total !== 1 ? "s" : ""}`].join(" · ")}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+    <div class="poll-card-footer"><span class="poll-meta">${[`▲ ${poll.total_up_down_score} ▼`, `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`, `${totalVotes(poll)} vote${totalVotes(poll) !== 1 ? "s" : ""}`].join(" · ")}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function postInner(poll: Poll): string {
   const truncated = poll.body.length > POST_PREVIEW_CHARS;
-  const preview = truncated
-    ? poll.body.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…"
-    : poll.body;
+  const preview = truncated ? poll.body.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : poll.body;
   return `
     <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <p class="poll-body">${escapeHtml(preview)}</p>
-    <div class="poll-card-footer"><span class="poll-meta">${`${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+    <div class="poll-card-footer"><span class="poll-meta">${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function quoteInner(poll: Poll): string {
   return `
     <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <p class="poll-body poll-body--quote">${escapeHtml(poll.body)}</p>
-    <div class="poll-card-footer"><span class="poll-meta">${`${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+    <div class="poll-card-footer"><span class="poll-meta">${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
-function buildCard(poll: Poll): HTMLAnchorElement {
+function innerHtml(poll: Poll): string {
+  if (poll.kind === "post") return postInner(poll);
+  if (poll.kind === "quote") return quoteInner(poll);
+  return rankingInner(poll);
+}
+
+function buildCard(poll: Poll, index: number): HTMLAnchorElement {
   const a = document.createElement("a");
   a.className = poll.kind === "post" ? "poll-card poll-card--post" : poll.kind === "quote" ? "poll-card poll-card--quote" : "poll-card";
   a.href = `/poll?id=${poll.id}`;
   a.dataset.pollId = poll.id;
   a.dataset.kind = poll.kind;
-  a.innerHTML = poll.kind === "post" ? postInner(poll) : poll.kind === "quote" ? quoteInner(poll) : rankingInner(poll);
-  a.addEventListener("click", () => {
-    sessionStorage.setItem("feedScroll", String(window.scrollY));
-  });
+  a.innerHTML = innerHtml(poll);
+  if (initialRender) a.style.animationDelay = `${index * 0.06}s`;
+  else a.style.animation = "none";
+  if (poll.kind === "ranking" && initialRender) animateBars(a);
+  a.addEventListener("click", () => sessionStorage.setItem("feedScroll", String(window.scrollY)));
   return a;
 }
 
-// Patch an existing card to match the new poll state without re-creating it.
-// For rankings: the bar widths transition smoothly from old to new.
-function patchCard(card: HTMLAnchorElement, poll: Poll) {
-  card.innerHTML = poll.kind === "post" ? postInner(poll) : poll.kind === "quote" ? quoteInner(poll) : rankingInner(poll);
-  card.dataset.kind = poll.kind;
-  // Re-trigger the bar transition: start at 0 in the next frame, then to target.
-  if (poll.kind === "ranking") {
-    const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
-    const targets = Array.from(bars).map((b) => b.style.width);
-    bars.forEach((b) => (b.style.width = "0"));
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        bars.forEach((b, i) => (b.style.width = targets[i]));
-      });
+function popElement(el: Element | null) {
+  if (!el) return;
+  el.classList.remove("count-pop");
+  // Force reflow so re-adding the class re-triggers the animation
+  void (el as HTMLElement).offsetWidth;
+  el.classList.add("count-pop");
+  el.addEventListener("animationend", () => el.classList.remove("count-pop"), { once: true });
+}
+
+function patchCard(card: HTMLAnchorElement, oldPoll: Poll, newPoll: Poll) {
+  // Capture old bar widths before re-rendering so we can animate from them
+  const oldBars = new Map<string, string>();
+  card.querySelectorAll<HTMLElement>(".poll-option[data-option-id]").forEach((li) => {
+    const bar = li.querySelector<HTMLElement>(".poll-option-bar");
+    if (bar) oldBars.set(li.dataset.optionId!, bar.style.width);
+  });
+
+  card.innerHTML = innerHtml(newPoll);
+  card.dataset.kind = newPoll.kind;
+
+  // Animate bars from old width to new width
+  if (newPoll.kind === "ranking") {
+    card.querySelectorAll<HTMLElement>(".poll-option[data-option-id]").forEach((li) => {
+      const bar = li.querySelector<HTMLElement>(".poll-option-bar");
+      if (!bar) return;
+      const target = bar.style.width;
+      const from = oldBars.get(li.dataset.optionId!) ?? "0%";
+      if (from !== target) {
+        bar.style.width = from;
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = target; }));
+      }
     });
+  }
+
+  // Pop counts that changed
+  if (newPoll.like_count !== oldPoll.like_count) {
+    popElement(card.querySelector(".like-count"));
+  }
+  if (newPoll.comment_count !== oldPoll.comment_count) {
+    popElement(card.querySelector(".poll-meta"));
+  }
+  const oldTotal = totalVotes(oldPoll);
+  const newTotal = totalVotes(newPoll);
+  if (newTotal !== oldTotal) {
+    card.querySelectorAll(".poll-option-pct, .poll-option-count").forEach(popElement);
   }
 }
 
-function applyFilters() {
-  const sort = (document.getElementById("filter-sort") as HTMLSelectElement).value;
+function animateBars(card: HTMLAnchorElement) {
+  const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
+  const targets = Array.from(bars).map((b) => b.style.width);
+  bars.forEach((b) => (b.style.width = "0"));
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bars.forEach((b, i) => (b.style.width = targets[i]));
+    });
+  });
+}
 
+function sortedPolls(polls: Poll[]): Poll[] {
+  return polls;
+}
+
+function visiblePolls(): Poll[] {
   let polls = [...allPolls];
+  if (showUnvoted) polls = polls.filter((p) => p.kind === "ranking" && p.voted_option_id === null);
+  return sortedPolls(polls);
+}
 
-  if (typeFilter !== "all") {
-    polls = polls.filter((p) => p.kind === typeFilter);
-  }
+function renderAll() {
+  const polls = visiblePolls();
 
-  if (showUnvoted) {
-    polls = polls.filter((p) => p.kind === "ranking" && p.voted_option_id === null);
-  }
+  feed.querySelectorAll(".feed-empty, .feed-error, .feed-loading").forEach((el) => el.remove());
 
-  if (sort === "oldest") {
-    polls = polls.slice().reverse();
-  } else if (sort === "popular") {
-    polls = polls.slice().sort((a, b) => totalVotes(b) - totalVotes(a));
-  } else if (sort === "discussed") {
-    polls = polls.slice().sort((a, b) => b.comment_count - a.comment_count);
-  }
-
-  if (polls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">nothing matches.</p>`;
+  if (polls.length === 0 && !hasMore) {
+    feed.innerHTML = `<p class="feed-empty">nothing here yet.</p>`;
     return;
   }
 
-  // Build a map of existing cards so we can reuse them
   const existing = new Map<string, HTMLAnchorElement>();
   feed.querySelectorAll<HTMLAnchorElement>("a.poll-card").forEach((c) => {
     if (c.dataset.pollId) existing.set(c.dataset.pollId, c);
   });
 
-  // Drop any feed-empty / feed-error / feed-loading messages
-  feed.querySelectorAll(".feed-empty, .feed-error, .feed-loading").forEach((el) =>
-    el.remove(),
-  );
-
   polls.forEach((poll, i) => {
-    let card = existing.get(poll.id);
+    const card = existing.get(poll.id);
     if (card) {
-      patchCard(card, poll);
+      const oldPoll = allPolls.find((p) => p.id === poll.id) ?? poll;
+      patchCard(card, oldPoll, poll);
       existing.delete(poll.id);
     } else {
-      card = buildCard(poll);
-      // Only animate-in on the very first render; later refreshes shouldn't replay
-      if (initialRender) card.style.animationDelay = `${i * 0.06}s`;
-      else card.style.animation = "none";
-
-      // Initial bar growth animation for first-rendered ranking cards
-      if (poll.kind === "ranking" && initialRender) {
-        const bars = card.querySelectorAll<HTMLElement>(".poll-option-bar");
-        const targets = Array.from(bars).map((b) => b.style.width);
-        bars.forEach((b) => (b.style.width = "0"));
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            bars.forEach((b, j) => (b.style.width = targets[j]));
-          });
-        });
-      }
+      feed.appendChild(buildCard(poll, i));
     }
-    // Re-append to maintain sort order (DOM move, not destroy)
-    feed.appendChild(card);
   });
 
-  // Anything left in `existing` is a card that no longer matches the filters — remove it.
   existing.forEach((card) => card.remove());
-
   initialRender = false;
 }
 
-// Apply pending optimistic updates left by the detail page so we stay in sync
-// even before the silent refetch completes on bfcache restore.
+async function fetchPage(cursor: string | null = null): Promise<FeedResponse | null> {
+  const params = new URLSearchParams({ limit: String(LIMIT), sort });
+  if (typeFilter !== "all") params.set("kind", typeFilter);
+  if (cursor) params.set("cursor", cursor);
+
+  const res = await fetch(`${API.polls.feed}?${params}`, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    feed.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load."}</p>`;
+    return null;
+  }
+  return res.json();
+}
+
+async function loadFeed() {
+  feed.innerHTML = `<p class="feed-loading">loading...</p>`;
+  allPolls = [];
+  nextCursor = null;
+  hasMore = false;
+  initialRender = true;
+
+  const data = await fetchPage();
+  if (!data) return;
+
+  allPolls = data.polls;
+  nextCursor = data.next_cursor;
+  hasMore = data.has_more;
+
+  applyPendingUpdates();
+  renderAll();
+
+  const savedScroll = sessionStorage.getItem("feedScroll");
+  if (savedScroll) {
+    sessionStorage.removeItem("feedScroll");
+    requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll)));
+  }
+}
+
+async function loadMore() {
+  if (!hasMore || isLoading || !nextCursor) return;
+  isLoading = true;
+
+  const data = await fetchPage(nextCursor);
+  if (!data) { isLoading = false; return; }
+
+  allPolls = [...allPolls, ...data.polls];
+  nextCursor = data.next_cursor;
+  hasMore = data.has_more;
+
+  renderAll();
+  isLoading = false;
+}
+
+async function refreshFeed() {
+  applyPendingUpdates();
+  renderAll();
+
+  const data = await fetchPage();
+  if (!data) return;
+
+  // Merge: keep existing polls, prepend any new ones, update existing ones
+  const existingIds = new Set(allPolls.map((p) => p.id));
+  const newPolls = data.polls.filter((p) => !existingIds.has(p.id));
+  const updated = allPolls.map((p) => data.polls.find((q) => q.id === p.id) ?? p);
+  allPolls = [...newPolls, ...updated];
+
+  applyPendingUpdates();
+  renderAll();
+}
+
 function applyPendingUpdates() {
   const raw = sessionStorage.getItem("pendingPollUpdates");
   if (!raw) return;
@@ -216,134 +313,94 @@ function applyPendingUpdates() {
     const updates: Record<string, Partial<Poll>> = JSON.parse(raw);
     Object.entries(updates).forEach(([id, patch]) => {
       const idx = allPolls.findIndex((p) => p.id === id);
-      if (idx === -1) return;
-      allPolls[idx] = { ...allPolls[idx], ...patch };
+      if (idx !== -1) allPolls[idx] = { ...allPolls[idx], ...patch };
     });
-  } catch {
-    /* ignore malformed updates */
-  }
+  } catch { /* ignore */ }
 }
 
-async function fetchPolls(): Promise<Poll[] | string> {
-  const res = await fetch(API.polls.getAll, {
-    headers: { Authorization: `Bearer ${userId}` },
+// IntersectionObserver — fires loadMore when sentinel scrolls into view
+const observer = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) loadMore();
+}, { rootMargin: "200px" });
+observer.observe(sentinel);
+
+// Filter/sort listeners
+document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
+  sel.addEventListener("change", (e) => {
+    sort = (e.target as HTMLSelectElement).value;
+    document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => (s.value = sort));
+    loadFeed();
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    return body?.detail ?? "failed to load.";
-  }
-  return (await res.json()).filter((p: Poll) => p.approved);
-}
-
-async function loadFeed() {
-  const result = await fetchPolls();
-  const feed = document.getElementById("feed")!;
-  if (typeof result === "string") {
-    feed.innerHTML = `<p class="feed-error">${result}</p>`;
-    return;
-  }
-
-  allPolls = result;
-  applyPendingUpdates();
-  if (allPolls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">nothing yet.</p>`;
-  } else {
-    applyFilters();
-  }
-
-  const savedScroll = sessionStorage.getItem("feedScroll");
-  if (savedScroll) {
-    sessionStorage.removeItem("feedScroll");
-    requestAnimationFrame(() => window.scrollTo(0, parseInt(savedScroll)));
-  }
-
-  document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
-    sel.addEventListener("change", (e) => {
-      const val = (e.target as HTMLSelectElement).value;
-      document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => (s.value = val));
-      applyFilters();
-    });
-  });
-
-  const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
-  unvotedBtn?.addEventListener("click", () => {
-    showUnvoted = !showUnvoted;
-    unvotedBtn.classList.toggle("active", showUnvoted);
-    applyFilters();
-  });
-
-  document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
-      typeFilter = (tab.dataset.type as "all" | Kind) ?? "all";
-      document
-        .querySelectorAll<HTMLButtonElement>(".type-tab")
-        .forEach((t) => t.classList.toggle("active", t === tab));
-      // 'not voted' only makes sense for rankings — hide it on thoughts and
-      // turn it off so the filter state doesn't linger when switching back.
-      if (typeFilter === "post" || typeFilter === "quote") {
-        unvotedBtn.hidden = true;
-        if (showUnvoted) {
-          showUnvoted = false;
-          unvotedBtn.classList.remove("active");
-        }
-      } else {
-        unvotedBtn.hidden = false;
-      }
-      applyFilters();
-    });
-  });
-}
-
-// Silent refresh: refetch, merge, patch the DOM in place.
-async function refreshFeed() {
-  applyPendingUpdates(); // patch local state first for instant feedback
-  applyFilters();
-
-  const result = await fetchPolls();
-  if (typeof result === "string") return;
-  allPolls = result;
-  applyPendingUpdates(); // re-apply pendings in case server lags
-  applyFilters();
-}
-
-// Fires when the page becomes visible again — including bfcache restores
-// (browser back button) which DON'T re-run the script otherwise.
-window.addEventListener("pageshow", (e) => {
-  if (e.persisted) {
-    // bfcache restore — script state is intact, just refresh
-    refreshFeed();
-  }
 });
 
-// Also refresh when the tab is brought back into focus
+unvotedBtn?.addEventListener("click", () => {
+  showUnvoted = !showUnvoted;
+  unvotedBtn.classList.toggle("active", showUnvoted);
+  renderAll();
+});
+
+document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    typeFilter = (tab.dataset.type as "all" | Kind) ?? "all";
+    document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((t) => t.classList.toggle("active", t === tab));
+    if (typeFilter === "post" || typeFilter === "quote") {
+      unvotedBtn.hidden = true;
+      if (showUnvoted) { showUnvoted = false; unvotedBtn.classList.remove("active"); }
+    } else {
+      unvotedBtn.hidden = false;
+    }
+    // Re-fetch from scratch with the new kind filter
+    loadFeed();
+  });
+});
+
+// bfcache restore and visibility change
+window.addEventListener("pageshow", (e) => { if (e.persisted) refreshFeed(); });
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && allPolls.length > 0) {
-    refreshFeed();
-  }
+  if (document.visibilityState === "visible" && allPolls.length > 0) refreshFeed();
 });
 
-loadFeed();
-
-const newPostsBanner = document.getElementById("new-posts-banner") as HTMLButtonElement;
-const POLL_INTERVAL = 30_000;
-
+// New posts banner
 newPostsBanner.addEventListener("click", () => {
   newPostsBanner.hidden = true;
-  refreshFeed();
+  loadFeed();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 async function checkForNewPosts() {
   if (allPolls.length === 0) return;
-  const result = await fetchPolls();
-  if (typeof result === "string") return;
-  const latestKnown = allPolls[0]?.created_at;
-  const latestFetched = result[0]?.created_at;
-  if (latestFetched && latestKnown && latestFetched > latestKnown) {
-    newPostsBanner.hidden = false;
+
+  // Check for new posts with a cheap single-item fetch
+  const params = new URLSearchParams({ limit: "1" });
+  if (typeFilter !== "all") params.set("kind", typeFilter);
+  const res = await fetch(`${API.polls.feed}?${params}`, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (res.ok) {
+    const data: FeedResponse = await res.json();
+    const latestFetched = data.polls[0]?.created_at;
+    const latestKnown = allPolls[0]?.created_at;
+    if (latestFetched && latestKnown && latestFetched > latestKnown) {
+      newPostsBanner.hidden = false;
+    }
   }
+
+  // Silently refresh vote/like/comment counts for all loaded polls
+  const ids = allPolls.map((p) => p.id);
+  const statsRes = await fetch(API.polls.bulkStats, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
+    body: JSON.stringify({ ids }),
+  });
+  if (!statsRes.ok) return;
+  const updated: Poll[] = await statsRes.json();
+  const byId = new Map(updated.map((p) => [p.id, p]));
+  allPolls = allPolls.map((p) => byId.get(p.id) ?? p);
+  renderAll();
 }
 
 setInterval(() => {
   if (document.visibilityState === "visible") checkForNewPosts();
-}, POLL_INTERVAL);
+}, 30_000);
+
+loadFeed();

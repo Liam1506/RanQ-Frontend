@@ -14,6 +14,10 @@ export const API = {
   },
   polls: {
     getAll: `${BASE_URL}/api/polls/getAll`,
+    getById: `${BASE_URL}/api/polls/getById`,
+    feed: `${BASE_URL}/api/polls/feed`,
+    bulkStats: `${BASE_URL}/api/polls/bulkStats`,
+    search: `${BASE_URL}/api/polls/search`,
     get: `${BASE_URL}/api/polls/get`,
     getUnapproved: `${BASE_URL}/api/polls/getUnapproved`,
     getMyPolls: `${BASE_URL}/api/polls/getMyPolls`,
