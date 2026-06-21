@@ -1,8 +1,8 @@
 :root {
-    --color-bg: #ffffff;
+    --color-bg: #f2ede2;
     --color-text: #1e1e1e;
-    --color-input-bg: #ffffff;
-    --color-input-text: #1e1e1e;
+    --color-input-bg: #f2ede2;
+    --color-input-text: #555555;
     --color-link: #e2b714;
     --color-accent: #e2b714;
 
@@ -69,10 +69,10 @@
 }
 
 [data-theme="light"] {
-    --color-bg: #ffffff;
+    --color-bg: #f2ede2;
     --color-text: #1e1e1e;
-    --color-input-bg: #ffffff;
-    --color-input-text: #1e1e1e;
+    --color-input-bg: #f2ede2;
+    --color-input-text: #555555;
     --color-link: #e2b714;
     --color-accent: #e2b714;
     --inset-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
