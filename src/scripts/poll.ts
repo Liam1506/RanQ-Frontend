@@ -9,7 +9,7 @@ const isAdmin = getCookie("isAdmin") === "true";
 
 
 type Option = { id: string; option: string; votes: number };
-type Kind = "ranking" | "post";
+type Kind = "ranking" | "post" | "quote";
 type Poll = {
   id: string;
   kind: Kind;
