@@ -88,10 +88,10 @@
 
 .filter-toggle {
   height: 2rem;
-  border: none;
+  border: 1px solid var(--color-divider);
   border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-link);
+  background: none;
+  color: var(--color-text);
   font-family: var(--font);
   font-size: var(--font-size-md);
   padding: 0 0.75rem;
