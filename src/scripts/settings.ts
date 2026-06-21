@@ -70,7 +70,7 @@ async function checkMaintenance() {
   if (!res.ok) return;
   const data = await res.json();
   if (data.maintenance_mode) {
-    const ids = ["input-new-username", "btn-change-username", "input-current-password", "input-new-password", "btn-change-password", "input-delete-confirm", "btn-delete-account"];
+    const ids = ["input-new-handle", "btn-change-username", "input-current-password", "input-new-password", "btn-change-password", "input-delete-confirm", "btn-delete-account"];
     ids.forEach((id) => {
       const el = document.getElementById(id) as HTMLInputElement | HTMLButtonElement | null;
       if (el) el.disabled = true;
@@ -287,7 +287,7 @@ function showFeedback(el: HTMLElement, msg: string, isError: boolean) {
 }
 
 document.getElementById("btn-change-username")!.addEventListener("click", async () => {
-  const newUsername = (document.getElementById("input-new-username") as HTMLInputElement).value.trim();
+  const newUsername = (document.getElementById("input-new-handle") as HTMLInputElement).value.trim();
   if (!newUsername) return;
   const res = await fetch(API.auth.changeUsername, {
     method: "PATCH",
@@ -297,7 +297,7 @@ document.getElementById("btn-change-username")!.addEventListener("click", async 
   const data = await res.json();
   if (res.ok) {
     showFeedback(feedbackEl, "username updated", false);
-    (document.getElementById("input-new-username") as HTMLInputElement).value = "";
+    (document.getElementById("input-new-handle") as HTMLInputElement).value = "";
     loadUserInfo();
   } else {
     showFeedback(feedbackEl, data.detail ?? "failed", true);
@@ -343,6 +343,6 @@ document.getElementById("btn-delete-account")!.addEventListener("click", async (
     window.location.replace("/login");
   } else {
     const data = await res.json();
-    showFeedback(data.detail ?? "failed", true);
+    showFeedback(deleteFeedback, data.detail ?? "failed", true);
   }
 });
