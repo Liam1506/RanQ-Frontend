@@ -1,0 +1,33 @@
+.impressum {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.impressum h2 {
+  font-size: var(--font-size-sm);
+  opacity: 0.5;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.5rem;
+  font-weight: normal;
+}
+
+.impressum p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: var(--font-size-md);
+}
+
+.impressum a {
+  color: var(--color-link);
+}
+
+.notice {
+  font-size: var(--font-size-sm);
+  opacity: 0.6;
+  border-left: 2px solid var(--color-divider);
+  padding-left: 0.75rem;
+  margin: 0;
+  line-height: 1.6;
+}
