@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -19,19 +20,6 @@ let offset = 0;
 let hasMore = false;
 let isLoading = false;
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
 
 function renderCard(post: any): string {
   const username = post.creator_username ?? "";
