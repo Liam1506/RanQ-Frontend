@@ -18,6 +18,8 @@ type Poll = {
   approved: boolean;
   voted_option_id: string | null;
   options: Array<{ id: string; option: string; votes: number }>;
+  kind: "poll" | "post" | "quote";
+  body: string | null;
 };
 
 function formatDate(iso: string | null): string {
