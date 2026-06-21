@@ -214,6 +214,15 @@ pasteBtn.addEventListener("click", async () => {
   bodyInput.value = text;
 });
 
+const quotePasteBtn = document.getElementById("quote-paste-btn") as HTMLButtonElement;
+quotePasteBtn.addEventListener("click", async () => {
+  if (!navigator.clipboard) return;
+  const text = await navigator.clipboard.readText().catch(() => null);
+  if (text === null) return;
+  quoteBodyInput.value = text;
+  quoteBodyInput.dispatchEvent(new Event("input"));
+});
+
 // attach counters to initial option inputs
 Array.from(optionsList.querySelectorAll<HTMLLIElement>("li")).forEach(attachOptionCounter);
 
