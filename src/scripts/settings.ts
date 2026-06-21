@@ -70,7 +70,7 @@ async function checkMaintenance() {
   if (!res.ok) return;
   const data = await res.json();
   if (data.maintenance_mode) {
-    const ids = ["input-handle", "btn-change-username", "input-current-password", "input-new-password", "btn-change-password", "input-delete-confirm", "btn-delete-account"];
+    const ids = ["input-new-username", "btn-change-username", "input-current-password", "input-new-password", "btn-change-password", "input-delete-confirm", "btn-delete-account"];
     ids.forEach((id) => {
       const el = document.getElementById(id) as HTMLInputElement | HTMLButtonElement | null;
       if (el) el.disabled = true;
