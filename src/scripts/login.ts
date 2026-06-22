@@ -35,6 +35,7 @@ form.addEventListener("submit", async (e) => {
       setCookie("userId", token);
       setCookie("verified", "true");
       setCookie("isAdmin", String(user.admin));
+      setCookie("isOwner", String(user.owner));
       if ("Notification" in window && Notification.permission === "default") {
         await Notification.requestPermission();
       }

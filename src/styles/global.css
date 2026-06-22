@@ -125,7 +125,11 @@ a:focus-visible {
 .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .btn--danger { border-color: var(--danger) !important; color: var(--danger) !important; }
-.btn--danger:hover { border-color: var(--danger) !important; color: var(--danger) !important; box-shadow: 0 0 0 1px var(--danger); }
+.btn--danger:hover { box-shadow: 0 0 0 1px var(--danger); }
+.btn--positive { border-color: var(--positive) !important; color: var(--positive) !important; }
+.btn--positive:hover { box-shadow: 0 0 0 1px var(--positive); }
+.btn--accent { border-color: var(--color-accent) !important; color: var(--color-accent) !important; }
+.btn--accent:hover { box-shadow: 0 0 0 1px var(--color-accent); }
 .btn--sm { font-size: var(--font-size-sm); padding: 0.2rem 0.5rem; }
 
 .hidden {

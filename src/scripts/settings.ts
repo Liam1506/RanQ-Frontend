@@ -4,7 +4,7 @@ import { getCookie } from "../utils/cookies";
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
-type Kind = "ranking" | "post";
+type Kind = "ranking" | "post" | "quote";
 
 type Poll = {
   id: string;
@@ -23,6 +23,9 @@ type Poll = {
 };
 
 let allPolls: Poll[] = [];
+let nextCursor: string | null = null;
+let hasMore = false;
+let isLoadingPolls = false;
 let showUnapprovedOnly = false;
 let typeFilter: "all" | Kind = "all";
 
@@ -139,12 +142,12 @@ function renderRankingCard(poll: Poll): string {
     .join(" · ");
 
   return `
-    <div class="poll-card poll-card--static">
+    <div class="poll-card poll-card--static" data-poll-id="${poll.id}">
       <p class="poll-question">${escapeHtml(poll.question)}</p>
       <ul class="poll-options">${optionsHtml}</ul>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn btn-secondary btn--danger" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary btn--danger">delete</button>
       </div>
     </div>`;
 }
@@ -165,12 +168,12 @@ function renderPostCard(poll: Poll): string {
     .join(" · ");
 
   return `
-    <div class="poll-card poll-card--post poll-card--static">
+    <div class="poll-card poll-card--post poll-card--static" data-poll-id="${poll.id}">
       <p class="poll-question">${escapeHtml(poll.question)}</p>
       <p class="poll-body">${escapeHtml(preview)}</p>
       <span class="poll-meta">${meta}</span>
       <div class="poll-card-actions">
-        <button class="delete-btn btn-secondary btn--danger" data-poll-id="${poll.id}">delete</button>
+        <button class="delete-btn btn-secondary btn--danger">delete</button>
       </div>
     </div>`;
 }
@@ -178,20 +181,25 @@ function renderPostCard(poll: Poll): string {
 function renderPolls() {
   const feed = document.getElementById("settings-box-polls")!;
 
-  let polls = [...allPolls];
-  if (typeFilter !== "all") polls = polls.filter((p) => p.kind === typeFilter);
-  if (showUnapprovedOnly) polls = polls.filter((p) => !p.approved);
+  const polls = [...allPolls];
 
-  if (polls.length === 0) {
+  feed.querySelectorAll(".feed-empty, .feed-error, .feed-loading").forEach((el) => el.remove());
+
+  if (polls.length === 0 && !hasMore) {
     feed.innerHTML = `<p class="feed-empty">nothing here.</p>`;
     return;
   }
 
-  feed.innerHTML = "";
+  const existingIds = new Set(
+    Array.from(feed.querySelectorAll<HTMLElement>("[data-poll-id]")).map((el) => el.dataset.pollId)
+  );
 
   polls.forEach((poll, i) => {
+    if (existingIds.has(poll.id)) return;
     const tmp = document.createElement("div");
-    tmp.innerHTML = poll.kind === "post" ? renderPostCard(poll) : renderRankingCard(poll);
+    tmp.innerHTML = poll.kind === "post" || poll.kind === "quote"
+      ? renderPostCard(poll)
+      : renderRankingCard(poll);
     const card = tmp.firstElementChild as HTMLElement;
     card.style.animationDelay = `${i * 0.06}s`;
 
@@ -209,12 +217,10 @@ function renderPolls() {
       });
     });
 
-    card
-      .querySelector<HTMLButtonElement>(".delete-btn")!
-      .addEventListener("click", (e) => {
-        e.stopPropagation();
-        deletePoll(poll.id);
-      });
+    card.querySelector<HTMLButtonElement>(".delete-btn")!.addEventListener("click", (e) => {
+      e.stopPropagation();
+      deletePoll(poll.id);
+    });
   });
 }
 
@@ -227,25 +233,61 @@ async function deletePoll(poll_id: string) {
     },
     body: JSON.stringify({ id: poll_id }),
   });
-  if (!res.ok) {
-    return;
-  }
+  if (!res.ok) return;
   allPolls = allPolls.filter((p) => p.id !== poll_id);
-  renderPolls();
+  const card = document.querySelector<HTMLElement>(`[data-poll-id="${poll_id}"]`);
+  card?.remove();
+  if (allPolls.length === 0 && !hasMore) {
+    document.getElementById("settings-box-polls")!.innerHTML = `<p class="feed-empty">nothing here.</p>`;
+  }
 }
 
 async function loadPolls() {
-  const res = await fetch(API.polls.getMyPolls, {
+  const feed = document.getElementById("settings-box-polls")!;
+  allPolls = [];
+  nextCursor = null;
+  hasMore = false;
+  feed.innerHTML = `<p class="feed-loading">loading...</p>`;
+
+  const params = new URLSearchParams({ limit: "10" });
+  if (typeFilter !== "all") params.set("kind", typeFilter);
+  if (showUnapprovedOnly) params.set("approved", "false");
+  const res = await fetch(`${API.polls.getMyPolls}?${params}`, {
     headers: { Authorization: `Bearer ${userId}` },
   });
-  const feed = document.getElementById("settings-box-polls")!;
+
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     feed.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load polls."}</p>`;
     return;
   }
-  allPolls = await res.json();
+
+  const data = await res.json();
+  allPolls = data.polls;
+  nextCursor = data.next_cursor;
+  hasMore = data.has_more;
   renderPolls();
+}
+
+async function loadMorePolls() {
+  if (!hasMore || isLoadingPolls || !nextCursor) return;
+  isLoadingPolls = true;
+
+  const params = new URLSearchParams({ limit: "10", cursor: nextCursor });
+  if (typeFilter !== "all") params.set("kind", typeFilter);
+  if (showUnapprovedOnly) params.set("approved", "false");
+  const res = await fetch(`${API.polls.getMyPolls}?${params}`, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+
+  if (!res.ok) { isLoadingPolls = false; return; }
+
+  const data = await res.json();
+  allPolls = [...allPolls, ...data.polls];
+  nextCursor = data.next_cursor;
+  hasMore = data.has_more;
+  renderPolls();
+  isLoadingPolls = false;
 }
 
 const unapprovedBtn = document.getElementById(
@@ -254,7 +296,7 @@ const unapprovedBtn = document.getElementById(
 unapprovedBtn?.addEventListener("click", () => {
   showUnapprovedOnly = !showUnapprovedOnly;
   unapprovedBtn.classList.toggle("active", showUnapprovedOnly);
-  renderPolls();
+  loadPolls();
 });
 
 document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
@@ -263,9 +305,15 @@ document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
     document
       .querySelectorAll<HTMLButtonElement>(".type-tab")
       .forEach((t) => t.classList.toggle("active", t === tab));
-    renderPolls();
+    loadPolls();
   });
 });
+
+const settingsSentinel = document.getElementById("settings-polls-sentinel")!;
+const settingsObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) loadMorePolls();
+}, { rootMargin: "200px" });
+settingsObserver.observe(settingsSentinel);
 
 loadUserInfo();
 loadPolls();

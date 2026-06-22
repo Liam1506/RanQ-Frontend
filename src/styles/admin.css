@@ -145,6 +145,11 @@
   color: var(--color-accent);
 }
 
+.admin-badge--owner {
+  opacity: 1;
+  color: var(--danger);
+}
+
 .admin-user-actions {
   display: flex;
   gap: 0.4rem;

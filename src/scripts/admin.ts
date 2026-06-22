@@ -18,7 +18,7 @@ type Poll = {
   approved: boolean;
   voted_option_id: string | null;
   options: Array<{ id: string; option: string; votes: number }>;
-  kind: "poll" | "post" | "quote";
+  kind: "ranking" | "post" | "quote";
   body: string | null;
 };
 
@@ -26,6 +26,15 @@ function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 async function loadUnapprovedPolls() {
@@ -47,25 +56,18 @@ async function loadUnapprovedPolls() {
     return;
   }
 
-  const unapprovedPolls = polls.filter((poll) => !poll.approved);
-
-  if (unapprovedPolls.length === 0) {
-    feed.innerHTML = `<p class="feed-empty">no unapproved polls.</p>`;
-    return;
-  }
-
   feed.innerHTML = "";
 
-  unapprovedPolls.forEach((poll, i) => {
+  polls.forEach((poll, i) => {
     const total = poll.options.reduce((s, o) => s + o.votes, 0);
 
     const optionsHtml = poll.options
       .map((opt) => {
         const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
         return `
-          <li class="poll-option" non-clickable>
+          <li class="poll-option poll-option--static">
             <div class="poll-option-bar" style="width:0%"></div>
-            <span class="poll-option-label">${opt.option}</span>
+            <span class="poll-option-label">${escapeHtml(opt.option)}</span>
             <span class="poll-option-pct">${pct}%</span>
           </li>`;
       })
@@ -73,26 +75,28 @@ async function loadUnapprovedPolls() {
 
     const meta = [
       `${total} vote${total !== 1 ? "s" : ""}`,
-      poll.creator_username ? `by ${poll.creator_username}` : "",
+      poll.creator_username ? `by ${escapeHtml(poll.creator_username)}` : "",
       poll.created_at ? formatDate(poll.created_at) : "",
     ]
       .filter(Boolean)
       .join(" · ");
 
-    const contentHtml = poll.kind === "post"
-      ? `<p class="poll-body">${poll.body ?? ""}</p>`
-      : poll.kind === "quote"
-        ? `<p class="poll-body poll-body--quote">${poll.body ?? ""}</p>`
-        : `<ul class="poll-options">${optionsHtml}</ul>`;
+    const contentHtml =
+      poll.kind === "post"
+        ? `<p class="poll-body">${escapeHtml(poll.body ?? "")}</p>`
+        : poll.kind === "quote"
+          ? `<p class="poll-body poll-body--quote">${escapeHtml(poll.body ?? "")}</p>`
+          : `<ul class="poll-options">${optionsHtml}</ul>`;
 
     const tmp = document.createElement("div");
     tmp.innerHTML = `
       <div class="poll-card poll-card--static">
-        <p class="poll-question">${poll.question}</p>
+        <p class="poll-question">${escapeHtml(poll.question)}</p>
         ${contentHtml}
         <span class="poll-meta">${meta}</span>
         <div class="poll-card-actions">
-          <button class="btn-secondary" data-action="approve" data-poll-id="${poll.id}">approve</button>
+          <button class="btn-secondary btn--positive" data-action="approve" data-poll-id="${poll.id}">approve</button>
+          <span style="flex:1"></span>
           <button class="btn-secondary btn--danger" data-action="delete" data-poll-id="${poll.id}">delete</button>
         </div>
       </div>`;
@@ -113,44 +117,40 @@ async function loadUnapprovedPolls() {
       });
     });
 
-    card.querySelector<HTMLButtonElement>('.btn-secondary[data-action="approve"]')!.addEventListener("click", () => {
-      approve(poll.id);
-    });
+    card
+      .querySelector<HTMLButtonElement>('.btn-secondary[data-action="approve"]')!
+      .addEventListener("click", () => {
+        card.remove();
+        if (feed.children.length === 0)
+          feed.innerHTML = `<p class="feed-empty">currently no polls to approve.</p>`;
+        approve(poll.id);
+      });
 
-    card.querySelector<HTMLButtonElement>('.btn-secondary[data-action="delete"]')!.addEventListener("click", () => {
-      deletePoll(poll.id);
-    });
+    card
+      .querySelector<HTMLButtonElement>('.btn-secondary[data-action="delete"]')!
+      .addEventListener("click", () => {
+        card.remove();
+        if (feed.children.length === 0)
+          feed.innerHTML = `<p class="feed-empty">currently no polls to approve.</p>`;
+        deletePoll(poll.id);
+      });
   });
 }
 
 async function approve(poll_id: string) {
-  const res = await fetch(API.polls.approvePoll, {
+  await fetch(API.polls.approvePoll, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
     body: JSON.stringify({ poll_id }),
   });
-  if (!res.ok) {
-    return;
-  }
-  loadUnapprovedPolls();
 }
 
 async function deletePoll(poll_id: string) {
-  const res = await fetch(API.polls.delete, {
+  await fetch(API.polls.delete, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
     body: JSON.stringify({ id: poll_id }),
   });
-  if (!res.ok) {
-    return;
-  }
-  loadUnapprovedPolls();
 }
 
 async function updateSetting(data: Record<string, unknown>) {
@@ -193,10 +193,6 @@ document.getElementById("setting-max-options")!.addEventListener("change", (e) =
   updateSetting({ max_options_per_poll: parseInt((e.target as HTMLInputElement).value) });
 });
 
-loadUnapprovedPolls();
-loadSettings();
-loadStats();
-
 async function loadStats() {
   const res = await fetch(API.siteSettings.stats, {
     headers: { Authorization: `Bearer ${userId}` },
@@ -210,14 +206,18 @@ async function loadStats() {
     polls: totals.polls,
     posts: totals.posts,
     votes: totals.votes,
-    likes: totals.likes,
     comments: totals.comments,
   });
 
   drawLineChart(document.getElementById("stats-activity") as HTMLCanvasElement, daily);
 }
 
+loadUnapprovedPolls();
+loadSettings();
+loadStats();
+
 function drawBarChart(canvas: HTMLCanvasElement, data: Record<string, number>) {
+  canvas.width = canvas.offsetWidth || 600;
   const ctx = canvas.getContext("2d")!;
   const labels = Object.keys(data);
   const values = Object.values(data);
@@ -252,6 +252,7 @@ function drawLineChart(
   canvas: HTMLCanvasElement,
   daily: Array<{ day: string; event_type: string; count: number }>,
 ) {
+  canvas.width = canvas.offsetWidth || 600;
   const ctx = canvas.getContext("2d")!;
 
   const days: string[] = [];
@@ -301,7 +302,8 @@ function drawLineChart(
 
     ctx.fillStyle = textColor;
     ctx.fillText(days[i].slice(5), x, canvas.height - 10);
-    if (val > 0) ctx.fillText(String(val), x, y - 8);
+    const labelY = y - 8 < padding ? y + 14 : y - 8;
+    ctx.fillText(String(val), x, labelY);
   });
 }
 

@@ -90,6 +90,12 @@ removeBtn.addEventListener("click", () => {
   }
 });
 
+form.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+    e.preventDefault();
+  }
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorMsg.textContent = "";

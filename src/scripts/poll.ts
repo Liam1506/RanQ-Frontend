@@ -76,7 +76,7 @@ async function loadPoll() {
   });
 
   if (!res.ok) {
-    container.textContent = "failed to load ranking.";
+    container.textContent = "failed to load post.";
     return;
   }
 
