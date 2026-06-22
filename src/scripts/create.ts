@@ -90,6 +90,12 @@ removeBtn.addEventListener("click", () => {
   }
 });
 
+form.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+    e.preventDefault();
+  }
+});
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   errorMsg.textContent = "";
@@ -212,6 +218,15 @@ pasteBtn.addEventListener("click", async () => {
   if (text === null) return;
   const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
   bodyInput.value = text;
+});
+
+const quotePasteBtn = document.getElementById("quote-paste-btn") as HTMLButtonElement;
+quotePasteBtn.addEventListener("click", async () => {
+  if (!navigator.clipboard) return;
+  const text = await navigator.clipboard.readText().catch(() => null);
+  if (text === null) return;
+  quoteBodyInput.value = text;
+  quoteBodyInput.dispatchEvent(new Event("input"));
 });
 
 // attach counters to initial option inputs

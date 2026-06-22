@@ -5,12 +5,15 @@ const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 if (getCookie("isAdmin") !== "true") window.location.replace("/start");
 
+const isOwner = getCookie("isOwner") === "true";
+
 type User = {
   id: string;
   username: string;
   email: string;
   verified: boolean;
   admin: boolean;
+  owner: boolean;
 };
 
 let allUsers: User[] = [];
@@ -81,6 +84,12 @@ function renderUsers(users: User[]) {
       b.textContent = "admin";
       badges.append(b);
     }
+    if (user.owner) {
+      const b = document.createElement("span");
+      b.className = "admin-badge admin-badge--owner";
+      b.textContent = "owner";
+      badges.append(b);
+    }
 
     top.append(name, badges);
 
@@ -97,22 +106,29 @@ function renderUsers(users: User[]) {
     const actions = document.createElement("div");
     actions.className = "user-card-actions";
 
-    const verifyBtn = document.createElement("button");
-    verifyBtn.className = "btn-secondary";
-    verifyBtn.textContent = user.verified ? "unverify" : "verify";
-    verifyBtn.addEventListener("click", () => toggleVerified(user.id));
+    if (!user.owner) {
+      const verifyBtn = document.createElement("button");
+      verifyBtn.className = user.verified ? "btn-secondary" : "btn-secondary btn--positive";
+      verifyBtn.textContent = user.verified ? "unverify" : "verify";
+      verifyBtn.addEventListener("click", () => toggleVerified(user.id));
+      actions.append(verifyBtn);
+    }
 
-    const adminBtn = document.createElement("button");
-    adminBtn.className = "btn-secondary";
-    adminBtn.textContent = user.admin ? "demote" : "promote";
-    adminBtn.addEventListener("click", () => toggleAdmin(user.id));
+    if (isOwner && !user.owner) {
+      const adminBtn = document.createElement("button");
+      adminBtn.className = user.admin ? "btn-secondary btn--accent" : "btn-secondary btn--accent";
+      adminBtn.textContent = user.admin ? "demote" : "promote";
+      adminBtn.addEventListener("click", () => toggleAdmin(user.id));
+      actions.append(adminBtn);
+    }
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "btn-secondary btn--danger";
-    deleteBtn.textContent = "delete";
-    deleteBtn.addEventListener("click", () => deleteUser(user.id));
-
-    actions.append(verifyBtn, adminBtn, deleteBtn);
+    if (!user.owner && !user.admin) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "btn-secondary btn--danger";
+      deleteBtn.textContent = "delete";
+      deleteBtn.addEventListener("click", () => deleteUser(user.id));
+      actions.append(deleteBtn);
+    }
     card.append(info, actions);
     usersList.appendChild(card);
   });

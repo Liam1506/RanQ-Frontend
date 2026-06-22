@@ -192,18 +192,8 @@ function animateBars(card: HTMLAnchorElement) {
   });
 }
 
-function sortedPolls(polls: Poll[]): Poll[] {
-  return polls;
-}
-
-function visiblePolls(): Poll[] {
-  let polls = [...allPolls];
-  if (showUnvoted) polls = polls.filter((p) => p.kind === "ranking" && p.voted_option_id === null);
-  return sortedPolls(polls);
-}
-
 function renderAll() {
-  const polls = visiblePolls();
+  const polls = [...allPolls];
 
   feed.querySelectorAll(".feed-empty, .feed-error, .feed-loading").forEach((el) => el.remove());
 
@@ -235,6 +225,7 @@ function renderAll() {
 async function fetchPage(cursor: string | null = null): Promise<FeedResponse | null> {
   const params = new URLSearchParams({ limit: String(LIMIT), sort });
   if (typeFilter !== "all") params.set("kind", typeFilter);
+  if (showUnvoted) params.set("not_voted", "true");
   if (cursor) params.set("cursor", cursor);
 
   const res = await fetch(`${API.polls.feed}?${params}`, {
@@ -329,6 +320,7 @@ document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
   sel.addEventListener("change", (e) => {
     sort = (e.target as HTMLSelectElement).value;
     document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => (s.value = sort));
+    if (sort !== "newest") newPostsBanner.hidden = true;
     loadFeed();
   });
 });
@@ -336,7 +328,7 @@ document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
 unvotedBtn?.addEventListener("click", () => {
   showUnvoted = !showUnvoted;
   unvotedBtn.classList.toggle("active", showUnvoted);
-  renderAll();
+  loadFeed();
 });
 
 document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
@@ -370,18 +362,20 @@ newPostsBanner.addEventListener("click", () => {
 async function checkForNewPosts() {
   if (allPolls.length === 0) return;
 
-  // Check for new posts with a cheap single-item fetch
-  const params = new URLSearchParams({ limit: "1" });
-  if (typeFilter !== "all") params.set("kind", typeFilter);
-  const res = await fetch(`${API.polls.feed}?${params}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
-  if (res.ok) {
-    const data: FeedResponse = await res.json();
-    const latestFetched = data.polls[0]?.created_at;
-    const latestKnown = allPolls[0]?.created_at;
-    if (latestFetched && latestKnown && latestFetched > latestKnown) {
-      newPostsBanner.hidden = false;
+  // Banner only makes sense on newest sort — other sorts aren't ordered by creation time
+  if (sort === "newest") {
+    const params = new URLSearchParams({ limit: "1" });
+    if (typeFilter !== "all") params.set("kind", typeFilter);
+    const res = await fetch(`${API.polls.feed}?${params}`, {
+      headers: { Authorization: `Bearer ${userId}` },
+    });
+    if (res.ok) {
+      const data: FeedResponse = await res.json();
+      const latestFetched = data.polls[0]?.created_at;
+      const latestKnown = allPolls[0]?.created_at;
+      if (latestFetched && latestKnown && latestFetched > latestKnown) {
+        newPostsBanner.hidden = false;
+      }
     }
   }
 
@@ -399,8 +393,9 @@ async function checkForNewPosts() {
   renderAll();
 }
 
-setInterval(() => {
+const ticker = setInterval(() => {
   if (document.visibilityState === "visible") checkForNewPosts();
 }, 30_000);
+window.addEventListener("pagehide", () => clearInterval(ticker));
 
 loadFeed();

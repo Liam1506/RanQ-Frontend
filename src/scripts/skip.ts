@@ -14,6 +14,7 @@ document.querySelectorAll<HTMLAnchorElement>("a.skip").forEach((link) => {
       setCookie("userId", token);
       setCookie("verified", "true");
       setCookie("isAdmin", String(user.admin));
+      setCookie("isOwner", String(user.owner));
       window.location.replace("/");
     } catch {
       window.location.replace("/start");

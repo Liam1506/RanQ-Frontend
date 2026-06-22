@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -19,19 +20,6 @@ let offset = 0;
 let hasMore = false;
 let isLoading = false;
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
 
 function renderCard(post: any): string {
   const username = post.creator_username ?? "";
@@ -66,8 +54,9 @@ function renderCard(post: any): string {
     middle = `<ul class="poll-options">${options}${overflowLine}</ul>`;
   }
 
-  const total = post.options.reduce((s: number, o: any) => s + o.votes, 0);
-  const left = post.kind === "post" || post.kind === "quote"
+  const isPostOrQuote = post.kind === "post" || post.kind === "quote";
+  const total = isPostOrQuote ? 0 : post.options.reduce((s: number, o: any) => s + o.votes, 0);
+  const left = isPostOrQuote
     ? `${post.like_count ?? 0} like${post.like_count !== 1 ? "s" : ""} · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
     : `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""} · ${total} vote${total !== 1 ? "s" : ""}`;
 
@@ -118,7 +107,7 @@ async function search(q: string) {
 }
 
 async function loadMore() {
-  if (!hasMore || isLoading || !currentQuery) return;
+  if (!hasMore || isLoading) return;
   isLoading = true;
 
   const data = await fetchResults(currentQuery, offset);

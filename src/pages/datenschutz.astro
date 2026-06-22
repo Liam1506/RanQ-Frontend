@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import "../styles/datenschutz.css";
 ---
 
 <BaseLayout>
@@ -109,48 +110,3 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
   </div>
 </BaseLayout>
-
-<style>
-  .datenschutz {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .datenschutz h2 {
-    font-size: var(--font-size-sm);
-    opacity: 0.5;
-    text-transform: lowercase;
-    letter-spacing: 0.02em;
-    margin: 0 0 0.5rem;
-    font-weight: normal;
-  }
-
-  .datenschutz p,
-  .datenschutz li {
-    margin: 0 0 0.4rem;
-    line-height: 1.6;
-    font-size: var(--font-size-md);
-  }
-
-  .datenschutz ul {
-    margin: 0.5rem 0;
-    padding-left: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .datenschutz a {
-    color: var(--color-link);
-  }
-
-  .notice {
-    font-size: var(--font-size-sm);
-    opacity: 0.6;
-    border-left: 2px solid var(--color-divider);
-    padding-left: 0.75rem;
-    margin: 0;
-    line-height: 1.6;
-  }
-</style>

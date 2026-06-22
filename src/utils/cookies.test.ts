@@ -1,13 +1,17 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteCookie, getCookie, setCookie } from "./cookies";
+
+function clearAllCookies() {
+  document.cookie.split("; ").forEach((c) => {
+    const name = c.split("=")[0];
+    if (name) document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  });
+}
 
 describe("cookies", () => {
   beforeEach(() => {
     // happy-dom shares document.cookie across tests — clear it
-    document.cookie.split("; ").forEach((c) => {
-      const name = c.split("=")[0];
-      if (name) document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-    });
+    clearAllCookies();
   });
 
   it("returns undefined when the cookie is not set", () => {
@@ -37,5 +41,33 @@ describe("cookies", () => {
     setCookie("userId", "long");
     expect(getCookie("user")).toBe("short");
     expect(getCookie("userId")).toBe("long");
+  });
+
+  it("setCookie accepts a custom days argument", () => {
+    const spy = vi.spyOn(document, "cookie", "set");
+    setCookie("tok", "xyz", 7);
+    const written = spy.mock.calls[0][0] as string;
+    // 7 days = 604800 seconds
+    expect(written).toContain("max-age=604800");
+    spy.mockRestore();
+  });
+
+  it("setCookie defaults to 30 days when days is omitted", () => {
+    const spy = vi.spyOn(document, "cookie", "set");
+    setCookie("tok", "xyz");
+    const written = spy.mock.calls[0][0] as string;
+    // 30 days = 2592000 seconds
+    expect(written).toContain("max-age=2592000");
+    spy.mockRestore();
+  });
+
+  it("deleteCookie on an absent key does not throw", () => {
+    expect(() => deleteCookie("nonexistent")).not.toThrow();
+  });
+
+  it("overwrites an existing cookie value", () => {
+    setCookie("theme", "dark");
+    setCookie("theme", "light");
+    expect(getCookie("theme")).toBe("light");
   });
 });

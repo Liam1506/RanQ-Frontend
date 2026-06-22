@@ -108,7 +108,8 @@ form {
   opacity: 1;
 }
 
-#body {
+#body,
+#quote-body {
   width: 100%;
   font: inherit;
   font-size: var(--font-size-md);
@@ -117,8 +118,15 @@ form {
   border: 1px solid var(--color-divider);
   padding: 0.6rem 0.75rem;
   resize: vertical;
-  min-height: 10rem;
   box-sizing: border-box;
+}
+
+#body {
+  min-height: 10rem;
+}
+
+#quote-body {
+  min-height: 6rem;
 }
 
 #paste-btn {

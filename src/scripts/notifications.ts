@@ -32,10 +32,12 @@ async function pollNotifications() {
   }
 }
 
-export function startNotificationPolling() {
+export async function startNotificationPolling() {
   const token = getCookie("userId");
   if (!token) return;
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const granted = await requestNotificationPermission();
+  if (!granted) return;
 
   if (pollingInterval) clearInterval(pollingInterval);
 
