@@ -319,7 +319,9 @@ observer.observe(sentinel);
 document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
   sel.addEventListener("change", (e) => {
     sort = (e.target as HTMLSelectElement).value;
-    document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => (s.value = sort));
+    document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => {
+      s.value = sort;
+    });
     if (sort !== "newest") newPostsBanner.hidden = true;
     loadFeed();
   });
