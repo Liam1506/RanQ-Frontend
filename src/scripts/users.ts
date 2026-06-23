@@ -14,6 +14,7 @@ type User = {
   verified: boolean;
   admin: boolean;
   owner: boolean;
+  date_joined: string | null;
 };
 
 let allUsers: User[] = [];
@@ -97,11 +98,17 @@ function renderUsers(users: User[]) {
     email.className = "user-card-meta";
     email.textContent = user.email;
 
+    const joined = document.createElement("span");
+    joined.className = "user-card-meta";
+    joined.textContent = user.date_joined
+      ? new Date(user.date_joined).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })
+      : "";
+
     const id = document.createElement("span");
     id.className = "user-card-meta";
     id.textContent = user.id;
 
-    info.append(top, email, id);
+    info.append(top, email, joined, id);
 
     const actions = document.createElement("div");
     actions.className = "user-card-actions";

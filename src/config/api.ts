@@ -16,6 +16,7 @@ export const API = {
     getById: `${BASE_URL}/api/polls/getById`,
     feed: `${BASE_URL}/api/polls/feed`,
     bulkStats: `${BASE_URL}/api/polls/bulkStats`,
+    neighbors: `${BASE_URL}/api/polls/neighbors`,
     search: `${BASE_URL}/api/polls/search`,
     getUnapproved: `${BASE_URL}/api/polls/getUnapproved`,
     getMyPolls: `${BASE_URL}/api/polls/getMyPolls`,
