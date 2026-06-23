@@ -276,19 +276,23 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0.45;
+  opacity: 1;
   transition: opacity 0.15s ease, color 0.15s ease;
   line-height: 1;
   padding: 0;
 }
 
 .updown-btn:hover {
-  opacity: 1;
+  opacity: 0.45;
 }
 
 .updown-btn.active {
   color: var(--color-accent);
   opacity: 1;
+}
+
+.updown-btn.active:hover {
+  opacity: 0.55;
 }
 
 .updown-score {

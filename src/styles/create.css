@@ -121,12 +121,9 @@ form {
   box-sizing: border-box;
 }
 
-#body {
-  min-height: 10rem;
-}
-
+#body,
 #quote-body {
-  min-height: 6rem;
+  min-height: 8rem;
 }
 
 #paste-btn {

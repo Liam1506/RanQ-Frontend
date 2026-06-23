@@ -118,7 +118,7 @@
   border: none;
   font-size: 2.5rem;
   color: var(--color-text);
-  opacity: 0.3;
+  opacity: 1;
   cursor: pointer;
   padding: 1rem;
   transition: opacity 0.15s ease;
@@ -126,7 +126,7 @@
 }
 
 .neighbor-btn.neighbor-btn--hidden { display: none; }
-.neighbor-btn:hover { opacity: 1; }
+.neighbor-btn:hover { opacity: 0.3; }
 .neighbor-btn--prev { left: 1rem; }
 .neighbor-btn--next { right: 1rem; }
 
