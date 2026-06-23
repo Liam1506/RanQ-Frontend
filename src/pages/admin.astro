@@ -4,6 +4,7 @@ import "../styles/start.css";
 import "../styles/admin.css";
 import "../styles/settings.css";
 import "../styles/poll-card.css";
+const isDev = import.meta.env.DEV;
 ---
 
 <BaseLayout showNav={true}>
@@ -83,6 +84,28 @@ import "../styles/poll-card.css";
         <div class="settings-row settings-row--no-border">
           <p id="cleanup-result" class="admin-cleanup-result"></p>
         </div>
+        {
+          isDev && (
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">seed mock data</span>
+                <span class="settings-row-desc">
+                  dev only: create 10 users, polls, posts, quotes, votes, likes, comments
+                </span>
+              </div>
+              <div class="settings-row-control">
+                <button class="btn" id="seed-btn">seed</button>
+              </div>
+            </div>
+          )
+        }
+        {
+          isDev && (
+            <div class="settings-row settings-row--no-border">
+              <p id="seed-result" class="admin-cleanup-result" />
+            </div>
+          )
+        }
     </section>
     <section class="settings-section">
       <h2 class="settings-section-title">polls for approval</h2>
@@ -94,3 +117,4 @@ import "../styles/poll-card.css";
 </BaseLayout>
 
 <script src="../scripts/admin.ts"></script>
+{isDev && <script src="../scripts/seed.ts" />}
