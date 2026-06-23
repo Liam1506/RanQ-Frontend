@@ -35,6 +35,30 @@ let offset = 0;
 let hasMore = false;
 let isLoading = false;
 
+function renderMiddle(post: SearchPoll): string {
+  if (post.kind === "post" || post.kind === "quote") {
+    const truncated = (post.body?.length ?? 0) > POST_PREVIEW_CHARS;
+    const preview = truncated ? post.body!.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : (post.body ?? "");
+    const cls = post.kind === "quote" ? "poll-body poll-body--quote" : "poll-body";
+    return `<p class="${cls}">${escapeHtml(preview)}</p>`;
+  }
+
+  const total = post.options.reduce((s, o) => s + o.votes, 0);
+  const visible = [...post.options].sort((a, b) => b.votes - a.votes).slice(0, MAX_OPTIONS_IN_FEED);
+  const overflow = post.options.length - visible.length;
+  const options = visible.map((opt) => {
+    const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
+    const isVoted = opt.id === post.voted_option_id;
+    return `<li class="poll-option poll-option--ranked${isVoted ? " poll-option--voted" : ""}">
+      <div class="poll-option-bar" style="width:${pct}%"></div>
+      <span class="poll-option-label">${escapeHtml(opt.option)}</span>
+      <span class="poll-option-pct">${pct}%</span>
+    </li>`;
+  }).join("");
+  const overflowLine = overflow > 0 ? `<li class="poll-option-overflow">+ ${overflow} more →</li>` : "";
+  return `<ul class="poll-options">${options}${overflowLine}</ul>`;
+}
+
 function renderCard(post: SearchPoll): string {
   const username = post.creator_username ?? "";
   const date = formatDate(post.created_at);
@@ -45,34 +69,12 @@ function renderCard(post: SearchPoll): string {
     <span class="poll-meta-date">${date}</span>
   </div>`;
 
-  let middle = "";
-  if (post.kind === "post" || post.kind === "quote") {
-    const truncated = (post.body?.length ?? 0) > POST_PREVIEW_CHARS;
-    const preview = truncated ? post.body!.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : (post.body ?? "");
-    const cls = post.kind === "quote" ? "poll-body poll-body--quote" : "poll-body";
-    middle = `<p class="${cls}">${escapeHtml(preview)}</p>`;
-  } else {
-    const total = post.options.reduce((s, o) => s + o.votes, 0);
-    const visible = [...post.options].sort((a, b) => b.votes - a.votes).slice(0, MAX_OPTIONS_IN_FEED);
-    const overflow = post.options.length - visible.length;
-    const options = visible.map((opt) => {
-      const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
-      const isVoted = opt.id === post.voted_option_id;
-      return `<li class="poll-option poll-option--ranked${isVoted ? " poll-option--voted" : ""}">
-        <div class="poll-option-bar" style="width:${pct}%"></div>
-        <span class="poll-option-label">${escapeHtml(opt.option)}</span>
-        <span class="poll-option-pct">${pct}%</span>
-      </li>`;
-    }).join("");
-    const overflowLine = overflow > 0 ? `<li class="poll-option-overflow">+ ${overflow} more →</li>` : "";
-    middle = `<ul class="poll-options">${options}${overflowLine}</ul>`;
-  }
+  const middle = renderMiddle(post);
 
   const isPostOrQuote = post.kind === "post" || post.kind === "quote";
   const total = isPostOrQuote ? 0 : post.options.reduce((s, o) => s + o.votes, 0);
-  const left = isPostOrQuote
-    ? `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
-    : `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""} · ${total} vote${total !== 1 ? "s" : ""}`;
+  const score = `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`;
+  const left = isPostOrQuote ? score : `${score} · ${total} vote${total !== 1 ? "s" : ""}`;
 
   const footer = `<div class="poll-card-footer">
     <span class="poll-meta">${left}</span>
