@@ -27,49 +27,9 @@ const { title } = Astro.props;
       <slot />
     </div>
     <button id="trailer-btn" aria-label="watch trailer">▶ trailer</button>
-    <div id="trailer-overlay" tabindex="-1">
-      <iframe id="trailer-frame" src="" title="ranQ trailer"></iframe>
-    </div>
     <script>
-      const btn     = document.getElementById("trailer-btn")!;
-      const overlay = document.getElementById("trailer-overlay")!;
-      const frame   = document.getElementById("trailer-frame") as HTMLIFrameElement;
-
-      btn.addEventListener("click", () => {
-        frame.src = "/trailer.html";
-        overlay.style.display = "block";
-        overlay.requestFullscreen().catch(() => {});
-      });
-
-      // once iframe is loaded, tell it the current fullscreen state
-      frame.addEventListener("load", () => {
-        const msg = document.fullscreenElement ? "fullscreen-on" : "fullscreen-off";
-        frame.contentWindow?.postMessage(msg, "*");
-      });
-
-      document.addEventListener("fullscreenchange", () => {
-        if (document.fullscreenElement) {
-          // keep focus on the parent page, not the iframe
-          overlay.focus();
-        } else {
-          overlay.style.display = "none";
-          frame.src = "";
-        }
-        // tell iframe about fullscreen state so it can update its button label
-        const msg = document.fullscreenElement ? "fullscreen-on" : "fullscreen-off";
-        frame.contentWindow?.postMessage(msg, "*");
-      });
-
-      // messages from iframe
-      window.addEventListener("message", (e) => {
-        if (e.data === "trailer-close") document.exitFullscreen();
-        if (e.data === "trailer-toggle-fs") {
-          if (!document.fullscreenElement) {
-            overlay.requestFullscreen().catch(() => {});
-          } else {
-            document.exitFullscreen();
-          }
-        }
+      document.getElementById("trailer-btn")!.addEventListener("click", () => {
+        window.open("/trailer.html", "_blank");
       });
     </script>
   </body>

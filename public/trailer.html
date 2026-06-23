@@ -86,7 +86,7 @@
     }
 
     /* ── Controls ── */
-    #btn-skip, #btn-restart, #btn-close, #btn-fs {
+    #btn-skip, #btn-restart, #btn-fs {
       position: fixed; z-index: 997;
       background: rgba(30,30,30,0.7);
       border: 1px solid var(--dimmed);
@@ -99,9 +99,8 @@
     }
     #btn-skip    { right: 1.5rem; }
     #btn-restart { right: 9rem; display: none; }
-    #btn-close   { right: 1.5rem; display: none; }
     #btn-fs      { left: 1.5rem; }
-    #btn-skip:hover, #btn-restart:hover, #btn-close:hover, #btn-fs:hover {
+    #btn-skip:hover, #btn-restart:hover, #btn-fs:hover {
       color: var(--accent);
       border-color: var(--accent);
     }
@@ -385,7 +384,6 @@
   <button id="btn-fs">⛶ fullscreen</button>
   <button id="btn-skip">skip →</button>
   <button id="btn-restart">↺ restart</button>
-  <button id="btn-close">✕ close</button>
 
   <!-- Stage -->
   <div id="stage">
@@ -934,29 +932,17 @@
     // Controls
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     const btnFs = document.getElementById('btn-fs');
-    const inIframe = window.parent !== window;
 
     btnFs.addEventListener('click', () => {
-      if (inIframe) {
-        window.parent.postMessage('trailer-toggle-fs', '*');
-      } else if (!document.fullscreenElement) {
+      if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
         document.exitFullscreen();
       }
     });
 
-    // update label when fullscreen changes (standalone mode)
     document.addEventListener('fullscreenchange', () => {
-      if (!inIframe) {
-        btnFs.textContent = document.fullscreenElement ? '✕ exit fullscreen' : '⛶ fullscreen';
-      }
-    });
-
-    // parent tells us fullscreen state changed so we can update the label
-    window.addEventListener('message', (e) => {
-      if (e.data === 'fullscreen-on')  btnFs.textContent = '✕ exit fullscreen';
-      if (e.data === 'fullscreen-off') btnFs.textContent = '⛶ fullscreen';
+      btnFs.textContent = document.fullscreenElement ? '✕ exit fullscreen' : '⛶ fullscreen';
     });
 
     document.getElementById('btn-skip').addEventListener('click', () => {
@@ -964,13 +950,10 @@
     });
 
     document.getElementById('btn-restart').addEventListener('click', () => {
-      // Reset mutable state
       votes.a = 0; votes.b = 0; votes.c = 0;
-      // reset bar widths and colors
       gsap.set(['#d-bar-a','#d-bar-b','#d-bar-c'], { width: '0%', clearProps: 'backgroundColor' });
       gsap.set(['#f1b1','#f1b2','#f1b3','#f2b1','#f2b2','#f3b1','#f3b2','#f3b3'], { width: '0%' });
       gsap.set(['#s6b1','#s6b2'], { width: '0%' });
-      // restore initial voted state: A is voted, B is not
       document.getElementById('d-opt-a').classList.add('t-opt--voted');
       document.getElementById('d-opt-b').classList.remove('t-opt--voted');
       document.getElementById('s7-count').textContent = '3 comments';
@@ -978,21 +961,13 @@
       document.getElementById('s8-tag').textContent = '';
       document.getElementById('s1-tagline').textContent = '';
       updateVoteText();
-
       tl.seek(0).play();
       document.getElementById('btn-restart').style.display = 'none';
-      document.getElementById('btn-close').style.display = 'none';
       document.getElementById('btn-skip').style.display = '';
-    });
-
-    document.getElementById('btn-close').addEventListener('click', () => {
-      if (window.parent !== window) window.parent.postMessage('trailer-close', '*');
-      else document.exitFullscreen();
     });
 
     tl.eventCallback('onComplete', () => {
       document.getElementById('btn-restart').style.display = 'inline-block';
-      document.getElementById('btn-close').style.display = 'inline-block';
       document.getElementById('btn-skip').style.display = 'none';
     });
   </script>
