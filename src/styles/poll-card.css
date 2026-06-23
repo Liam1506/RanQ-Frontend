@@ -243,12 +243,6 @@
   border-left: 2px solid var(--color-accent);
 }
 
-/* Like row on post detail */
-.post-like-row {
-  display: flex;
-  margin-top: 0.5rem;
-}
-
 .poll-action-row {
   display: flex;
   align-items: center;
@@ -302,37 +296,6 @@
   font-variant-numeric: tabular-nums;
   min-width: 3ch;
   text-align: center;
-}
-
-.like-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: 1px solid var(--color-divider);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--font-size-md);
-  padding: 0.45rem 0.9rem;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.like-btn:hover {
-  border-color: var(--color-text);
-}
-
-.like-btn.liked {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-.like-count {
-  font-variant-numeric: tabular-nums;
-}
-
-.like-label {
-  opacity: 0.85;
 }
 
 .share-btn {

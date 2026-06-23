@@ -103,14 +103,14 @@ function postInner(poll: Poll): string {
   return `
     <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <p class="poll-body">${escapeHtml(preview)}</p>
-    <div class="poll-card-footer"><span class="poll-meta">${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+    <div class="poll-card-footer"><span class="poll-meta">${[`▲ ${poll.total_up_down_score} ▼`, `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`].join(" · ")}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function quoteInner(poll: Poll): string {
   return `
     <div class="poll-card-header"><p class="poll-question">${escapeHtml(poll.question)}</p><span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span></div>
     <p class="poll-body poll-body--quote">${escapeHtml(poll.body)}</p>
-    <div class="poll-card-footer"><span class="poll-meta">${poll.like_count} like${poll.like_count !== 1 ? "s" : ""} · ${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
+    <div class="poll-card-footer"><span class="poll-meta">${[`▲ ${poll.total_up_down_score} ▼`, `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`].join(" · ")}</span><span class="poll-meta poll-meta-author">${poll.creator_username ? `@${poll.creator_username}` : ""}</span></div>`;
 }
 
 function innerHtml(poll: Poll): string {
@@ -168,8 +168,8 @@ function patchCard(card: HTMLAnchorElement, oldPoll: Poll, newPoll: Poll) {
   }
 
   // Pop counts that changed
-  if (newPoll.like_count !== oldPoll.like_count) {
-    popElement(card.querySelector(".like-count"));
+  if (newPoll.total_up_down_score !== oldPoll.total_up_down_score) {
+    popElement(card.querySelector(".poll-meta"));
   }
   if (newPoll.comment_count !== oldPoll.comment_count) {
     popElement(card.querySelector(".poll-meta"));
