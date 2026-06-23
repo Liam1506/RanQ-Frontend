@@ -19,7 +19,7 @@ import "../styles/poll-card.css";
       <h2 class="settings-section-title">site settings</h2>
         <div class="settings-row">
           <div class="settings-row-info">
-            <span class="settings-row-label">auto approve polls</span>
+            <label for="setting-auto-approve" class="settings-row-label">auto approve polls</label>
             <span class="settings-row-desc">skip approval queue for new submissions</span>
           </div>
           <div class="settings-row-control">
@@ -28,7 +28,7 @@ import "../styles/poll-card.css";
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
-            <span class="settings-row-label">allow registration</span>
+            <label for="setting-allow-registration" class="settings-row-label">allow registration</label>
             <span class="settings-row-desc">let new users sign up</span>
           </div>
           <div class="settings-row-control">
@@ -37,7 +37,7 @@ import "../styles/poll-card.css";
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
-            <span class="settings-row-label">maintenance mode</span>
+            <label for="setting-maintenance-mode" class="settings-row-label">maintenance mode</label>
             <span class="settings-row-desc">block all non-admin api access</span>
           </div>
           <div class="settings-row-control">
@@ -46,7 +46,7 @@ import "../styles/poll-card.css";
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
-            <span class="settings-row-label">max options per poll</span>
+            <label for="setting-max-options" class="settings-row-label">max options per poll</label>
             <span class="settings-row-desc">maximum number of options for ranking polls</span>
           </div>
           <div class="settings-row-control">
@@ -80,7 +80,7 @@ import "../styles/poll-card.css";
             <button class="btn" id="cleanup-btn">run</button>
           </div>
         </div>
-        <div class="settings-row" style="border-bottom:none; padding-top:0">
+        <div class="settings-row settings-row--no-border">
           <p id="cleanup-result" class="admin-cleanup-result"></p>
         </div>
     </section>

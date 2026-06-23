@@ -93,6 +93,17 @@
   min-height: 1.2rem;
 }
 
+.settings-row--no-border {
+  border-bottom: none;
+  padding-top: 0;
+}
+
+.user-search-input {
+  flex: 1;
+  height: 2rem;
+  font-size: var(--font-size-md);
+}
+
 
 .admin-user-row {
   display: flex;

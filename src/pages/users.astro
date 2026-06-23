@@ -11,7 +11,8 @@ import "../styles/poll-detail.css";
   </div>
   <a href="/admin" class="back-btn">← admin</a>
   <div class="filters">
-    <input id="user-search" type="text" placeholder="search username or id..." autocomplete="off" style="height:2rem; font-size:var(--font-size-md); flex:1" />
+    <label for="user-search" class="sr-only">search users</label>
+    <input id="user-search" type="text" placeholder="search username or id..." autocomplete="off" class="user-search-input" />
     <button id="filter-unverified" class="filter-toggle">unverified</button>
   </div>
   <p id="users-empty" class="feed-empty hidden">no users found.</p>
