@@ -8,8 +8,8 @@ import { getCookie } from "../utils/cookies";
  * every call. Skips user registration entirely — the backend's register route
  * relies on Resend for verification emails, which isn't usable in local dev.
  *
- * Creates: 10 polls, 10 posts, 10 quotes, 10 votes, 10 likes, 10 comments.
- * Failures are surfaced per-call but never abort the run.
+ * Creates: 10 polls, 10 posts, 10 quotes, 10 votes, 10 upvotes, 10 downvotes,
+ * 10 comments. Failures are surfaced per-call but never abort the run.
  */
 
 const btn = document.getElementById("seed-btn") as HTMLButtonElement | null;
@@ -117,14 +117,14 @@ async function vote(token: string, pollId: string, optionId: string): Promise<bo
   return res.ok;
 }
 
-async function like(token: string, pollId: string): Promise<boolean> {
-  const res = await fetch(API.polls.like, {
+async function redditVote(token: string, pollId: string, direction: 1 | -1): Promise<boolean> {
+  const res = await fetch(API.polls.redditVote, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ poll_id: pollId }),
+    body: JSON.stringify({ poll_id: pollId, voting_score: direction }),
   });
   return res.ok;
 }
@@ -188,17 +188,25 @@ async function run() {
   }
   log(`votes: ${voteOk}/${polls.length}`);
 
-  // 3. Likes + 4. Comments — cycled across polls/posts/quotes (10 of each total)
+  // 3. Up/down votes + 4. Comments — cycled across polls/posts/quotes.
+  // Each user can only cast one updown vote per item, so spread across all 30:
+  //   - items 0-9   → upvote
+  //   - items 10-19 → downvote
+  //   - items 0-9   → comment
   const allContent = [...polls, ...posts, ...quotes];
-  let likeOk = 0;
+  let upOk = 0;
+  let downOk = 0;
   let commentOk = 0;
   for (let i = 0; i < 10; i++) {
-    const target = allContent[i % allContent.length];
-    if (!target) continue;
-    if (await like(token, target.id)) likeOk++;
-    if (await comment(token, target.id, COMMENTS[i])) commentOk++;
+    const upTarget = allContent[i];
+    const downTarget = allContent[i + 10];
+    const commentTarget = allContent[i % allContent.length];
+    if (upTarget && (await redditVote(token, upTarget.id, 1))) upOk++;
+    if (downTarget && (await redditVote(token, downTarget.id, -1))) downOk++;
+    if (commentTarget && (await comment(token, commentTarget.id, COMMENTS[i]))) commentOk++;
   }
-  log(`likes: ${likeOk}/10`);
+  log(`upvotes: ${upOk}/10`);
+  log(`downvotes: ${downOk}/10`);
   log(`comments: ${commentOk}/10`);
   log("done.");
   btn!.disabled = false;
