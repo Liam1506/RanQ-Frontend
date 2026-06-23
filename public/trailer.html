@@ -808,7 +808,6 @@
       src.start();
     }
 
-<<<<<<< HEAD
     let activeBeamGains = [];
 
     function playBeam(duration, targetPct) {
@@ -858,8 +857,6 @@
       src.start(t);
       src.stop(t + soundDur + 0.1);
     }
-=======
->>>>>>> 9b04a27d7a8b5a2b8a425f03d01c83c98073d1a3
     // Plant one click per character on the master timeline
     function addClicksForTyping(text, start, dur) {
       const step = dur / text.length;
@@ -1126,13 +1123,9 @@
         ease: 'none'
       }, 41.1)
       .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 43.0)
-<<<<<<< HEAD
       .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4)
       .call(() => playBeam(1.0, 100), null, 43.4)
       .call(playNotification, null, 44.5);
-=======
-      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4);
->>>>>>> 9b04a27d7a8b5a2b8a425f03d01c83c98073d1a3
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Progress bar
