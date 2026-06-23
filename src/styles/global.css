@@ -109,8 +109,8 @@ a:focus-visible {
 
 .btn-secondary {
   background: none;
-  border: 1px solid var(--color-text);
-  color: var(--color-text);
+  border: 1px solid var(--color-divider);
+  color: var(--color-input-text);
   border-radius: var(--btn-radius);
   padding: var(--btn-padding);
   font-family: var(--font);
@@ -118,16 +118,18 @@ a:focus-visible {
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.btn-secondary:hover { box-shadow: 0 0 0 1px var(--color-text); }
+.btn-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
 .btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
 
-.btn--danger { border-color: var(--danger) !important; color: var(--danger) !important; }
-.btn--danger:hover { box-shadow: 0 0 0 1px var(--danger); }
-.btn--positive { border-color: var(--positive) !important; color: var(--positive) !important; }
-.btn--positive:hover { box-shadow: 0 0 0 1px var(--positive); }
+.btn--danger { color: var(--danger) !important; }
+.btn--danger:hover { border-color: var(--danger) !important; color: var(--danger) !important; }
+.btn--positive { /* identical to .btn-secondary — kept for semantic markup */ }
 .btn--accent { border-color: var(--color-accent) !important; color: var(--color-accent) !important; }
 .btn--accent:hover { box-shadow: 0 0 0 1px var(--color-accent); }
 .btn--sm { font-size: var(--font-size-sm); padding: 0.2rem 0.5rem; }
