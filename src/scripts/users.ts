@@ -113,7 +113,7 @@ function renderUsers(users: User[]) {
     const actions = document.createElement("div");
     actions.className = "user-card-actions";
 
-    if (!user.owner) {
+    if (!user.owner && !user.admin) {
       const verifyBtn = document.createElement("button");
       verifyBtn.className = user.verified ? "btn-secondary" : "btn-secondary btn--positive";
       verifyBtn.textContent = user.verified ? "unverify" : "verify";
@@ -121,7 +121,7 @@ function renderUsers(users: User[]) {
       actions.append(verifyBtn);
     }
 
-    if (isOwner && !user.owner) {
+    if (isOwner && !user.owner && user.verified) {
       const adminBtn = document.createElement("button");
       adminBtn.className = "btn-secondary";
       adminBtn.textContent = user.admin ? "demote" : "promote";

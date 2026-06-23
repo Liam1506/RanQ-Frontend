@@ -36,7 +36,7 @@ const apiBase = import.meta.env.PUBLIC_API_BASE_URL;
       const apiBase = document.querySelector('meta[name="api-base"]')?.getAttribute("content") || "";
       btn.addEventListener("click", () => {
         localStorage.setItem("apiBase", apiBase);
-        window.open("/trailer.html", "_blank");
+        window.open("/trailer", "_blank");
       });
 
       fetch(API.siteSettings.public)

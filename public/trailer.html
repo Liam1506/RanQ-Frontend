@@ -1202,17 +1202,20 @@
     // Gate: only play if show_trailer_button is enabled
     const apiBase = new URLSearchParams(window.location.search).get('api')
       || localStorage.getItem('apiBase')
-      || 'http://localhost:8000';
-    fetch(`${apiBase}/api/settings/public/`)
-      .then(r => r.json())
-      .then(s => {
-        if (!s.show_trailer_button) {
-          window.location.replace('/login');
-        } else {
-          tl.play();
-        }
-      })
-      .catch(() => tl.play());
+      || '';
+    if (!apiBase) { window.location.replace('/login'); }
+    else {
+      fetch(`${apiBase}/api/settings/public/`)
+        .then(r => r.json())
+        .then(s => {
+          if (!s.show_trailer_button) {
+            window.location.replace('/login');
+          } else {
+            tl.play();
+          }
+        })
+        .catch(() => window.location.replace('/login'));
+    }
   </script>
 </body>
 </html>

@@ -36,9 +36,9 @@ let allPolls: Poll[] = [];
 let nextCursor: string | null = null;
 let hasMore = false;
 let isLoading = false;
-let showUnvoted = false;
-let typeFilter: "all" | Kind = "all";
-let sort = "newest";
+let showUnvoted = sessionStorage.getItem("feedUnvoted") === "true";
+let typeFilter: "all" | Kind = (sessionStorage.getItem("feedType") as "all" | Kind) ?? "all";
+let sort = sessionStorage.getItem("feedSort") ?? "newest";
 let initialRender = true;
 
 const LIMIT = 10;
@@ -297,6 +297,7 @@ observer.observe(sentinel);
 document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
   sel.addEventListener("change", (e) => {
     sort = (e.target as HTMLSelectElement).value;
+    sessionStorage.setItem("feedSort", sort);
     document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => {
       s.value = sort;
     });
@@ -307,6 +308,7 @@ document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
 
 unvotedBtn?.addEventListener("click", () => {
   showUnvoted = !showUnvoted;
+  sessionStorage.setItem("feedUnvoted", String(showUnvoted));
   unvotedBtn.classList.toggle("active", showUnvoted);
   loadFeed();
 });
@@ -314,10 +316,11 @@ unvotedBtn?.addEventListener("click", () => {
 document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     typeFilter = (tab.dataset.type as "all" | Kind) ?? "all";
+    sessionStorage.setItem("feedType", typeFilter);
     document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((t) => t.classList.toggle("active", t === tab));
     if (typeFilter === "post" || typeFilter === "quote") {
       unvotedBtn.hidden = true;
-      if (showUnvoted) { showUnvoted = false; unvotedBtn.classList.remove("active"); }
+      if (showUnvoted) { showUnvoted = false; sessionStorage.setItem("feedUnvoted", "false"); unvotedBtn.classList.remove("active"); }
     } else {
       unvotedBtn.hidden = false;
     }
@@ -372,5 +375,15 @@ const ticker = setInterval(() => {
   if (document.visibilityState === "visible") checkForNewPosts();
 }, 30_000);
 window.addEventListener("pagehide", () => clearInterval(ticker));
+
+// restore UI to persisted filter state
+document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((s) => { s.value = sort; });
+if (showUnvoted) unvotedBtn.classList.add("active");
+if (typeFilter !== "all") {
+  document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((t) => {
+    t.classList.toggle("active", t.dataset.type === typeFilter);
+  });
+  if (typeFilter === "post" || typeFilter === "quote") unvotedBtn.hidden = true;
+}
 
 loadFeed();
