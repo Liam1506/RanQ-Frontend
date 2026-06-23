@@ -698,20 +698,116 @@
       if (audioCtx.state !== 'running') return;
       const t = audioCtx.currentTime;
 
-      // Short sine thud — low pitch, fast decay
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(200, t);
-      osc.frequency.exponentialRampToValueAtTime(60, t + 0.08);
+      function clickTransient(startTime, pitchStart, pitchEnd, vol) {
+        const bufLen = Math.floor(audioCtx.sampleRate * 0.006);
+        const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+
+        // tonal body via oscillator underneath the noise
+        const osc = audioCtx.createOscillator();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(pitchStart, startTime);
+        osc.frequency.exponentialRampToValueAtTime(pitchEnd, startTime + 0.012);
+
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.value = 1200;
+        bandpass.Q.value = 2.5;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(vol, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.05);
+
+        src.connect(bandpass);
+        osc.connect(bandpass);
+        bandpass.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        src.start(startTime);
+        osc.start(startTime);
+        osc.stop(startTime + 0.05);
+      }
+
+      clickTransient(t,        550, 240, 0.4);   // press — higher to lower
+      clickTransient(t + 0.08, 400, 180, 0.28);  // release — softer, slightly lower
+    }
+
+    function playNotification() {
+      if (audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+
+      // Two-tone chime: rising interval like iPhone tri-tone
+      const notes = [
+        { freq: 1318, start: 0,    dur: 0.12 },  // E6
+        { freq: 1568, start: 0.13, dur: 0.12 },  // G6
+        { freq: 2093, start: 0.26, dur: 0.22 },  // C7 — holds longer
+      ];
+
+      notes.forEach(({ freq, start, dur }) => {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+
+        // second sine one octave up for shimmer
+        const osc2 = audioCtx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.value = freq * 2;
+
+        const gain = audioCtx.createGain();
+        const startT = t + start;
+        gain.gain.setValueAtTime(0.0001, startT);
+        gain.gain.linearRampToValueAtTime(0.22, startT + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startT + dur);
+
+        const gain2 = audioCtx.createGain();
+        gain2.gain.value = 0.06; // shimmer quieter
+
+        osc.connect(gain);
+        osc2.connect(gain2);
+        gain.connect(audioCtx.destination);
+        gain2.connect(audioCtx.destination);
+
+        osc.start(startT);
+        osc.stop(startT + dur);
+        osc2.start(startT);
+        osc2.stop(startT + dur);
+      });
+    }
+
+    function playWhoosh(vol) {
+      vol = vol !== undefined ? vol : 0.08;
+      if (audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+
+      const bufLen = Math.floor(audioCtx.sampleRate * 0.25);
+      const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+
+      const bandpass = audioCtx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.setValueAtTime(600, t);
+      bandpass.frequency.linearRampToValueAtTime(1200, t + 0.12);
+      bandpass.Q.value = 2.5;
 
       const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.35, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
 
-      osc.connect(gain);
+      src.connect(bandpass);
+      bandpass.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start(t);
-      osc.stop(t + 0.1);
+
+      src.start(t);
+      src.stop(t + 0.25);
     }
 
     document.addEventListener('pointerdown', () => {
@@ -752,22 +848,27 @@
     function playBeam(duration, targetPct) {
       if (audioCtx.state !== 'running') return;
       const t = audioCtx.currentTime;
-      const endFreq = 300 + (targetPct / 100) * 400; // 300–700 Hz based on bar width
+
+      // Cap sound duration so overlapping bars don't stack up
+      const soundDur = Math.min(duration * 0.5, 0.3);
+
+      const startFreq = 120 + (targetPct / 100) * 80;
+      const endFreq = startFreq + (targetPct / 100) * 55;
 
       const osc = audioCtx.createOscillator();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(180, t);
-      osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+      osc.frequency.setValueAtTime(startFreq, t);
+      osc.frequency.linearRampToValueAtTime(endFreq, t + soundDur);
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.18, t + 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      gain.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur);
 
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start(t);
-      osc.stop(t + duration);
+      osc.stop(t + soundDur);
     }
 
     // Plant one click per character on the master timeline
@@ -864,8 +965,11 @@
       .set('#s2', { opacity: 1 }, 8.0)
       .from('#s2 .t-page-title', { duration: 0.4, opacity: 0, y: 14, ease: 'power2.out' }, 8.2)
       .fromTo('#f-c1', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 8.6)
+      .call(() => playWhoosh(0.06), null, 8.6)
       .fromTo('#f-c2', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 8.85)
+      .call(() => playWhoosh(0.06), null, 8.85)
       .fromTo('#f-c3', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 9.1)
+      .call(() => playWhoosh(0.06), null, 9.1)
       // vote bars — expo.out for snappy deceleration, stagger for racing feel
       .fromTo('#f1b1', { width: '0%' }, { width: '62%', duration: 1.0, ease: 'expo.out' }, 9.4)
       .call(() => playBeam(1.0, 62), null, 9.4)
@@ -895,6 +999,7 @@
       .set('#s3', { opacity: 1, x: 0 }, 12.7)
       .from('#s3 .t-back',  { duration: 0.3, opacity: 0, x: -12, ease: 'power2.out' }, 12.9)
       .from('#d-card',      { duration: 0.4, opacity: 0, y: 12,  ease: 'power2.out' }, 13.1)
+      .call(() => playWhoosh(0.06), null, 13.1)
       // bars race in — A already gold (voted), B not voted
       .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 13.7)
       .call(() => playBeam(1.2, 67), null, 13.7)
@@ -973,6 +1078,8 @@
         { opacity: 0, y: 8 },
         { duration: 0.3, opacity: 1, y: 0, stagger: 0.12, ease: 'power2.out' },
       30.7)
+      .call(() => playWhoosh(0.06), null, 30.7)
+      .call(() => playWhoosh(0.06), null, 30.82)
       .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 31.1)
       .call(() => playBeam(0.7, 55), null, 31.1)
       .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 31.25)
@@ -989,8 +1096,11 @@
       .fromTo('#s7-section', { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 34.4)
       // comments stagger in
       .fromTo('#s7-c1', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 34.7)
+      .call(() => playWhoosh(0.06), null, 34.7)
       .fromTo('#s7-c2', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 35.0)
-      .fromTo('#s7-c3', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 35.3);
+      .call(() => playWhoosh(0.06), null, 35.0)
+      .fromTo('#s7-c3', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 35.3)
+      .call(() => playWhoosh(0.06), null, 35.3);
 
     // type new comment into input field
     addTypingTween(tl, '#s7-cmt-input', 'honestly all three are great!', 36.0, 1.5);
@@ -998,6 +1108,7 @@
     // "post" — comment appears
     tl
       .call(playTap, null, 37.7)
+      .call(() => playWhoosh(0.06), null, 37.7)
       .fromTo('#s7-c4',
         { opacity: 0, y: 10 },
         { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' },
