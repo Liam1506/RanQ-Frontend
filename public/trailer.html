@@ -959,13 +959,21 @@
       .call(() => playWhoosh(0.06), null, 9.1)
       // vote bars — expo.out for snappy deceleration, stagger for racing feel
       .fromTo('#f1b1', { width: '0%' }, { width: '62%', duration: 1.0, ease: 'expo.out' }, 9.4)
+      .call(() => playBeam(1.0, 62), null, 9.4)
       .fromTo('#f1b2', { width: '0%' }, { width: '24%', duration: 1.0, ease: 'expo.out' }, 9.55)
+      .call(() => playBeam(1.0, 24), null, 9.55)
       .fromTo('#f1b3', { width: '0%' }, { width: '14%', duration: 1.0, ease: 'expo.out' }, 9.7)
+      .call(() => playBeam(1.0, 14), null, 9.7)
       .fromTo('#f2b1', { width: '0%' }, { width: '55%', duration: 1.0, ease: 'expo.out' }, 10.1)
+      .call(() => playBeam(1.0, 55), null, 10.1)
       .fromTo('#f2b2', { width: '0%' }, { width: '45%', duration: 1.0, ease: 'expo.out' }, 10.25)
+      .call(() => playBeam(1.0, 45), null, 10.25)
       .fromTo('#f3b1', { width: '0%' }, { width: '38%', duration: 1.0, ease: 'expo.out' }, 10.7)
+      .call(() => playBeam(1.0, 38), null, 10.7)
       .fromTo('#f3b2', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 10.85)
+      .call(() => playBeam(1.0, 31), null, 10.85)
       .fromTo('#f3b3', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 11.0)
+      .call(() => playBeam(1.0, 31), null, 11.0)
       // exit: slide left
       .to('#s2', { duration: 0.55, opacity: 0, x: -40, ease: 'power2.in' }, 12.2);
 
@@ -981,7 +989,9 @@
       .call(() => playWhoosh(0.06), null, 13.1)
       // bars race in — A already gold (voted), B not voted
       .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 13.7)
+      .call(() => playBeam(1.2, 67), null, 13.7)
       .fromTo('#d-bar-b', { width: '0%' }, { width: '33%', duration: 1.2, ease: 'expo.out' }, 13.85)
+      .call(() => playBeam(1.2, 33), null, 13.85)
       .call(() => {
         votes.a = 2; votes.b = 1; votes.c = 0;
         updateVoteText();
@@ -991,6 +1001,7 @@
       // A loses gold and shrinks, B gains gold and grows — all at once
       .to('#d-bar-a', { width: '50%', backgroundColor: 'var(--option-bar)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
       .to('#d-bar-b', { width: '50%', backgroundColor: 'rgba(226,183,20,0.38)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
+      .call(() => playBeam(0.5, 50), null, 15.8)
       // class swap: remove voted from A, add to B
       .call(() => {
         document.getElementById('d-opt-a').classList.remove('t-opt--voted');
@@ -1057,7 +1068,9 @@
       .call(() => playWhoosh(0.06), null, 30.7)
       .call(() => playWhoosh(0.06), null, 30.82)
       .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 31.1)
+      .call(() => playBeam(0.7, 55), null, 31.1)
       .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 31.25)
+      .call(() => playBeam(0.7, 45), null, 31.25)
       // exit: crossfade
       .to('#s6', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 33.4);
 
