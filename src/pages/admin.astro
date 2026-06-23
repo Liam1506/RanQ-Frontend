@@ -4,7 +4,6 @@ import "../styles/start.css";
 import "../styles/admin.css";
 import "../styles/settings.css";
 import "../styles/poll-card.css";
-const isDev = import.meta.env.DEV;
 ---
 
 <BaseLayout showNav={true}>
@@ -47,6 +46,15 @@ const isDev = import.meta.env.DEV;
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
+            <label for="setting-show-trailer" class="settings-row-label">show trailer button</label>
+            <span class="settings-row-desc">show the trailer button on the login and register page</span>
+          </div>
+          <div class="settings-row-control">
+            <input type="checkbox" id="setting-show-trailer" />
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
             <label for="setting-max-options" class="settings-row-label">max options per poll</label>
             <span class="settings-row-desc">maximum number of options for ranking polls</span>
           </div>
@@ -84,28 +92,6 @@ const isDev = import.meta.env.DEV;
         <div class="settings-row settings-row--no-border">
           <p id="cleanup-result" class="admin-cleanup-result"></p>
         </div>
-        {
-          isDev && (
-            <div class="settings-row">
-              <div class="settings-row-info">
-                <span class="settings-row-label">seed mock data</span>
-                <span class="settings-row-desc">
-                  dev only: create 10 users, polls, posts, quotes, votes, likes, comments
-                </span>
-              </div>
-              <div class="settings-row-control">
-                <button class="btn" id="seed-btn">seed</button>
-              </div>
-            </div>
-          )
-        }
-        {
-          isDev && (
-            <div class="settings-row settings-row--no-border">
-              <p id="seed-result" class="admin-cleanup-result" />
-            </div>
-          )
-        }
     </section>
     <section class="settings-section">
       <h2 class="settings-section-title">polls for approval</h2>
@@ -117,4 +103,3 @@ const isDev = import.meta.env.DEV;
 </BaseLayout>
 
 <script src="../scripts/admin.ts"></script>
-{isDev && <script src="../scripts/seed.ts" />}

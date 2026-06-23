@@ -32,6 +32,7 @@ export const API = {
   },
   siteSettings: {
     get: `${BASE_URL}/api/settings/`,
+    public: `${BASE_URL}/api/settings/public/`,
     update: `${BASE_URL}/api/settings/update/`,
     cleanup: `${BASE_URL}/api/settings/cleanup/`,
     stats: `${BASE_URL}/api/settings/stats/`,

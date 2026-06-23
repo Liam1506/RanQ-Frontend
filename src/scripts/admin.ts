@@ -162,6 +162,8 @@ async function loadSettings() {
     s.allow_registration;
   (document.getElementById("setting-maintenance-mode") as HTMLInputElement).checked =
     s.maintenance_mode;
+  (document.getElementById("setting-show-trailer") as HTMLInputElement).checked =
+    s.show_trailer_button;
   (document.getElementById("setting-max-options") as HTMLInputElement).value =
     s.max_options_per_poll;
 }
@@ -174,6 +176,9 @@ document.getElementById("setting-allow-registration")!.addEventListener("change"
 });
 document.getElementById("setting-maintenance-mode")!.addEventListener("change", (e) => {
   updateSetting({ maintenance_mode: (e.target as HTMLInputElement).checked });
+});
+document.getElementById("setting-show-trailer")!.addEventListener("change", (e) => {
+  updateSetting({ show_trailer_button: (e.target as HTMLInputElement).checked });
 });
 document.getElementById("setting-max-options")!.addEventListener("change", (e) => {
   updateSetting({ max_options_per_poll: parseInt((e.target as HTMLInputElement).value) });
