@@ -772,7 +772,7 @@
       .fromTo('#f3b2', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 10.85)
       .fromTo('#f3b3', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 11.0)
       // exit: slide left
-      .to('#s2', { duration: 0.55, opacity: 0, x: -40, ease: 'power2.in' }, 17.4);
+      .to('#s2', { duration: 0.55, opacity: 0, x: -40, ease: 'power2.in' }, 12.2);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCENE 3: Poll detail / vote switch  18s – 28s
@@ -780,145 +780,145 @@
     // Switch: user clicks B → A drops to 50%, B rises to 50%, gold swaps
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     tl
-      .set('#s3', { opacity: 1, x: 0 }, 18.0)
-      .from('#s3 .t-back',  { duration: 0.3, opacity: 0, x: -12, ease: 'power2.out' }, 18.2)
-      .from('#d-card',      { duration: 0.4, opacity: 0, y: 12,  ease: 'power2.out' }, 18.4)
+      .set('#s3', { opacity: 1, x: 0 }, 12.7)
+      .from('#s3 .t-back',  { duration: 0.3, opacity: 0, x: -12, ease: 'power2.out' }, 12.9)
+      .from('#d-card',      { duration: 0.4, opacity: 0, y: 12,  ease: 'power2.out' }, 13.1)
       // bars race in — A already gold (voted), B not voted
-      .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 19.0)
-      .fromTo('#d-bar-b', { width: '0%' }, { width: '33%', duration: 1.2, ease: 'expo.out' }, 19.15)
+      .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 13.7)
+      .fromTo('#d-bar-b', { width: '0%' }, { width: '33%', duration: 1.2, ease: 'expo.out' }, 13.85)
       .call(() => {
         votes.a = 2; votes.b = 1; votes.c = 0;
         updateVoteText();
-      }, null, 20.3)
+      }, null, 15.0)
       // hold a beat so viewer reads the state — "oh they voted Linux"
       // --- vote SWITCH: click B at 21.5s ---
       // A loses gold and shrinks, B gains gold and grows — all at once
-      .to('#d-bar-a', { width: '50%', backgroundColor: 'var(--option-bar)', duration: 0.5, ease: 'power2.inOut' }, 21.5)
-      .to('#d-bar-b', { width: '50%', backgroundColor: 'rgba(226,183,20,0.38)', duration: 0.5, ease: 'power2.inOut' }, 21.5)
+      .to('#d-bar-a', { width: '50%', backgroundColor: 'var(--option-bar)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
+      .to('#d-bar-b', { width: '50%', backgroundColor: 'rgba(226,183,20,0.38)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
       // class swap: remove voted from A, add to B
       .call(() => {
         document.getElementById('d-opt-a').classList.remove('t-opt--voted');
         document.getElementById('d-opt-b').classList.add('t-opt--voted');
         votes.a = 2; votes.b = 2; votes.c = 0;
         updateVoteText();
-      }, null, 22.0)
+      }, null, 16.3)
       // pct labels both pop at the same moment
       .fromTo('#d-pct-a',
         { scale: 1, transformOrigin: 'right center' },
         { scale: 1.25, duration: 0.15, ease: 'power2.out', yoyo: true, repeat: 1 },
-      22.05)
+      16.35)
       .fromTo('#d-pct-b',
         { scale: 1, transformOrigin: 'right center' },
         { scale: 1.25, duration: 0.15, ease: 'power2.out', yoyo: true, repeat: 1 },
-      22.05)
+      16.35)
       // exit: fade
-      .to('#s3', { duration: 0.6, opacity: 0, ease: 'power2.in' }, 27.4);
+      .to('#s3', { duration: 0.6, opacity: 0, ease: 'power2.in' }, 17.5);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCENE 5: Create form  28s – 38s
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     tl
-      .set('#s5', { opacity: 1, x: 0 }, 28.0)
-      .from('#s5 .t-page-title',  { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 28.2)
-      .from('#s5 .t-kind-toggle', { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 28.5)
-      .from('#s5-form',           { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 28.7);
+      .set('#s5', { opacity: 1, x: 0 }, 18.0)
+      .from('#s5 .t-page-title',  { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 18.2)
+      .from('#s5 .t-kind-toggle', { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 18.5)
+      .from('#s5-form',           { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 18.7);
 
     // type question
-    addTypingTween(tl, '#s5-question', 'would you rather...', 29.3, 1.5);
+    addTypingTween(tl, '#s5-question', 'would you rather...', 19.3, 1.5);
     // type option 1
-    addTypingTween(tl, '#s5-opt1', 'live in the city', 31.2, 1.1);
+    addTypingTween(tl, '#s5-opt1', 'live in the city', 21.2, 1.1);
     // type option 2
-    addTypingTween(tl, '#s5-opt2', 'live in the countryside', 32.8, 1.3);
+    addTypingTween(tl, '#s5-opt2', 'live in the countryside', 22.8, 1.3);
     // option 3 fades in
-    tl.to('#s5-opt3', { duration: 0.35, opacity: 1, ease: 'power2.out' }, 34.5);
+    tl.to('#s5-opt3', { duration: 0.35, opacity: 1, ease: 'power2.out' }, 24.5);
     // type option 3
-    addTypingTween(tl, '#s5-opt3', 'live off-grid', 34.8, 0.9);
+    addTypingTween(tl, '#s5-opt3', 'live off-grid', 24.8, 0.9);
     // submit button press
     tl
-      .to('#s5-submit', { duration: 0.12, scale: 0.93, ease: 'power3.in'  }, 36.4)
-      .to('#s5-submit', { duration: 0.12, scale: 1.0,  ease: 'power3.out' }, 36.54)
+      .to('#s5-submit', { duration: 0.12, scale: 0.93, ease: 'power3.in'  }, 26.4)
+      .to('#s5-submit', { duration: 0.12, scale: 1.0,  ease: 'power3.out' }, 26.54)
       // exit: slide right
-      .to('#s5', { duration: 0.55, opacity: 0, x: 40, ease: 'power2.in' }, 37.4);
+      .to('#s5', { duration: 0.55, opacity: 0, x: 40, ease: 'power2.in' }, 27.4);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCENE 6: Search  38s – 44s
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     tl
-      .set('#s6', { opacity: 1 }, 38.0)
-      .from('#s6 .t-page-title', { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 38.2)
-      .from('#s6-input',         { duration: 0.35, opacity: 0, y: 8,  ease: 'power2.out' }, 38.5);
+      .set('#s6', { opacity: 1 }, 27.9)
+      .from('#s6 .t-page-title', { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 28.1)
+      .from('#s6-input',         { duration: 0.35, opacity: 0, y: 8,  ease: 'power2.out' }, 28.4);
 
-    addTypingTween(tl, '#s6-input', 'would you rather', 39.0, 1.6);
+    addTypingTween(tl, '#s6-input', 'would you rather', 28.9, 1.6);
 
     tl
-      .to('#s6-results', { duration: 0.4, opacity: 1, ease: 'power2.out' }, 40.8)
+      .to('#s6-results', { duration: 0.4, opacity: 1, ease: 'power2.out' }, 30.6)
       .fromTo('#s6-results .t-card',
         { opacity: 0, y: 8 },
         { duration: 0.3, opacity: 1, y: 0, stagger: 0.12, ease: 'power2.out' },
-      40.9)
-      .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 41.3)
-      .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 41.45)
+      30.7)
+      .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 31.1)
+      .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 31.25)
       // exit: crossfade
-      .to('#s6', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 43.4);
+      .to('#s6', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 33.4);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCENE 7: Comments  44s – 50s
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     tl
-      .set('#s7', { opacity: 1 }, 44.0)
-      .fromTo('#s7-title',   { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 44.2)
-      .fromTo('#s7-section', { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 44.5)
+      .set('#s7', { opacity: 1 }, 33.9)
+      .fromTo('#s7-title',   { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 34.1)
+      .fromTo('#s7-section', { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 34.4)
       // comments stagger in
-      .fromTo('#s7-c1', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 44.8)
-      .fromTo('#s7-c2', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 45.1)
-      .fromTo('#s7-c3', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 45.4);
+      .fromTo('#s7-c1', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 34.7)
+      .fromTo('#s7-c2', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 35.0)
+      .fromTo('#s7-c3', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 35.3);
 
     // type new comment into input field
-    addTypingTween(tl, '#s7-cmt-input', 'honestly all three are great!', 46.0, 1.5);
+    addTypingTween(tl, '#s7-cmt-input', 'honestly all three are great!', 36.0, 1.5);
 
     // "post" — comment appears
     tl
       .fromTo('#s7-c4',
         { opacity: 0, y: 10 },
         { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' },
-      47.7)
+      37.7)
       // clear input
       .call(() => {
         const inp = document.getElementById('s7-cmt-input');
         if (inp) inp.value = '';
-      }, null, 47.72)
+      }, null, 37.72)
       // type comment body with TextPlugin (it's a span)
       .to('#s7-c4-body', {
         duration: 1.2,
         text: { value: 'honestly all three are great!', delimiter: '' },
         ease: 'none'
-      }, 47.8)
+      }, 37.8)
       // count bumps
       .fromTo('#s7-count',
         { scale: 1, transformOrigin: 'center center' },
         { scale: 1.18, duration: 0.15, ease: 'power3.out', yoyo: true, repeat: 1 },
-      49.1)
+      39.1)
       .call(() => {
         document.getElementById('s7-count').textContent = '4 comments';
-      }, null, 49.15)
+      }, null, 39.15)
       // exit
-      .to('#s7', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 49.4);
+      .to('#s7', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 39.4);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // SCENE 8: Outro / CTA  50s – 55s
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     tl
-      .set('#s8', { opacity: 1 }, 50.0)
+      .set('#s8', { opacity: 1 }, 39.9)
       .from('#s8-logo',
         { duration: 0.7, opacity: 0, scale: 0.88, ease: 'back.out(1.6)' },
-      50.3)
+      40.2)
       .to('#s8-tag', {
         duration: 2.0,
         text: { value: 'vote, rank and discuss with your friends', delimiter: '' },
         ease: 'none'
-      }, 51.2)
-      .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 53.0)
-      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 53.4);
+      }, 41.1)
+      .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 43.0)
+      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Progress bar
@@ -948,7 +948,7 @@
     });
 
     document.getElementById('btn-skip').addEventListener('click', () => {
-      tl.seek(50.0);
+      tl.seek(39.9);
     });
 
     document.getElementById('btn-restart').addEventListener('click', () => {
