@@ -104,6 +104,8 @@ function renderPoll(container: HTMLElement, poll: Poll) {
   card.append(header);
 
   if (poll.kind === "post" || poll.kind === "quote") {
+    currentPoll = poll;
+
     const body = document.createElement("p");
     body.className = poll.kind === "quote"
       ? "poll-body poll-body--detail poll-body--quote"
@@ -732,5 +734,66 @@ async function deleteComment(commentId: string, li: HTMLLIElement) {
   currentComments = currentComments.filter((c) => c.id !== commentId);
   updateCommentHeading();
 }
+
+async function refreshPollStats() {
+  if (!currentPoll) return;
+
+  const [pollRes, commentRes] = await Promise.all([
+    fetch(`${API.polls.getById}?id=${pollId}`, {
+      headers: { Authorization: `Bearer ${userId}` },
+    }),
+    fetch(`${API.polls.getAllComments}?poll_id=${pollId}`, {
+      headers: { Authorization: `Bearer ${userId}` },
+    }),
+  ]);
+
+  if (pollRes.ok) {
+    const fresh: Poll = await pollRes.json();
+
+    // Update up/down score
+    if (fresh.total_up_down_score !== currentPoll.total_up_down_score) {
+      currentPoll.total_up_down_score = fresh.total_up_down_score;
+      const scoreEl = document.querySelector<HTMLElement>(".updown-score");
+      if (scoreEl) scoreEl.textContent = String(fresh.total_up_down_score);
+    }
+
+    // Update ranking bars and vote counts
+    if (currentPoll.kind === "ranking") {
+      const changed = fresh.options.some((o) => {
+        const old = currentPoll!.options.find((x) => x.id === o.id);
+        return old && old.votes !== o.votes;
+      });
+      if (changed) {
+        fresh.options.forEach((o) => {
+          const old = currentPoll!.options.find((x) => x.id === o.id);
+          if (old) old.votes = o.votes;
+        });
+        applyRanking();
+      }
+    }
+  }
+
+  if (commentRes.ok) {
+    const fresh: Comment[] = await commentRes.json();
+    const knownIds = new Set(currentComments.map((c) => c.id));
+    const newComments = fresh.filter((c) => !knownIds.has(c.id));
+
+    if (newComments.length > 0) {
+      currentComments = [...newComments, ...currentComments];
+      if (commentListEl) {
+        const empty = commentListEl.querySelector(".comment-empty");
+        if (empty) empty.remove();
+        newComments.forEach((c) => commentListEl!.prepend(renderCommentItem(c)));
+      }
+      updateCommentHeading();
+      if (currentPoll) currentPoll.comment_count = currentComments.length;
+    }
+  }
+}
+
+const detailTicker = setInterval(() => {
+  if (document.visibilityState === "visible") refreshPollStats();
+}, 8_000);
+window.addEventListener("pagehide", () => clearInterval(detailTicker));
 
 loadPoll();
