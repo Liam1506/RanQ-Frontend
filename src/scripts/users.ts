@@ -116,7 +116,7 @@ function renderUsers(users: User[]) {
 
     if (isOwner && !user.owner) {
       const adminBtn = document.createElement("button");
-      adminBtn.className = user.admin ? "btn-secondary btn--accent" : "btn-secondary btn--accent";
+      adminBtn.className = "btn-secondary btn--accent";
       adminBtn.textContent = user.admin ? "demote" : "promote";
       adminBtn.addEventListener("click", () => toggleAdmin(user.id));
       actions.append(adminBtn);

@@ -6,6 +6,11 @@ if (!userId) window.location.replace("/login");
 
 type Kind = "ranking" | "post" | "quote";
 
+const MAX_BODY = 3500;
+const MAX_QUESTION = 200;
+const MAX_OPTION = 100;
+const MAX_QUOTE = 512;
+
 const form = document.getElementById("create-form") as HTMLFormElement;
 const optionsList = document.getElementById("options-list") as HTMLUListElement;
 const addBtn = document.getElementById("add-option-btn") as HTMLButtonElement;
@@ -20,7 +25,12 @@ const postFields = document.getElementById("post-fields") as HTMLDivElement;
 const quoteFields = document.getElementById("quote-fields") as HTMLDivElement;
 const tabs = document.querySelectorAll<HTMLButtonElement>(".kind-tab");
 
+const bodyCounter = document.getElementById("body-counter") as HTMLSpanElement;
+const questionCounter = document.getElementById("question-counter") as HTMLSpanElement;
+const quoteCounter = document.getElementById("quote-counter") as HTMLSpanElement;
+
 let kind: Kind = "ranking";
+let maxOptions = 10;
 
 function setKind(next: Kind) {
   kind = next;
@@ -41,8 +51,6 @@ function setKind(next: Kind) {
 tabs.forEach((tab) => {
   tab.addEventListener("click", () => setKind(tab.dataset.kind as Kind));
 });
-
-let maxOptions = 10;
 
 async function loadMaxOptions() {
   const res = await fetch(API.siteSettings.get, {
@@ -158,40 +166,18 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-const MAX_BODY = 3500;
-const MAX_QUESTION = 200;
-const MAX_OPTION = 100;
-const MAX_QUOTE = 512;
-
-const bodyCounter = document.getElementById("body-counter") as HTMLSpanElement;
-const questionCounter = document.getElementById("question-counter") as HTMLSpanElement;
-const quoteCounter = document.getElementById("quote-counter") as HTMLSpanElement;
-
-function attachCounter(input: HTMLInputElement, counter: HTMLSpanElement, max: number) {
+function attachCounter(input: HTMLInputElement | HTMLTextAreaElement, counter: HTMLSpanElement, max: number, lowThreshold = 30, criticalThreshold = 10) {
   input.addEventListener("input", () => {
     const remaining = max - input.value.length;
-    if (remaining < 30) {
+    if (remaining < lowThreshold) {
       counter.style.display = "";
       counter.textContent = String(remaining);
-      counter.classList.toggle("body-counter--low", remaining < 10);
+      counter.classList.toggle("body-counter--low", remaining < criticalThreshold);
     } else {
       counter.style.display = "none";
     }
   });
 }
-
-attachCounter(questionInput, questionCounter, MAX_QUESTION);
-
-quoteBodyInput.addEventListener("input", () => {
-  const remaining = MAX_QUOTE - quoteBodyInput.value.length;
-  if (remaining < 100) {
-    quoteCounter.style.display = "";
-    quoteCounter.textContent = String(remaining);
-    quoteCounter.classList.toggle("body-counter--low", remaining < 30);
-  } else {
-    quoteCounter.style.display = "none";
-  }
-});
 
 function attachOptionCounter(li: HTMLLIElement) {
   const input = li.querySelector<HTMLInputElement>("input")!;
@@ -200,23 +186,15 @@ function attachOptionCounter(li: HTMLLIElement) {
   attachCounter(input, counter, MAX_OPTION);
 }
 
-bodyInput.addEventListener("input", () => {
-  const remaining = MAX_BODY - bodyInput.value.length;
-  if (remaining < 500) {
-    bodyCounter.style.display = "";
-    bodyCounter.textContent = String(remaining);
-    bodyCounter.classList.toggle("body-counter--low", remaining < 200);
-  } else {
-    bodyCounter.style.display = "none";
-  }
-});
+attachCounter(questionInput, questionCounter, MAX_QUESTION);
+attachCounter(quoteBodyInput, quoteCounter, MAX_QUOTE, 100, 30);
+attachCounter(bodyInput, bodyCounter, MAX_BODY, 500, 200);
 
 const pasteBtn = document.getElementById("paste-btn") as HTMLButtonElement;
 pasteBtn.addEventListener("click", async () => {
   if (!navigator.clipboard) return;
   const text = await navigator.clipboard.readText().catch(() => null);
   if (text === null) return;
-  const bodyInput = document.getElementById("body") as HTMLTextAreaElement;
   bodyInput.value = text;
 });
 
@@ -229,7 +207,6 @@ quotePasteBtn.addEventListener("click", async () => {
   quoteBodyInput.dispatchEvent(new Event("input"));
 });
 
-// attach counters to initial option inputs
 Array.from(optionsList.querySelectorAll<HTMLLIElement>("li")).forEach(attachOptionCounter);
 
 loadMaxOptions();

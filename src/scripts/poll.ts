@@ -1,12 +1,12 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
 const pollId = new URLSearchParams(window.location.search).get("id")!;
 const isAdmin = getCookie("isAdmin") === "true";
-
 
 type Option = { id: string; option: string; votes: number };
 type Kind = "ranking" | "post" | "quote";
@@ -24,7 +24,7 @@ type Poll = {
   like_count: number;
   user_has_liked: boolean;
   total_up_down_score: number;
-  user_vote_up_down: number | null; // -1, 0, 1, or null
+  user_vote_up_down: number | null;
   options: Option[];
 };
 
@@ -37,17 +37,12 @@ type Comment = {
   created_at: string | null;
 };
 
-// in-memory state so vote / comment can update the DOM in place
-// rather than re-fetching and re-rendering (which causes a flash)
 let currentPoll: Poll | null = null;
 let rankingListEl: HTMLUListElement | null = null;
 let rankingMetaEl: HTMLElement | null = null;
 let currentComments: Comment[] = [];
 let commentListEl: HTMLUListElement | null = null;
 let commentHeadingEl: HTMLElement | null = null;
-// Frozen ranking order for the detail page: captured on first render so the
-// user's own vote doesn't visibly shuffle the rows. The feed re-sorts when
-// the user comes back; this only locks the order while on /poll.
 let rankingOrder: string[] | null = null;
 
 const backBtn = document.createElement("button");
@@ -55,16 +50,6 @@ backBtn.className = "back-btn btn-secondary";
 backBtn.textContent = "← back";
 backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 async function loadPoll() {
   const container = document.getElementById("poll-detail")!;
@@ -155,7 +140,6 @@ function renderPoll(container: HTMLElement, poll: Poll) {
     return;
   }
 
-  // ranking
   currentPoll = poll;
 
   const optionsList = document.createElement("ul");
@@ -225,10 +209,6 @@ function applyRanking({ animateFromZero = false } = {}) {
 
   const total = poll.options.reduce((s, o) => s + o.votes, 0);
 
-  // Capture the ranking order on first render and keep it frozen while the
-  // user is on the detail page. Their own vote should change percentages and
-  // bars, NOT the row order — that re-shuffle is jarring. The feed will
-  // re-sort when they navigate back.
   if (rankingOrder === null) {
     rankingOrder = [...poll.options].sort((a, b) => b.votes - a.votes).map((o) => o.id);
   }
@@ -236,11 +216,8 @@ function applyRanking({ animateFromZero = false } = {}) {
   const ranked = rankingOrder
     .map((id) => byId.get(id))
     .filter((o): o is (typeof poll.options)[number] => Boolean(o));
-  // Leader follows the frozen order (the row shown at index 0). The user's
-  // own vote shouldn't suddenly make a different row light up either.
   const leaderId = rankingOrder[0];
 
-  // index existing rows by option id so we can update in place
   const existing = new Map<string, HTMLLIElement>();
   list.querySelectorAll<HTMLLIElement>("li.poll-option").forEach((li) => {
     if (li.dataset.optId) existing.set(li.dataset.optId, li);
@@ -293,9 +270,7 @@ function applyRanking({ animateFromZero = false } = {}) {
     if (animateFromZero) bar.style.width = "0";
     targets.push({ bar, width: `${pct}%` });
 
-    // re-append in frozen order; this is a move, not a destroy
     list.appendChild(li);
-    // sync explicit height so the absolutely positioned bar fills it correctly
     li.style.height = "";
     li.style.height = `${li.scrollHeight}px`;
   });
@@ -314,9 +289,7 @@ async function castVote(optionId: string) {
   const poll = currentPoll;
   const previousVoteId = poll.voted_option_id;
 
-  // optimistic update
   if (previousVoteId === optionId) {
-    // un-vote
     const prev = poll.options.find((o) => o.id === optionId);
     if (prev) prev.votes = Math.max(0, prev.votes - 1);
     poll.voted_option_id = null;
@@ -345,13 +318,10 @@ async function castVote(optionId: string) {
   });
 
   if (!res.ok) {
-    // server rejected — refetch authoritative state
     loadPoll();
   }
 }
 
-// Write a partial update to sessionStorage so the feed page can pick it up
-// instantly when the user navigates back, before the silent refetch finishes.
 function renderUpDownRow(poll: Poll): HTMLDivElement {
   const row = document.createElement("div");
   row.className = "updown-row";
@@ -400,10 +370,8 @@ async function castUpDownVote(
   down: HTMLButtonElement,
 ) {
   const prev = poll.user_vote_up_down ?? 0;
-  // Clicking the already-active direction removes the vote
   const next: 0 | 1 | -1 = prev === direction ? 0 : direction;
 
-  // Optimistic update
   poll.total_up_down_score += next - prev;
   poll.user_vote_up_down = next === 0 ? null : next;
   syncUpDown(poll, up, score, down);
@@ -418,13 +386,11 @@ async function castUpDownVote(
   });
 
   if (!res.ok) {
-    // Roll back
     poll.total_up_down_score -= next - prev;
     poll.user_vote_up_down = prev === 0 ? null : prev;
     syncUpDown(poll, up, score, down);
     return;
   }
-  // Stage after server confirms so the feed meta line reflects the right score
   stagePendingUpdate(poll.id, {
     total_up_down_score: poll.total_up_down_score,
   });
@@ -436,7 +402,7 @@ function stagePendingUpdate(pollId: string, patch: Record<string, unknown>) {
     const raw = sessionStorage.getItem("pendingPollUpdates");
     if (raw) updates = JSON.parse(raw);
   } catch {
-    /* ignore malformed storage */
+    // malformed storage — start fresh
   }
   updates[pollId] = { ...(updates[pollId] ?? {}), ...patch };
   sessionStorage.setItem("pendingPollUpdates", JSON.stringify(updates));
@@ -461,13 +427,9 @@ function renderAdminDeleteBtn(id: string): HTMLButtonElement {
   return btn;
 }
 
-
 async function loadComment(poll_id: string) {
   const res = await fetch(`${API.polls.getAllComments}?poll_id=${poll_id}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${userId}`,
-    },
+    headers: { Authorization: `Bearer ${userId}` },
   });
   if (!res.ok) {
     return;
@@ -641,7 +603,6 @@ async function createComment(poll_id: string, comment: string) {
   currentComments = [created, ...currentComments];
 
   if (commentListEl) {
-    // wipe the "no comments yet" placeholder if present
     const empty = commentListEl.querySelector(".comment-empty");
     if (empty) empty.remove();
     commentListEl.prepend(renderCommentItem(created));
@@ -685,14 +646,12 @@ async function refreshPollStats() {
   if (pollRes.ok) {
     const fresh: Poll = await pollRes.json();
 
-    // Update up/down score
     if (fresh.total_up_down_score !== currentPoll.total_up_down_score) {
       currentPoll.total_up_down_score = fresh.total_up_down_score;
       const scoreEl = document.querySelector<HTMLElement>(".updown-score");
       if (scoreEl) scoreEl.textContent = String(fresh.total_up_down_score);
     }
 
-    // Update ranking bars and vote counts
     if (currentPoll.kind === "ranking") {
       const changed = fresh.options.some((o) => {
         const old = currentPoll!.options.find((x) => x.id === o.id);

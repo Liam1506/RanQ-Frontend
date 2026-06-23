@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) {
@@ -48,28 +49,12 @@ const feed = document.getElementById("feed")!;
 const newPostsBanner = document.getElementById("new-posts-banner") as HTMLButtonElement;
 const unvotedBtn = document.getElementById("filter-unvoted") as HTMLButtonElement;
 
-// Sentinel element at the bottom of the feed for IntersectionObserver
 const sentinel = document.createElement("div");
 sentinel.id = "feed-sentinel";
 feed.after(sentinel);
 
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
-
 function totalVotes(poll: Poll): number {
   return poll.options.reduce((s, o) => s + o.votes, 0);
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
 
 function rankingInner(poll: Poll): string {
@@ -136,14 +121,12 @@ function buildCard(poll: Poll, index: number): HTMLAnchorElement {
 function popElement(el: Element | null) {
   if (!el) return;
   el.classList.remove("count-pop");
-  // Force reflow so re-adding the class re-triggers the animation
   void (el as HTMLElement).offsetWidth;
   el.classList.add("count-pop");
   el.addEventListener("animationend", () => el.classList.remove("count-pop"), { once: true });
 }
 
 function patchCard(card: HTMLAnchorElement, oldPoll: Poll, newPoll: Poll) {
-  // Capture old bar widths before re-rendering so we can animate from them
   const oldBars = new Map<string, string>();
   card.querySelectorAll<HTMLElement>(".poll-option[data-option-id]").forEach((li) => {
     const bar = li.querySelector<HTMLElement>(".poll-option-bar");
@@ -153,7 +136,6 @@ function patchCard(card: HTMLAnchorElement, oldPoll: Poll, newPoll: Poll) {
   card.innerHTML = innerHtml(newPoll);
   card.dataset.kind = newPoll.kind;
 
-  // Animate bars from old width to new width
   if (newPoll.kind === "ranking") {
     card.querySelectorAll<HTMLElement>(".poll-option[data-option-id]").forEach((li) => {
       const bar = li.querySelector<HTMLElement>(".poll-option-bar");
@@ -167,7 +149,6 @@ function patchCard(card: HTMLAnchorElement, oldPoll: Poll, newPoll: Poll) {
     });
   }
 
-  // Pop counts that changed
   if (newPoll.total_up_down_score !== oldPoll.total_up_down_score) {
     popElement(card.querySelector(".poll-meta"));
   }
@@ -286,7 +267,6 @@ async function refreshFeed() {
   const data = await fetchPage();
   if (!data) return;
 
-  // Merge: keep existing polls, prepend any new ones, update existing ones
   const existingIds = new Set(allPolls.map((p) => p.id));
   const newPolls = data.polls.filter((p) => !existingIds.has(p.id));
   const updated = allPolls.map((p) => data.polls.find((q) => q.id === p.id) ?? p);
@@ -309,13 +289,11 @@ function applyPendingUpdates() {
   } catch { /* ignore */ }
 }
 
-// IntersectionObserver — fires loadMore when sentinel scrolls into view
 const observer = new IntersectionObserver((entries) => {
   if (entries[0].isIntersecting) loadMore();
 }, { rootMargin: "200px" });
 observer.observe(sentinel);
 
-// Filter/sort listeners
 document.querySelectorAll<HTMLSelectElement>(".filter-sort").forEach((sel) => {
   sel.addEventListener("change", (e) => {
     sort = (e.target as HTMLSelectElement).value;
@@ -343,18 +321,15 @@ document.querySelectorAll<HTMLButtonElement>(".type-tab").forEach((tab) => {
     } else {
       unvotedBtn.hidden = false;
     }
-    // Re-fetch from scratch with the new kind filter
     loadFeed();
   });
 });
 
-// bfcache restore and visibility change
 window.addEventListener("pageshow", (e) => { if (e.persisted) refreshFeed(); });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && allPolls.length > 0) refreshFeed();
 });
 
-// New posts banner
 newPostsBanner.addEventListener("click", () => {
   newPostsBanner.hidden = true;
   loadFeed();
@@ -364,7 +339,6 @@ newPostsBanner.addEventListener("click", () => {
 async function checkForNewPosts() {
   if (allPolls.length === 0) return;
 
-  // Banner only makes sense on newest sort — other sorts aren't ordered by creation time
   if (sort === "newest") {
     const params = new URLSearchParams({ limit: "1" });
     if (typeFilter !== "all") params.set("kind", typeFilter);
@@ -381,7 +355,6 @@ async function checkForNewPosts() {
     }
   }
 
-  // Silently refresh vote/like/comment counts for all loaded polls
   const ids = allPolls.map((p) => p.id);
   const statsRes = await fetch(API.polls.bulkStats, {
     method: "POST",

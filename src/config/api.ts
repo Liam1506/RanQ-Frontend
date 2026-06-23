@@ -41,4 +41,7 @@ export const API = {
     toggleVerified: `${BASE_URL}/api/auth/users/toggle-verified`,
     delete: `${BASE_URL}/api/auth/users/delete`,
   },
+  notifications: {
+    list: `${BASE_URL}/api/notifications/`,
+  },
 };
