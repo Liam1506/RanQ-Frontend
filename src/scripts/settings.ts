@@ -1,5 +1,6 @@
 import { API } from "../config/api";
-import { getCookie } from "../utils/cookies";
+import { getCookie, deleteCookie } from "../utils/cookies";
+import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -32,27 +33,6 @@ let typeFilter: "all" | Kind = "all";
 
 const POST_PREVIEW_CHARS = 200;
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-// ---- account section ----
-
 async function loadUserInfo() {
   const usernameEl = document.getElementById("info-username") as HTMLElement;
   const emailEl = document.getElementById("info-email") as HTMLElement;
@@ -81,8 +61,6 @@ async function checkMaintenance() {
     });
   }
 }
-
-// ---- appearance section ----
 
 function currentTheme(): "light" | "dark" | "system" {
   const saved = localStorage.getItem("theme");
@@ -117,8 +95,6 @@ document.querySelectorAll<HTMLButtonElement>(".theme-option").forEach((btn) => {
   });
 });
 syncThemeButtons();
-
-// ---- my posts section ----
 
 function renderRankingCard(poll: Poll): string {
   const total = poll.options.reduce((s, o) => s + o.votes, 0);
@@ -324,8 +300,6 @@ if ("Notification" in window && Notification.permission !== "granted") {
   (document.getElementById("notification-hint") as HTMLElement).style.display = "";
 }
 
-// ---- account edit ----
-
 const feedbackEl = document.getElementById("username-feedback") as HTMLElement;
 const passwordFeedbackEl = document.getElementById("password-feedback") as HTMLElement;
 
@@ -386,9 +360,10 @@ document.getElementById("btn-delete-account")!.addEventListener("click", async (
     headers: { Authorization: `Bearer ${userId}` },
   });
   if (res.ok) {
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
-    });
+    deleteCookie("userId");
+    deleteCookie("verified");
+    deleteCookie("isAdmin");
+    deleteCookie("isOwner");
     window.location.replace("/login");
   } else {
     const data = await res.json();

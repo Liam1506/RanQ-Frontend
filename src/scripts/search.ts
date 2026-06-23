@@ -5,6 +5,21 @@ import { escapeHtml, formatDate } from "../utils/format";
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
+type Kind = "ranking" | "post" | "quote";
+
+type SearchPoll = {
+  id: string;
+  kind: Kind;
+  question: string;
+  body?: string;
+  creator_username: string | null;
+  created_at: string | null;
+  voted_option_id: string | null;
+  total_up_down_score: number;
+  comment_count: number;
+  options: Array<{ id: string; option: string; votes: number }>;
+};
+
 const input = document.getElementById("search-input") as HTMLInputElement;
 const noResults = document.getElementById("no-results") as HTMLParagraphElement;
 const postList = document.getElementById("post-list") as HTMLElement;
@@ -20,8 +35,7 @@ let offset = 0;
 let hasMore = false;
 let isLoading = false;
 
-
-function renderCard(post: any): string {
+function renderCard(post: SearchPoll): string {
   const username = post.creator_username ?? "";
   const date = formatDate(post.created_at);
   const author = username ? `@${escapeHtml(username)}` : "";
@@ -33,15 +47,15 @@ function renderCard(post: any): string {
 
   let middle = "";
   if (post.kind === "post" || post.kind === "quote") {
-    const truncated = post.body?.length > POST_PREVIEW_CHARS;
-    const preview = truncated ? post.body.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : (post.body ?? "");
+    const truncated = (post.body?.length ?? 0) > POST_PREVIEW_CHARS;
+    const preview = truncated ? post.body!.slice(0, POST_PREVIEW_CHARS).trimEnd() + "…" : (post.body ?? "");
     const cls = post.kind === "quote" ? "poll-body poll-body--quote" : "poll-body";
     middle = `<p class="${cls}">${escapeHtml(preview)}</p>`;
   } else {
-    const total = post.options.reduce((s: number, o: any) => s + o.votes, 0);
-    const visible = [...post.options].sort((a: any, b: any) => b.votes - a.votes).slice(0, MAX_OPTIONS_IN_FEED);
+    const total = post.options.reduce((s, o) => s + o.votes, 0);
+    const visible = [...post.options].sort((a, b) => b.votes - a.votes).slice(0, MAX_OPTIONS_IN_FEED);
     const overflow = post.options.length - visible.length;
-    const options = visible.map((opt: any) => {
+    const options = visible.map((opt) => {
       const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
       const isVoted = opt.id === post.voted_option_id;
       return `<li class="poll-option poll-option--ranked${isVoted ? " poll-option--voted" : ""}">
@@ -55,7 +69,7 @@ function renderCard(post: any): string {
   }
 
   const isPostOrQuote = post.kind === "post" || post.kind === "quote";
-  const total = isPostOrQuote ? 0 : post.options.reduce((s: number, o: any) => s + o.votes, 0);
+  const total = isPostOrQuote ? 0 : post.options.reduce((s, o) => s + o.votes, 0);
   const left = isPostOrQuote
     ? `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
     : `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""} · ${total} vote${total !== 1 ? "s" : ""}`;
@@ -70,7 +84,7 @@ function renderCard(post: any): string {
   return `<a class="${cardClass}" href="/poll?id=${post.id}">${header}${middle}${footer}</a>`;
 }
 
-async function fetchResults(q: string, off: number): Promise<{ polls: any[]; has_more: boolean } | null> {
+async function fetchResults(q: string, off: number): Promise<{ polls: SearchPoll[]; has_more: boolean } | null> {
   const params = new URLSearchParams({ q, limit: String(LIMIT), offset: String(off) });
   const res = await fetch(`${API.polls.search}?${params}`, {
     headers: { Authorization: `Bearer ${userId}` },
@@ -119,7 +133,6 @@ async function loadMore() {
   isLoading = false;
 }
 
-// Debounced input handler
 let debounceTimer: ReturnType<typeof setTimeout>;
 input.addEventListener("input", () => {
   clearTimeout(debounceTimer);
@@ -127,11 +140,9 @@ input.addEventListener("input", () => {
   debounceTimer = setTimeout(() => search(q), DEBOUNCE_MS);
 });
 
-// IntersectionObserver for auto load more
 const observer = new IntersectionObserver((entries) => {
   if (entries[0].isIntersecting) loadMore();
 }, { rootMargin: "200px" });
 observer.observe(sentinel);
 
-// Load default feed on page load
 search("");

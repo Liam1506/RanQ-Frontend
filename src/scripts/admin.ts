@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
 if (!userId) {
@@ -21,21 +22,6 @@ type Poll = {
   kind: "ranking" | "post" | "quote";
   body: string | null;
 };
-
-function formatDate(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 async function loadUnapprovedPolls() {
   const res = await fetch(API.polls.getUnapproved, {

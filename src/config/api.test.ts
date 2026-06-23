@@ -30,9 +30,8 @@ describe("API config", () => {
   });
 
   it("includes the endpoints the frontend actually calls", () => {
-    // Sanity: make sure no key was accidentally renamed.
     const required = [
-      "getAll", "getMyPolls", "getUnapproved",
+      "feed", "getMyPolls", "getUnapproved",
       "create", "delete", "vote", "comment",
       "getAllComments", "redditVote", "approvePoll",
     ] as const;
