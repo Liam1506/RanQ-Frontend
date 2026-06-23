@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ranQ — trailer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+  <style>
+    /* ── Design tokens (dark theme) ── */
+    :root {
+      --bg:         #1e1e1e;
+      --text:       #ffffff;
+      --dimmed:     rgba(255,255,255,0.55);
+      --accent:     #e2b714;
+      --input-bg:   #2a2a2a;
+      --option-bg:  rgba(255,255,255,0.07);
+      --option-bar: rgba(226,183,20,0.20);
+      --voted-bar:  rgba(226,183,20,0.35);
+      --divider:    rgba(255,255,255,0.10);
+      --font:       monospace;
+      --r:          0px;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: var(--font);
+    }
+
+    /* ── Ambient: scanline ── */
+    #scanline {
+      position: fixed; inset: 0; z-index: 999; pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px, transparent 3px,
+        rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px
+      );
+      animation: scanMove 10s linear infinite;
+    }
+    @keyframes scanMove {
+      from { background-position: 0 0; }
+      to   { background-position: 0 100vh; }
+    }
+
+    /* ── Ambient: grid ── */
+    #grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(226,183,20,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(226,183,20,0.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    /* ── Progress bar ── */
+    #progress-bar {
+      position: fixed; bottom: 0; left: 0; z-index: 998;
+      height: 3px; width: 0%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(226,183,20,0.7);
+      pointer-events: none;
+    }
+
+    /* ── Controls ── */
+    #btn-skip, #btn-restart {
+      position: fixed; z-index: 997;
+      background: rgba(30,30,30,0.7);
+      border: 1px solid var(--dimmed);
+      color: var(--dimmed);
+      font: 0.9rem var(--font);
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      bottom: 1.4rem;
+    }
+    #btn-skip    { right: 1.5rem; }
+    #btn-restart { right: 9rem; display: none; }
+    #btn-skip:hover, #btn-restart:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ── Stage ── */
+    #stage {
+      position: fixed; inset: 0; z-index: 1;
+    }
+
+    section {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      opacity: 0; pointer-events: none;
+      padding: 2rem;
+    }
+
+    /* ── Logo ── */
+    .t-logo {
+      font: bold 7rem var(--font);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      text-align: center;
+      user-select: none;
+    }
+    .t-logo--sm {
+      font-size: 3.5rem;
+    }
+
+    /* ── Page title ── */
+    .t-page-title {
+      font: bold 1.5rem var(--font);
+      color: var(--text);
+      margin-bottom: 1.1rem;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Feed ── */
+    .t-feed {
+      display: flex; flex-direction: column;
+      border-top: 1px solid var(--divider);
+      width: 100%;
+    }
+
+    /* ── Poll card ── */
+    .t-card {
+      display: flex; flex-direction: column; gap: 0.65rem;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--divider);
+      opacity: 0;
+    }
+    .t-card--visible { opacity: 1; }
+    .t-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .t-question {
+      flex: 1;
+      font: bold 1.05rem var(--font);
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .t-question--lg { font-size: 1.35rem; }
+    .t-date { font: 0.8rem var(--font); color: var(--dimmed); white-space: nowrap; flex-shrink: 0; }
+
+    /* ── Options ── */
+    .t-options {
+      list-style: none;
+      display: flex; flex-direction: column;
+      gap: 0.3rem;
+    }
+    .t-opt {
+      position: relative;
+      display: flex; align-items: center;
+      min-height: 1.75rem;
+      background: var(--option-bg);
+      padding: 0.3rem 0.7rem;
+      gap: 0.5rem;
+      overflow: hidden;
+    }
+    .t-opt--voted {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+    }
+    .t-opt--voted .t-bar { background: var(--voted-bar); }
+    .t-opt--voted .t-opt-label { font-weight: bold; }
+
+    .t-bar {
+      position: absolute; left: 0; top: 0;
+      height: 100%;
+      background: var(--option-bar);
+      width: 0%;
+      transform-origin: left center;
+    }
+    .t-opt-label {
+      position: relative;
+      flex: 1;
+      font: 1rem var(--font);
+      color: var(--text);
+    }
+    .t-opt-pct {
+      position: relative;
+      font: 0.82rem var(--font);
+      color: var(--dimmed);
+      min-width: 3ch;
+      text-align: right;
+    }
+    .t-opt-count {
+      position: relative;
+      font: 0.82rem var(--font);
+      color: var(--dimmed);
+      min-width: 2ch;
+      text-align: right;
+    }
+    .t-rank {
+      position: relative;
+      font: 0.8rem var(--font);
+      color: var(--dimmed);
+      min-width: 1ch;
+    }
+    .t-rank--lead { color: var(--accent); }
+
+    .t-card-footer {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .t-meta   { font: 0.8rem var(--font); color: var(--dimmed); }
+    .t-author { font: 0.8rem var(--font); color: var(--dimmed); }
+
+    /* ── Back button ── */
+    .t-back {
+      font: 0.95rem var(--font);
+      color: var(--accent);
+      margin-bottom: 1rem;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    /* ── Up/down row ── */
+    .t-action-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 0.2rem;
+    }
+    .t-updown {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--divider);
+    }
+    .t-updown-btn {
+      background: none; border: none;
+      color: var(--dimmed);
+      font: 1rem var(--font);
+      cursor: pointer; padding: 0;
+    }
+    .t-updown-score {
+      font: 1rem var(--font);
+      color: var(--text);
+      min-width: 3ch; text-align: center;
+    }
+
+    /* ── Create form ── */
+    .t-kind-toggle {
+      display: flex;
+      border: 1px solid var(--divider);
+      width: fit-content;
+      margin-bottom: 1.4rem;
+    }
+    .t-kind-tab {
+      background: none; border: none;
+      color: var(--text);
+      font: 0.95rem var(--font);
+      padding: 0.4rem 1rem;
+      opacity: 0.5; cursor: pointer;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+    }
+    .t-kind-tab--active {
+      background: var(--accent);
+      color: #1e1e1e;
+      opacity: 1;
+    }
+    .t-form { display: flex; flex-direction: column; gap: 1.3rem; width: 100%; }
+    .t-field { display: flex; flex-direction: column; gap: 0.45rem; }
+    .t-field-label {
+      font: 0.8rem var(--font);
+      color: var(--dimmed);
+      letter-spacing: 0.02em;
+    }
+    .t-input {
+      width: 100%; height: 2rem; border: none;
+      background: var(--input-bg);
+      color: var(--text);
+      font: 1rem var(--font);
+      padding: 0 0.75rem;
+      outline: none;
+    }
+    .t-options-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .t-option-btns  { margin-top: 0.4rem; }
+    .t-ghost-btn {
+      font: 0.88rem var(--font);
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .t-btn {
+      background: var(--accent);
+      color: #1e1e1e; border: none;
+      font: 1rem var(--font);
+      padding: 0.45rem 1rem;
+      cursor: pointer;
+      align-self: flex-start;
+    }
+
+    /* ── Search ── */
+    .t-search-wrapper {
+      width: 100%; margin-bottom: 0.8rem;
+    }
+    .t-search-input {
+      width: 100%; height: 2.5rem;
+      font-size: 1.1rem;
+      padding: 0 1rem;
+    }
+    .t-post-list {
+      display: flex; flex-direction: column;
+      border-top: 1px solid var(--divider);
+      width: 100%;
+    }
+
+    /* ── Comments ── */
+    .t-comments-section {
+      display: flex; flex-direction: column; gap: 0.8rem;
+      width: 100%;
+    }
+    .t-comments-heading {
+      font: 0.9rem var(--font);
+      color: var(--dimmed);
+    }
+    .t-comment-input-row {
+      display: flex; gap: 0.5rem; align-items: center;
+    }
+    .t-comment-input-row .t-input { flex: 1; }
+    .t-comment-list {
+      list-style: none;
+      display: flex; flex-direction: column;
+    }
+    .t-comment-item {
+      display: flex; flex-direction: column; gap: 0.2rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    .t-comment-header {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .t-comment-author { font: 0.8rem var(--font); color: var(--accent); }
+    .t-comment-date   { font: 0.8rem var(--font); color: var(--dimmed); }
+    .t-comment-body   { font: 0.95rem var(--font); color: var(--text); line-height: 1.5; }
+
+    /* ── Outro line ── */
+    #outro-line {
+      width: 0; height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(226,183,20,0.75);
+    }
+
+    /* ── Utility ── */
+    .t-inner {
+      width: min(500px, 90vw);
+      display: flex; flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient layers -->
+  <div id="scanline"></div>
+  <div id="grid-bg"></div>
+
+  <!-- Progress bar -->
+  <div id="progress-bar"></div>
+
+  <!-- Controls -->
+  <button id="btn-skip">skip →</button>
+  <button id="btn-restart">↺ restart</button>
+
+  <!-- Stage -->
+  <div id="stage">
+
+    <!-- Scene 1: Splash -->
+    <section id="s1">
+      <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:1.2rem;">
+        <div class="t-logo">
+          <span id="s1-ran" style="color:var(--accent)">ran</span><span id="s1-q" style="color:#fff">Q</span>
+        </div>
+        <p id="s1-tagline" style="font:1.05rem var(--font); color:var(--dimmed); letter-spacing:0.04em;"></p>
+      </div>
+    </section>
+
+    <!-- Scene 2: Feed -->
+    <section id="s2">
+      <div class="t-inner">
+        <p class="t-page-title">feed</p>
+        <div class="t-feed">
+
+          <div class="t-card" id="f-c1">
+            <div class="t-card-header">
+              <p class="t-question">best programming language?</p>
+              <span class="t-date">12 Jun 2025</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="f1b1"></div><span class="t-opt-label">Rust</span><span class="t-opt-pct">62%</span></li>
+              <li class="t-opt"><div class="t-bar" id="f1b2"></div><span class="t-opt-label">TypeScript</span><span class="t-opt-pct">24%</span></li>
+              <li class="t-opt"><div class="t-bar" id="f1b3"></div><span class="t-opt-label">Python</span><span class="t-opt-pct">14%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta">▲ 42 · 8 comments · 86 votes</span>
+              <span class="t-author">@alice</span>
+            </div>
+          </div>
+
+          <div class="t-card" id="f-c2">
+            <div class="t-card-header">
+              <p class="t-question">tabs or spaces?</p>
+              <span class="t-date">11 Jun 2025</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="f2b1"></div><span class="t-opt-label">Tabs</span><span class="t-opt-pct">55%</span></li>
+              <li class="t-opt"><div class="t-bar" id="f2b2"></div><span class="t-opt-label">Spaces</span><span class="t-opt-pct">45%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta">▲ 17 · 23 comments · 441 votes</span>
+              <span class="t-author">@bob</span>
+            </div>
+          </div>
+
+          <div class="t-card" id="f-c3">
+            <div class="t-card-header">
+              <p class="t-question">favourite coffee order?</p>
+              <span class="t-date">10 Jun 2025</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="f3b1"></div><span class="t-opt-label">Flat white</span><span class="t-opt-pct">38%</span></li>
+              <li class="t-opt"><div class="t-bar" id="f3b2"></div><span class="t-opt-label">Espresso</span><span class="t-opt-pct">31%</span></li>
+              <li class="t-opt"><div class="t-bar" id="f3b3"></div><span class="t-opt-label">Oat latte</span><span class="t-opt-pct">31%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta">▲ 9 · 5 comments · 129 votes</span>
+              <span class="t-author">@carol</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 3: Poll detail / voting -->
+    <section id="s3">
+      <div class="t-inner">
+        <p class="t-back">← back</p>
+        <div style="border-top: 1px solid var(--divider);">
+          <div class="t-card" id="d-card" style="opacity:1;">
+            <div class="t-card-header">
+              <p class="t-question t-question--lg">best operating system?</p>
+              <span class="t-date">14 Jun 2025</span>
+            </div>
+            <ul class="t-options" id="d-opts">
+              <li class="t-opt t-opt--voted" id="d-opt-a">
+                <div class="t-bar" id="d-bar-a"></div>
+                <span class="t-rank t-rank--lead">1</span>
+                <span class="t-opt-label">Linux</span>
+                <span class="t-opt-pct" id="d-pct-a">0%</span>
+                <span class="t-opt-count" id="d-cnt-a">0</span>
+              </li>
+              <li class="t-opt" id="d-opt-b">
+                <div class="t-bar" id="d-bar-b"></div>
+                <span class="t-rank">2</span>
+                <span class="t-opt-label">macOS</span>
+                <span class="t-opt-pct" id="d-pct-b">0%</span>
+                <span class="t-opt-count" id="d-cnt-b">0</span>
+              </li>
+              <li class="t-opt" id="d-opt-c">
+                <div class="t-bar" id="d-bar-c"></div>
+                <span class="t-rank">3</span>
+                <span class="t-opt-label">Windows</span>
+                <span class="t-opt-pct" id="d-pct-c">0%</span>
+                <span class="t-opt-count" id="d-cnt-c">0</span>
+              </li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta" id="d-total">0 votes</span>
+              <span class="t-author">@dave</span>
+            </div>
+            <div class="t-action-row">
+              <div class="t-updown">
+                <button class="t-updown-btn">▲</button>
+                <span class="t-updown-score" id="d-score">34</span>
+                <button class="t-updown-btn">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 4: Live vote racing -->
+    <section id="s4">
+      <div class="t-inner">
+        <p class="t-page-title">live</p>
+        <div class="t-feed">
+
+          <div class="t-card" id="r-c1">
+            <div class="t-card-header">
+              <p class="t-question">would you rather live on Mars?</p>
+              <span class="t-date">today</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="r1b1"></div><span class="t-opt-label">Yes, absolutely</span><span class="t-opt-pct" id="r1p1">0%</span></li>
+              <li class="t-opt"><div class="t-bar" id="r1b2"></div><span class="t-opt-label">No way</span><span class="t-opt-pct" id="r1p2">0%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta" id="r1total">0 votes</span>
+              <span class="t-author">@eve</span>
+            </div>
+          </div>
+
+          <div class="t-card" id="r-c2">
+            <div class="t-card-header">
+              <p class="t-question">dark mode or light mode?</p>
+              <span class="t-date">today</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="r2b1"></div><span class="t-opt-label">Dark</span><span class="t-opt-pct" id="r2p1">0%</span></li>
+              <li class="t-opt"><div class="t-bar" id="r2b2"></div><span class="t-opt-label">Light</span><span class="t-opt-pct" id="r2p2">0%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta" id="r2total">0 votes</span>
+              <span class="t-author">@frank</span>
+            </div>
+          </div>
+
+          <div class="t-card" id="r-c3">
+            <div class="t-card-header">
+              <p class="t-question">pineapple on pizza?</p>
+              <span class="t-date">today</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="r3b1"></div><span class="t-opt-label">Yes!</span><span class="t-opt-pct" id="r3p1">0%</span></li>
+              <li class="t-opt"><div class="t-bar" id="r3b2"></div><span class="t-opt-label">Absolutely not</span><span class="t-opt-pct" id="r3p2">0%</span></li>
+            </ul>
+            <div class="t-card-footer">
+              <span class="t-meta" id="r3total">0 votes</span>
+              <span class="t-author">@grace</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 5: Create form -->
+    <section id="s5">
+      <div class="t-inner">
+        <p class="t-page-title">create</p>
+        <div class="t-kind-toggle">
+          <button class="t-kind-tab t-kind-tab--active" id="s5-tab-poll">poll</button>
+          <button class="t-kind-tab" id="s5-tab-post">post</button>
+          <button class="t-kind-tab" id="s5-tab-quote">quote</button>
+        </div>
+        <div class="t-form" id="s5-form">
+          <div class="t-field">
+            <span class="t-field-label">question</span>
+            <input class="t-input" id="s5-question" type="text" autocomplete="off" />
+          </div>
+          <div class="t-field">
+            <span class="t-field-label">options</span>
+            <div class="t-options-list">
+              <input class="t-input" id="s5-opt1" type="text" placeholder="option 1" autocomplete="off" />
+              <input class="t-input" id="s5-opt2" type="text" placeholder="option 2" autocomplete="off" />
+              <input class="t-input" id="s5-opt3" type="text" placeholder="option 3" autocomplete="off" style="opacity:0;" />
+            </div>
+            <div class="t-option-btns">
+              <span class="t-ghost-btn">+ add option</span>
+            </div>
+          </div>
+          <button class="t-btn" id="s5-submit">create</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 6: Search -->
+    <section id="s6">
+      <div class="t-inner">
+        <p class="t-page-title">search</p>
+        <div class="t-search-wrapper">
+          <input class="t-input t-search-input" id="s6-input" type="text" autocomplete="off" />
+        </div>
+        <div class="t-post-list" id="s6-results" style="opacity:0;">
+          <div class="t-card" style="opacity:1;">
+            <div class="t-card-header">
+              <p class="t-question">would you rather live in the city?</p>
+              <span class="t-date">13 Jun 2025</span>
+            </div>
+            <ul class="t-options">
+              <li class="t-opt"><div class="t-bar" id="s6b1"></div><span class="t-opt-label">city</span><span class="t-opt-pct">55%</span></li>
+              <li class="t-opt"><div class="t-bar" id="s6b2"></div><span class="t-opt-label">countryside</span><span class="t-opt-pct">45%</span></li>
+            </ul>
+          </div>
+          <div class="t-card" style="opacity:1;">
+            <div class="t-card-header">
+              <p class="t-question">would you rather skip sleep or food?</p>
+              <span class="t-date">12 Jun 2025</span>
+            </div>
+            <div class="t-card-footer">
+              <span class="t-meta">▲ 5 · 11 comments · 58 votes</span>
+              <span class="t-author">@henry</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 7: Comments -->
+    <section id="s7">
+      <div class="t-inner">
+        <p class="t-question" style="margin-bottom:1.1rem; font-size:1.2rem; opacity:0" id="s7-title">
+          best programming language?
+        </p>
+        <div class="t-comments-section" id="s7-section" style="opacity:0;">
+          <p class="t-comments-heading" id="s7-count">3 comments</p>
+          <div class="t-comment-input-row">
+            <input class="t-input" id="s7-cmt-input" placeholder="add a comment..." autocomplete="off" />
+            <button class="t-btn">post</button>
+          </div>
+          <ul class="t-comment-list">
+            <li class="t-comment-item" id="s7-c1" style="opacity:0;">
+              <div class="t-comment-header">
+                <span class="t-comment-author">@alice</span>
+                <span class="t-comment-date">14 Jun 2025</span>
+              </div>
+              <span class="t-comment-body">Rust 100%, memory safety is a game changer</span>
+            </li>
+            <li class="t-comment-item" id="s7-c2" style="opacity:0;">
+              <div class="t-comment-header">
+                <span class="t-comment-author">@bob</span>
+                <span class="t-comment-date">14 Jun 2025</span>
+              </div>
+              <span class="t-comment-body">TypeScript for real-world productivity tho</span>
+            </li>
+            <li class="t-comment-item" id="s7-c3" style="opacity:0;">
+              <div class="t-comment-header">
+                <span class="t-comment-author">@carol</span>
+                <span class="t-comment-date">14 Jun 2025</span>
+              </div>
+              <span class="t-comment-body">Python never loses</span>
+            </li>
+            <li class="t-comment-item" id="s7-c4" style="opacity:0;">
+              <div class="t-comment-header">
+                <span class="t-comment-author" style="color:var(--accent)">@you</span>
+                <span class="t-comment-date">now</span>
+              </div>
+              <span class="t-comment-body" id="s7-c4-body"></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scene 8: Outro / CTA -->
+    <section id="s8">
+      <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:1.6rem;">
+        <div class="t-logo t-logo--sm" id="s8-logo">
+          <span style="color:var(--accent)">ran</span><span style="color:#fff">Q</span>
+        </div>
+        <p id="s8-tag" style="font:1rem var(--font); color:var(--dimmed); letter-spacing:0.04em;"></p>
+        <p id="s8-url" style="font:1.6rem var(--font); color:var(--accent); letter-spacing:0.06em; opacity:0;">ranq.dev</p>
+        <div id="outro-line"></div>
+      </div>
+    </section>
+
+  </div><!-- /stage -->
+
+  <script>
+    gsap.registerPlugin(TextPlugin);
+
+    // ── Vote counter state (scene 3) ──
+    // Text counters only — bars are tweened directly
+    const votes = { a: 0, b: 0, c: 0 };
+
+    function updateVoteText() {
+      const total = votes.a + votes.b + votes.c;
+      const pctA = total ? Math.round(votes.a / total * 100) : 0;
+      const pctB = total ? Math.round(votes.b / total * 100) : 0;
+      const pctC = 100 - pctA - pctB;
+      const rA = Math.round(votes.a), rB = Math.round(votes.b), rC = Math.round(votes.c);
+      document.getElementById('d-cnt-a').textContent = rA;
+      document.getElementById('d-cnt-b').textContent = rB;
+      document.getElementById('d-cnt-c').textContent = rC;
+      document.getElementById('d-pct-a').textContent = pctA + '%';
+      document.getElementById('d-pct-b').textContent = pctB + '%';
+      document.getElementById('d-pct-c').textContent = pctC + '%';
+      document.getElementById('d-total').textContent = (rA + rB + rC) + ' votes';
+    }
+
+    // Live-racing counters for scene 4 (text only)
+    const race1 = { v1: 0, v2: 0 };
+    const race2 = { v1: 0, v2: 0 };
+    const race3 = { v1: 0, v2: 0 };
+
+    function updateRaceText(obj, p1id, p2id, totid) {
+      const total = obj.v1 + obj.v2;
+      const p1 = total ? Math.round(obj.v1 / total * 100) : 0;
+      const p2 = 100 - p1;
+      document.getElementById(p1id).textContent = p1 + '%';
+      document.getElementById(p2id).textContent = p2 + '%';
+      document.getElementById(totid).textContent = Math.round(total) + ' votes';
+    }
+
+    // Input typing helper — works with <input> .value
+    function addTypingTween(tl, selector, text, startPos, duration) {
+      const obj = { p: 0 };
+      tl.to(obj, {
+        p: 1,
+        duration,
+        ease: 'none',
+        onUpdate() {
+          const el = document.querySelector(selector);
+          if (el) el.value = text.slice(0, Math.round(obj.p * text.length));
+        }
+      }, startPos);
+    }
+
+    // ── Master timeline ──
+    const tl = gsap.timeline({ paused: false });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 1: Splash  0s – 8s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s1', { opacity: 1 }, 0)
+      .from('#s1-ran', { duration: 0.7, opacity: 0, y: 24, ease: 'power3.out' }, 0.4)
+      .from('#s1-q',   { duration: 0.7, opacity: 0, y: 24, ease: 'power3.out' }, 0.9)
+      .to('#s1-tagline', {
+        duration: 2.4,
+        text: { value: 'vote, rank and discuss with your friends', delimiter: '' },
+        ease: 'none'
+      }, 2.0)
+      // subtle pulse on logo
+      .to('.t-logo', { duration: 0.5, scale: 1.02, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 5.0)
+      // exit
+      .to('#s1', { duration: 0.7, opacity: 0, scale: 1.04, ease: 'power2.in' }, 7.3);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 2: Feed  8s – 18s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s2', { opacity: 1 }, 8.0)
+      .from('#s2 .t-page-title', { duration: 0.4, opacity: 0, y: 14, ease: 'power2.out' }, 8.2)
+      .fromTo('#f-c1', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 8.6)
+      .fromTo('#f-c2', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 8.85)
+      .fromTo('#f-c3', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 9.1)
+      // vote bars — expo.out for snappy deceleration, stagger for racing feel
+      .fromTo('#f1b1', { width: '0%' }, { width: '62%', duration: 1.0, ease: 'expo.out' }, 9.4)
+      .fromTo('#f1b2', { width: '0%' }, { width: '24%', duration: 1.0, ease: 'expo.out' }, 9.55)
+      .fromTo('#f1b3', { width: '0%' }, { width: '14%', duration: 1.0, ease: 'expo.out' }, 9.7)
+      .fromTo('#f2b1', { width: '0%' }, { width: '55%', duration: 1.0, ease: 'expo.out' }, 10.1)
+      .fromTo('#f2b2', { width: '0%' }, { width: '45%', duration: 1.0, ease: 'expo.out' }, 10.25)
+      .fromTo('#f3b1', { width: '0%' }, { width: '38%', duration: 1.0, ease: 'expo.out' }, 10.7)
+      .fromTo('#f3b2', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 10.85)
+      .fromTo('#f3b3', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 11.0)
+      // exit: slide left
+      .to('#s2', { duration: 0.55, opacity: 0, x: -40, ease: 'power2.in' }, 17.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 3: Poll detail / vote switch  18s – 28s
+    // Starting state: 3 votes total (2A=67%, 1B=33%, 0C=0%), user already voted A
+    // Switch: user clicks B → A drops to 50%, B rises to 50%, gold swaps
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s3', { opacity: 1, x: 0 }, 18.0)
+      .from('#s3 .t-back',  { duration: 0.3, opacity: 0, x: -12, ease: 'power2.out' }, 18.2)
+      .from('#d-card',      { duration: 0.4, opacity: 0, y: 12,  ease: 'power2.out' }, 18.4)
+      // bars race in — A already gold (voted), B not voted
+      .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 19.0)
+      .fromTo('#d-bar-b', { width: '0%' }, { width: '33%', duration: 1.2, ease: 'expo.out' }, 19.15)
+      .call(() => {
+        votes.a = 2; votes.b = 1; votes.c = 0;
+        updateVoteText();
+      }, null, 20.3)
+      // hold a beat so viewer reads the state — "oh they voted Linux"
+      // --- vote SWITCH: click B at 21.5s ---
+      // A loses gold and shrinks, B gains gold and grows — all at once
+      .to('#d-bar-a', { width: '50%', backgroundColor: 'var(--option-bar)', duration: 0.5, ease: 'power2.inOut' }, 21.5)
+      .to('#d-bar-b', { width: '50%', backgroundColor: 'rgba(226,183,20,0.38)', duration: 0.5, ease: 'power2.inOut' }, 21.5)
+      // class swap: remove voted from A, add to B
+      .call(() => {
+        document.getElementById('d-opt-a').classList.remove('t-opt--voted');
+        document.getElementById('d-opt-b').classList.add('t-opt--voted');
+        votes.a = 2; votes.b = 2; votes.c = 0;
+        updateVoteText();
+      }, null, 22.0)
+      // pct labels both pop at the same moment
+      .fromTo('#d-pct-a',
+        { scale: 1, transformOrigin: 'right center' },
+        { scale: 1.25, duration: 0.15, ease: 'power2.out', yoyo: true, repeat: 1 },
+      22.05)
+      .fromTo('#d-pct-b',
+        { scale: 1, transformOrigin: 'right center' },
+        { scale: 1.25, duration: 0.15, ease: 'power2.out', yoyo: true, repeat: 1 },
+      22.05)
+      // exit: fade
+      .to('#s3', { duration: 0.6, opacity: 0, ease: 'power2.in' }, 27.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 5: Create form  28s – 38s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s5', { opacity: 1, x: 0 }, 28.0)
+      .from('#s5 .t-page-title',  { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 28.2)
+      .from('#s5 .t-kind-toggle', { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 28.5)
+      .from('#s5-form',           { duration: 0.3,  opacity: 0, y: 8,  ease: 'power2.out' }, 28.7);
+
+    // type question
+    addTypingTween(tl, '#s5-question', 'would you rather...', 29.3, 1.5);
+    // type option 1
+    addTypingTween(tl, '#s5-opt1', 'live in the city', 31.2, 1.1);
+    // type option 2
+    addTypingTween(tl, '#s5-opt2', 'live in the countryside', 32.8, 1.3);
+    // option 3 fades in
+    tl.to('#s5-opt3', { duration: 0.35, opacity: 1, ease: 'power2.out' }, 34.5);
+    // type option 3
+    addTypingTween(tl, '#s5-opt3', 'live off-grid', 34.8, 0.9);
+    // submit button press
+    tl
+      .to('#s5-submit', { duration: 0.12, scale: 0.93, ease: 'power3.in'  }, 36.4)
+      .to('#s5-submit', { duration: 0.12, scale: 1.0,  ease: 'power3.out' }, 36.54)
+      // exit: slide right
+      .to('#s5', { duration: 0.55, opacity: 0, x: 40, ease: 'power2.in' }, 37.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 6: Search  38s – 44s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s6', { opacity: 1 }, 38.0)
+      .from('#s6 .t-page-title', { duration: 0.35, opacity: 0, y: 12, ease: 'power2.out' }, 38.2)
+      .from('#s6-input',         { duration: 0.35, opacity: 0, y: 8,  ease: 'power2.out' }, 38.5);
+
+    addTypingTween(tl, '#s6-input', 'would you rather', 39.0, 1.6);
+
+    tl
+      .to('#s6-results', { duration: 0.4, opacity: 1, ease: 'power2.out' }, 40.8)
+      .fromTo('#s6-results .t-card',
+        { opacity: 0, y: 8 },
+        { duration: 0.3, opacity: 1, y: 0, stagger: 0.12, ease: 'power2.out' },
+      40.9)
+      .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 41.3)
+      .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 41.45)
+      // exit: crossfade
+      .to('#s6', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 43.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 7: Comments  44s – 50s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s7', { opacity: 1 }, 44.0)
+      .fromTo('#s7-title',   { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 44.2)
+      .fromTo('#s7-section', { opacity: 0, y: 8 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 44.5)
+      // comments stagger in
+      .fromTo('#s7-c1', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 44.8)
+      .fromTo('#s7-c2', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 45.1)
+      .fromTo('#s7-c3', { opacity: 0, y: 10 }, { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' }, 45.4);
+
+    // type new comment into input field
+    addTypingTween(tl, '#s7-cmt-input', 'honestly all three are great!', 46.0, 1.5);
+
+    // "post" — comment appears
+    tl
+      .fromTo('#s7-c4',
+        { opacity: 0, y: 10 },
+        { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' },
+      47.7)
+      // clear input
+      .call(() => {
+        const inp = document.getElementById('s7-cmt-input');
+        if (inp) inp.value = '';
+      }, null, 47.72)
+      // type comment body with TextPlugin (it's a span)
+      .to('#s7-c4-body', {
+        duration: 1.2,
+        text: { value: 'honestly all three are great!', delimiter: '' },
+        ease: 'none'
+      }, 47.8)
+      // count bumps
+      .fromTo('#s7-count',
+        { scale: 1, transformOrigin: 'center center' },
+        { scale: 1.18, duration: 0.15, ease: 'power3.out', yoyo: true, repeat: 1 },
+      49.1)
+      .call(() => {
+        document.getElementById('s7-count').textContent = '4 comments';
+      }, null, 49.15)
+      // exit
+      .to('#s7', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 49.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // SCENE 8: Outro / CTA  50s – 55s
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    tl
+      .set('#s8', { opacity: 1 }, 50.0)
+      .from('#s8-logo',
+        { duration: 0.7, opacity: 0, scale: 0.88, ease: 'back.out(1.6)' },
+      50.3)
+      .to('#s8-tag', {
+        duration: 2.0,
+        text: { value: 'vote, rank and discuss with your friends', delimiter: '' },
+        ease: 'none'
+      }, 51.2)
+      .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 53.0)
+      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 53.4);
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // Progress bar
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    gsap.ticker.add(() => {
+      const pct = tl.duration() > 0
+        ? Math.min(100, (tl.time() / tl.duration()) * 100)
+        : 0;
+      gsap.set('#progress-bar', { width: pct + '%' });
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // Controls
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    document.getElementById('btn-skip').addEventListener('click', () => {
+      tl.seek(50.0);
+    });
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      // Reset mutable state
+      votes.a = 0; votes.b = 0; votes.c = 0;
+      // reset bar widths and colors
+      gsap.set(['#d-bar-a','#d-bar-b','#d-bar-c'], { width: '0%', clearProps: 'backgroundColor' });
+      gsap.set(['#f1b1','#f1b2','#f1b3','#f2b1','#f2b2','#f3b1','#f3b2','#f3b3'], { width: '0%' });
+      gsap.set(['#s6b1','#s6b2'], { width: '0%' });
+      // restore initial voted state: A is voted, B is not
+      document.getElementById('d-opt-a').classList.add('t-opt--voted');
+      document.getElementById('d-opt-b').classList.remove('t-opt--voted');
+      document.getElementById('s7-count').textContent = '3 comments';
+      document.getElementById('s7-c4-body').textContent = '';
+      document.getElementById('s8-tag').textContent = '';
+      document.getElementById('s1-tagline').textContent = '';
+      updateVoteText();
+
+      tl.seek(0).play();
+      document.getElementById('btn-restart').style.display = 'none';
+      document.getElementById('btn-skip').style.display = '';
+    });
+
+    tl.eventCallback('onComplete', () => {
+      document.getElementById('btn-restart').style.display = 'inline-block';
+      document.getElementById('btn-skip').style.display = 'none';
+    });
+  </script>
+</body>
+</html>
