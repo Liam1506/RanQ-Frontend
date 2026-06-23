@@ -4,6 +4,9 @@ const isDev = import.meta.env.DEV;
 ---
 
 <AuthLayout title="Sign Up">
+  <div class="page-header">
+    <h1 class="page-title">sign up</h1>
+  </div>
   <form id="signup-form">
     <label for="email" class="sr-only">dhbw email</label>
     <input id="email" type="email" placeholder="dhbw-email" required />
@@ -13,13 +16,22 @@ const isDev = import.meta.env.DEV;
     <input id="password" type="password" placeholder="password" required />
     <label class="datenschutz-check">
       <input type="checkbox" id="datenschutz" required />
-      <span>Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und akzeptiere sie.</span>
+      <span
+        >Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> gelesen und
+        akzeptiere sie.</span
+      >
     </label>
-    <button type="submit" class="btn" aria-label="sign up">→</button>
+    <button type="submit" class="btn" aria-label="sign up">sign up →</button>
     <p id="signup-error" class="create-error"></p>
     <a href="/login">login</a>
-    {isDev && <a href="/start" class="skip">skip →</a>}
+    {
+      isDev && (
+        <a href="/start" class="skip">
+          skip →
+        </a>
+      )
+    }
   </form>
   <script src="../scripts/signup.ts"></script>
-  {isDev && <script src="../scripts/skip.ts"></script>}
+  {isDev && <script src="../scripts/skip.ts" />}
 </AuthLayout>

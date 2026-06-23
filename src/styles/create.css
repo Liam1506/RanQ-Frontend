@@ -126,7 +126,8 @@ form {
   min-height: 8rem;
 }
 
-#paste-btn {
+#paste-btn,
+#quote-paste-btn {
   display: flex;
   align-items: center;
   gap: 0.35rem;
