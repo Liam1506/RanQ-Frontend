@@ -8,7 +8,7 @@ import SettingsIcon from "../components/icons/SettingsIcon.astro";
 import AdminIcon from "../components/icons/AdminIcon.astro";
 
 const { showNav = true } = Astro.props;
-const path = Astro.url.pathname;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
 
 <!doctype html>
