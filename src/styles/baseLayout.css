@@ -65,8 +65,16 @@ footer {
   color: var(--color-nav-icon);
   position: relative;
   outline: none;
-  border-radius: var(--border-radius);
-  padding: 0.25rem;
+  border-radius: 20px;
+  padding: 0.35rem 0.6rem;
+  transition: opacity 0.15s ease;
+  opacity: 0.5;
+}
+
+.floating-nav a[aria-current="page"] {
+  background: var(--color-nav-icon);
+  color: var(--color-nav-bg);
+  opacity: 1;
 }
 
 .floating-nav a:focus-visible {
@@ -75,7 +83,7 @@ footer {
 }
 
 .floating-nav a:hover {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .copyright {
