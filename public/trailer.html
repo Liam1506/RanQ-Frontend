@@ -845,30 +845,73 @@
       src.start();
     }
 
+    let activeBeamGains = [];
+
     function playBeam(duration, targetPct) {
       if (audioCtx.state !== 'running') return;
       const t = audioCtx.currentTime;
 
-      // Cap sound duration so overlapping bars don't stack up
-      const soundDur = Math.min(duration * 0.5, 0.3);
+      // Fade out any currently playing beams
+      const toFade = activeBeamGains.slice();
+      activeBeamGains = [];
+      toFade.forEach(g => {
+        try {
+          g.gain.cancelAndHoldAtCurrentValue(t);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+        } catch(e) {
+          try { g.gain.cancelScheduledValues(t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); } catch(e2) {}
+        }
+      });
 
-      const startFreq = 120 + (targetPct / 100) * 80;
-      const endFreq = startFreq + (targetPct / 100) * 55;
+      const soundDur = Math.min(duration * 1.4, 1.2);
+      const startFreq = 200 + (targetPct / 100) * 300;
+      const peakFreq  = startFreq * 1.8;
+      const endFreq   = startFreq * 0.6;
 
-      const osc = audioCtx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(startFreq, t);
-      osc.frequency.linearRampToValueAtTime(endFreq, t + soundDur);
+      const bufLen = Math.floor(audioCtx.sampleRate * (soundDur + 0.3));
+      const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+
+      const bp = audioCtx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(startFreq, t);
+      bp.frequency.linearRampToValueAtTime(peakFreq, t + soundDur * 0.25);
+      bp.frequency.exponentialRampToValueAtTime(endFreq, t + soundDur * 1.0);
+      bp.Q.value = 4.0;
+
+      // Second narrower layer for texture/detail
+      const bp2 = audioCtx.createBiquadFilter();
+      bp2.type = 'bandpass';
+      bp2.frequency.setValueAtTime(startFreq * 1.5, t);
+      bp2.frequency.linearRampToValueAtTime(peakFreq * 1.5, t + soundDur * 0.25);
+      bp2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, t + soundDur * 1.0);
+      bp2.Q.value = 8.0;
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.3);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur);
+      gain.gain.linearRampToValueAtTime(0.09, t + soundDur * 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur * 1.0);
 
-      osc.connect(gain);
+      const gain2 = audioCtx.createGain();
+      gain2.gain.setValueAtTime(0.0001, t);
+      gain2.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.4);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + soundDur * 1.0);
+
+      src.connect(bp);
+      src.connect(bp2);
+      bp.connect(gain);
+      bp2.connect(gain2);
       gain.connect(audioCtx.destination);
-      osc.start(t);
-      osc.stop(t + soundDur);
+      gain2.connect(audioCtx.destination);
+
+      activeBeamGains.push(gain, gain2);
+
+      src.start(t);
+      src.stop(t + soundDur + 0.1);
     }
 
     // Plant one click per character on the master timeline
