@@ -57,7 +57,7 @@ function renderCard(post: any): string {
   const isPostOrQuote = post.kind === "post" || post.kind === "quote";
   const total = isPostOrQuote ? 0 : post.options.reduce((s: number, o: any) => s + o.votes, 0);
   const left = isPostOrQuote
-    ? `${post.like_count ?? 0} like${post.like_count !== 1 ? "s" : ""} · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
+    ? `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""}`
     : `▲ ${post.total_up_down_score ?? 0} ▼ · ${post.comment_count ?? 0} comment${post.comment_count !== 1 ? "s" : ""} · ${total} vote${total !== 1 ? "s" : ""}`;
 
   const footer = `<div class="poll-card-footer">

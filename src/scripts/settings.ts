@@ -19,6 +19,7 @@ type Poll = {
   comment_count: number;
   like_count: number;
   user_has_liked: boolean;
+  total_up_down_score: number;
   options: Array<{ id: string; option: string; votes: number }>;
 };
 
@@ -159,7 +160,7 @@ function renderPostCard(poll: Poll): string {
     : poll.body;
 
   const meta = [
-    `${poll.like_count} like${poll.like_count !== 1 ? "s" : ""}`,
+    `▲ ${poll.total_up_down_score} ▼`,
     `${poll.comment_count} comment${poll.comment_count !== 1 ? "s" : ""}`,
     poll.created_at ? formatDate(poll.created_at) : "",
     poll.approved ? "" : "unapproved",

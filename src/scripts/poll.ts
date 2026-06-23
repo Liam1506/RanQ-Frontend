@@ -120,13 +120,34 @@ function renderPoll(container: HTMLElement, poll: Poll) {
     footer.append(authorSpan);
     card.append(footer);
 
-    const likeRow = renderLikeRow(poll);
+    const actionRow = document.createElement("div");
+    actionRow.className = "poll-action-row";
+    actionRow.append(renderUpDownRow(poll));
+
+    if (navigator.share) {
+      const shareBtn = document.createElement("button");
+      shareBtn.type = "button";
+      shareBtn.className = "share-btn";
+      shareBtn.textContent = "share";
+      shareBtn.addEventListener("click", () => {
+        const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
+        const date = poll.created_at ? formatDate(poll.created_at) : "";
+        const url = `${window.location.origin}/poll?id=${poll.id}`;
+        navigator.share({
+          title: poll.question,
+          text: `# ${poll.question}\n\n${poll.body}\n${author} · ${date}`,
+          url,
+        });
+      });
+      actionRow.append(shareBtn);
+    }
+
     if (isAdmin) {
       const spacer = document.createElement("span");
       spacer.style.flex = "1";
-      likeRow.append(spacer, renderAdminDeleteBtn(poll.id));
+      actionRow.append(spacer, renderAdminDeleteBtn(poll.id));
     }
-    card.append(likeRow);
+    card.append(actionRow);
 
     container.append(card);
     return;
@@ -438,92 +459,6 @@ function renderAdminDeleteBtn(id: string): HTMLButtonElement {
   return btn;
 }
 
-function renderLikeRow(poll: Poll): HTMLDivElement {
-  const row = document.createElement("div");
-  row.className = "post-like-row";
-  row.dataset.pollId = poll.id;
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `like-btn${poll.user_has_liked ? " liked" : ""}`;
-  button.setAttribute("aria-pressed", String(poll.user_has_liked));
-
-  const count = document.createElement("span");
-  count.className = "like-count";
-  count.textContent = String(poll.like_count);
-
-  const label = document.createElement("span");
-  label.className = "like-label";
-  label.textContent = poll.like_count === 1 ? "like" : "likes";
-  button.append(count, label);
-  button.addEventListener("click", () => toggleLike(poll, button, count, label));
-
-  row.append(button);
-
-  if (navigator.share) {
-    const shareBtn = document.createElement("button");
-    shareBtn.type = "button";
-    shareBtn.className = "share-btn";
-    shareBtn.textContent = "share";
-    shareBtn.addEventListener("click", () => {
-      const author = poll.creator_username ? `@${poll.creator_username}` : "anon";
-      const date = poll.created_at ? formatDate(poll.created_at) : "";
-      const url = `${window.location.origin}/poll?id=${poll.id}`;
-      navigator.share({
-        title: poll.question,
-        text: `# ${poll.question}\n\n${poll.body}\n${author} · ${date}`,
-        url,
-      });
-    });
-    row.append(shareBtn);
-  }
-
-  return row;
-}
-
-async function toggleLike(
-  poll: Poll,
-  button: HTMLButtonElement,
-  count: HTMLElement,
-  label: HTMLElement,
-) {
-  const wasLiked = poll.user_has_liked;
-  poll.user_has_liked = !wasLiked;
-  poll.like_count += wasLiked ? -1 : 1;
-  button.classList.toggle("liked", poll.user_has_liked);
-  button.setAttribute("aria-pressed", String(poll.user_has_liked));
-  count.textContent = String(poll.like_count);
-  label.textContent = poll.like_count === 1 ? "like" : "likes";
-
-  const res = await fetch(API.polls.like, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id: poll.id }),
-  });
-
-  if (!res.ok) {
-    poll.user_has_liked = wasLiked;
-    poll.like_count += wasLiked ? 1 : -1;
-    button.classList.toggle("liked", poll.user_has_liked);
-    button.setAttribute("aria-pressed", String(poll.user_has_liked));
-    count.textContent = String(poll.like_count);
-    label.textContent = poll.like_count === 1 ? "like" : "likes";
-    return;
-  }
-
-  const data = await res.json();
-  poll.like_count = data.like_count;
-  count.textContent = String(poll.like_count);
-  label.textContent = poll.like_count === 1 ? "like" : "likes";
-  // Stage after server confirms so the feed gets the authoritative count
-  stagePendingUpdate(poll.id, {
-    user_has_liked: poll.user_has_liked,
-    like_count: poll.like_count,
-  });
-}
 
 async function loadComment(poll_id: string) {
   const res = await fetch(`${API.polls.getAllComments}?poll_id=${poll_id}`, {
