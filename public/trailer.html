@@ -86,7 +86,7 @@
     }
 
     /* ── Controls ── */
-    #btn-skip, #btn-restart, #btn-fs {
+    #btn-skip, #btn-restart, #btn-close, #btn-fs {
       position: fixed; z-index: 997;
       background: rgba(30,30,30,0.7);
       border: 1px solid var(--dimmed);
@@ -99,8 +99,9 @@
     }
     #btn-skip    { right: 1.5rem; }
     #btn-restart { right: 9rem; display: none; }
+    #btn-close   { right: 1.5rem; display: none; }
     #btn-fs      { left: 1.5rem; }
-    #btn-skip:hover, #btn-restart:hover, #btn-fs:hover {
+    #btn-skip:hover, #btn-restart:hover, #btn-close:hover, #btn-fs:hover {
       color: var(--accent);
       border-color: var(--accent);
     }
@@ -384,6 +385,7 @@
   <button id="btn-fs">⛶ fullscreen</button>
   <button id="btn-skip">skip →</button>
   <button id="btn-restart">↺ restart</button>
+  <button id="btn-close">✕ close</button>
 
   <!-- Stage -->
   <div id="stage">
@@ -963,12 +965,18 @@
       updateVoteText();
       tl.seek(0).play();
       document.getElementById('btn-restart').style.display = 'none';
+      document.getElementById('btn-close').style.display = 'none';
       document.getElementById('btn-skip').style.display = '';
+    });
+
+    document.getElementById('btn-close').addEventListener('click', () => {
+      window.close();
     });
 
     tl.eventCallback('onComplete', () => {
       document.getElementById('btn-restart').style.display = 'inline-block';
       document.getElementById('btn-skip').style.display = 'none';
+      document.getElementById('btn-close').style.display = 'inline-block';
     });
   </script>
 </body>
