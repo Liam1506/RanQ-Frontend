@@ -26,5 +26,28 @@ const { title } = Astro.props;
     <div class="auth-wrapper">
       <slot />
     </div>
+    <button id="trailer-btn" aria-label="watch trailer">▶ trailer</button>
+    <div id="trailer-overlay">
+      <iframe id="trailer-frame" src="" title="ranQ trailer" allowfullscreen></iframe>
+    </div>
+    <script>
+      const btn     = document.getElementById("trailer-btn")!;
+      const overlay = document.getElementById("trailer-overlay")!;
+      const frame   = document.getElementById("trailer-frame") as HTMLIFrameElement;
+
+      btn.addEventListener("click", () => {
+        frame.src = "/trailer.html";
+        overlay.style.display = "block";
+        overlay.requestFullscreen().catch(() => {});
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+          overlay.style.display = "none";
+          frame.src = "";
+          window.focus();
+        }
+      });
+    </script>
   </body>
 </html>
