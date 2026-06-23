@@ -64,7 +64,7 @@
     }
 
     /* ── Controls ── */
-    #btn-skip, #btn-restart {
+    #btn-skip, #btn-restart, #btn-close, #btn-fs {
       position: fixed; z-index: 997;
       background: rgba(30,30,30,0.7);
       border: 1px solid var(--dimmed);
@@ -77,7 +77,9 @@
     }
     #btn-skip    { right: 1.5rem; }
     #btn-restart { right: 9rem; display: none; }
-    #btn-skip:hover, #btn-restart:hover {
+    #btn-close   { right: 1.5rem; display: none; }
+    #btn-fs      { left: 1.5rem; }
+    #btn-skip:hover, #btn-restart:hover, #btn-close:hover, #btn-fs:hover {
       color: var(--accent);
       border-color: var(--accent);
     }
@@ -358,8 +360,10 @@
   <div id="progress-bar"></div>
 
   <!-- Controls -->
+  <button id="btn-fs">⛶ fullscreen</button>
   <button id="btn-skip">skip →</button>
   <button id="btn-restart">↺ restart</button>
+  <button id="btn-close">✕ close</button>
 
   <!-- Stage -->
   <div id="stage">
@@ -907,6 +911,32 @@
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Controls
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const btnFs = document.getElementById('btn-fs');
+    const inIframe = window.parent !== window;
+
+    btnFs.addEventListener('click', () => {
+      if (inIframe) {
+        window.parent.postMessage('trailer-toggle-fs', '*');
+      } else if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // update label when fullscreen changes (standalone mode)
+    document.addEventListener('fullscreenchange', () => {
+      if (!inIframe) {
+        btnFs.textContent = document.fullscreenElement ? '✕ exit fullscreen' : '⛶ fullscreen';
+      }
+    });
+
+    // parent tells us fullscreen state changed so we can update the label
+    window.addEventListener('message', (e) => {
+      if (e.data === 'fullscreen-on')  btnFs.textContent = '✕ exit fullscreen';
+      if (e.data === 'fullscreen-off') btnFs.textContent = '⛶ fullscreen';
+    });
+
     document.getElementById('btn-skip').addEventListener('click', () => {
       tl.seek(50.0);
     });
@@ -929,11 +959,18 @@
 
       tl.seek(0).play();
       document.getElementById('btn-restart').style.display = 'none';
+      document.getElementById('btn-close').style.display = 'none';
       document.getElementById('btn-skip').style.display = '';
+    });
+
+    document.getElementById('btn-close').addEventListener('click', () => {
+      if (window.parent !== window) window.parent.postMessage('trailer-close', '*');
+      else document.exitFullscreen();
     });
 
     tl.eventCallback('onComplete', () => {
       document.getElementById('btn-restart').style.display = 'inline-block';
+      document.getElementById('btn-close').style.display = 'inline-block';
       document.getElementById('btn-skip').style.display = 'none';
     });
   </script>
