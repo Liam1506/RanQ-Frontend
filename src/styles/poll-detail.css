@@ -81,11 +81,17 @@
   font-size: var(--font-size-sm);
   padding: 0.25rem 0.75rem;
   width: fit-content;
-  border: none;
+  background: none;
+  border: 1px solid var(--color-divider);
   border-radius: var(--border-radius);
-  background: var(--color-option-bg);
-  color: var(--color-accent);
+  color: var(--color-input-text);
   cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.unvote-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .fullscreen-btn {
