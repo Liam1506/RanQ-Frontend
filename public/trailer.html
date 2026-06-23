@@ -686,6 +686,98 @@
   <script>
     gsap.registerPlugin(TextPlugin);
 
+    // ── Audio ──
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Resume AudioContext on first user gesture (browser autoplay policy)
+    document.addEventListener('click', () => {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }, { once: true });
+
+    function playTap() {
+      if (audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+
+      // Short sine thud — low pitch, fast decay
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(200, t);
+      osc.frequency.exponentialRampToValueAtTime(60, t + 0.08);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.35, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.1);
+    }
+
+    document.addEventListener('pointerdown', () => {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      playTap();
+    });
+
+    function typeClick() {
+      if (audioCtx.state !== 'running') return;
+      // 18ms of white noise — longer burst = more distinct thud
+      const bufLen = Math.floor(audioCtx.sampleRate * 0.018);
+      const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1);
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+
+      // slight random detune so each click sounds unique
+      src.playbackRate.value = 0.85 + Math.random() * 0.3;
+
+      // bandpass around 2kHz — more mechanical thud, less hiss
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 900 + Math.random() * 400;
+      filter.Q.value = 1.6;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start();
+    }
+
+    function playBeam(duration, targetPct) {
+      if (audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+      const endFreq = 300 + (targetPct / 100) * 400; // 300–700 Hz based on bar width
+
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, t);
+      osc.frequency.exponentialRampToValueAtTime(endFreq, t + duration);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + duration);
+    }
+
+    // Plant one click per character on the master timeline
+    function addClicksForTyping(text, start, dur) {
+      const step = dur / text.length;
+      for (let i = 0; i < text.length; i++) {
+        tl.call(typeClick, null, start + i * step);
+      }
+    }
+
     // ── Vote counter state (scene 3) ──
     // Text counters only — bars are tweened directly
     const votes = { a: 0, b: 0, c: 0 };
@@ -747,8 +839,20 @@
         duration: 2.4,
         text: { value: 'vote, rank and discuss with your friends', delimiter: '' },
         ease: 'none'
-      }, 2.0)
-      // subtle pulse on logo
+      }, 2.0);
+
+    // ── Keyboard clicks for all typing scenes ──
+    addClicksForTyping('vote, rank and discuss with your friends', 2.0,  2.4); // S1 tagline
+    addClicksForTyping('would you rather...',                      19.3, 1.5); // S5 question
+    addClicksForTyping('live in the city',                         21.2, 1.1); // S5 opt1
+    addClicksForTyping('live in the countryside',                  22.8, 1.3); // S5 opt2
+    addClicksForTyping('live off-grid',                            24.8, 0.9); // S5 opt3
+    addClicksForTyping('would you rather',                         28.9, 1.6); // S6 search
+    addClicksForTyping('honestly all three are great!',            36.0, 1.5); // S7 input
+    addClicksForTyping('honestly all three are great!',            37.8, 1.2); // S7 body (TextPlugin)
+    addClicksForTyping('vote, rank and discuss with your friends', 41.1, 2.0); // S8 outro tagline
+
+    tl
       .to('.t-logo', { duration: 0.5, scale: 1.02, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 5.0)
       // exit
       .to('#s1', { duration: 0.7, opacity: 0, scale: 1.04, ease: 'power2.in' }, 7.3);
@@ -764,13 +868,21 @@
       .fromTo('#f-c3', { opacity: 0, y: 12 }, { duration: 0.35, opacity: 1, y: 0, ease: 'power2.out' }, 9.1)
       // vote bars — expo.out for snappy deceleration, stagger for racing feel
       .fromTo('#f1b1', { width: '0%' }, { width: '62%', duration: 1.0, ease: 'expo.out' }, 9.4)
+      .call(() => playBeam(1.0, 62), null, 9.4)
       .fromTo('#f1b2', { width: '0%' }, { width: '24%', duration: 1.0, ease: 'expo.out' }, 9.55)
+      .call(() => playBeam(1.0, 24), null, 9.55)
       .fromTo('#f1b3', { width: '0%' }, { width: '14%', duration: 1.0, ease: 'expo.out' }, 9.7)
+      .call(() => playBeam(1.0, 14), null, 9.7)
       .fromTo('#f2b1', { width: '0%' }, { width: '55%', duration: 1.0, ease: 'expo.out' }, 10.1)
+      .call(() => playBeam(1.0, 55), null, 10.1)
       .fromTo('#f2b2', { width: '0%' }, { width: '45%', duration: 1.0, ease: 'expo.out' }, 10.25)
+      .call(() => playBeam(1.0, 45), null, 10.25)
       .fromTo('#f3b1', { width: '0%' }, { width: '38%', duration: 1.0, ease: 'expo.out' }, 10.7)
+      .call(() => playBeam(1.0, 38), null, 10.7)
       .fromTo('#f3b2', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 10.85)
+      .call(() => playBeam(1.0, 31), null, 10.85)
       .fromTo('#f3b3', { width: '0%' }, { width: '31%', duration: 1.0, ease: 'expo.out' }, 11.0)
+      .call(() => playBeam(1.0, 31), null, 11.0)
       // exit: slide left
       .to('#s2', { duration: 0.55, opacity: 0, x: -40, ease: 'power2.in' }, 12.2);
 
@@ -785,7 +897,9 @@
       .from('#d-card',      { duration: 0.4, opacity: 0, y: 12,  ease: 'power2.out' }, 13.1)
       // bars race in — A already gold (voted), B not voted
       .fromTo('#d-bar-a', { width: '0%' }, { width: '67%', duration: 1.2, ease: 'expo.out' }, 13.7)
+      .call(() => playBeam(1.2, 67), null, 13.7)
       .fromTo('#d-bar-b', { width: '0%' }, { width: '33%', duration: 1.2, ease: 'expo.out' }, 13.85)
+      .call(() => playBeam(1.2, 33), null, 13.85)
       .call(() => {
         votes.a = 2; votes.b = 1; votes.c = 0;
         updateVoteText();
@@ -795,6 +909,7 @@
       // A loses gold and shrinks, B gains gold and grows — all at once
       .to('#d-bar-a', { width: '50%', backgroundColor: 'var(--option-bar)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
       .to('#d-bar-b', { width: '50%', backgroundColor: 'rgba(226,183,20,0.38)', duration: 0.5, ease: 'power2.inOut' }, 15.8)
+      .call(() => playBeam(0.5, 50), null, 15.8)
       // class swap: remove voted from A, add to B
       .call(() => {
         document.getElementById('d-opt-a').classList.remove('t-opt--voted');
@@ -831,11 +946,13 @@
     addTypingTween(tl, '#s5-opt2', 'live in the countryside', 22.8, 1.3);
     // option 3 fades in
     tl.to('#s5-opt3', { duration: 0.35, opacity: 1, ease: 'power2.out' }, 24.5);
+    tl.call(playTap, null, 24.5);
     // type option 3
     addTypingTween(tl, '#s5-opt3', 'live off-grid', 24.8, 0.9);
     // submit button press
     tl
       .to('#s5-submit', { duration: 0.12, scale: 0.93, ease: 'power3.in'  }, 26.4)
+      .call(playTap, null, 26.4)
       .to('#s5-submit', { duration: 0.12, scale: 1.0,  ease: 'power3.out' }, 26.54)
       // exit: slide right
       .to('#s5', { duration: 0.55, opacity: 0, x: 40, ease: 'power2.in' }, 27.4);
@@ -857,7 +974,9 @@
         { duration: 0.3, opacity: 1, y: 0, stagger: 0.12, ease: 'power2.out' },
       30.7)
       .fromTo('#s6b1', { width: '0%' }, { width: '55%', duration: 0.7, ease: 'expo.out' }, 31.1)
+      .call(() => playBeam(0.7, 55), null, 31.1)
       .fromTo('#s6b2', { width: '0%' }, { width: '45%', duration: 0.7, ease: 'expo.out' }, 31.25)
+      .call(() => playBeam(0.7, 45), null, 31.25)
       // exit: crossfade
       .to('#s6', { duration: 0.55, opacity: 0, ease: 'power2.in' }, 33.4);
 
@@ -878,6 +997,7 @@
 
     // "post" — comment appears
     tl
+      .call(playTap, null, 37.7)
       .fromTo('#s7-c4',
         { opacity: 0, y: 10 },
         { duration: 0.3, opacity: 1, y: 0, ease: 'power2.out' },
@@ -918,7 +1038,8 @@
         ease: 'none'
       }, 41.1)
       .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 43.0)
-      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4);
+      .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4)
+      .call(() => playBeam(1.0, 100), null, 43.4);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Progress bar
