@@ -84,7 +84,7 @@ describe("startNotificationPolling", () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(fetchSpy).toHaveBeenCalled();
-    const [_url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect((init.headers as Record<string, string>)["Authorization"]).toBe(
       "Bearer my-jwt-token"
     );
