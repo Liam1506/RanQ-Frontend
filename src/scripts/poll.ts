@@ -97,7 +97,7 @@ document.body.append(prevBtn, nextBtn);
 
 function navigateTo(id: string) {
   pollId = id;
-  history.pushState(null, "", `/poll?id=${id}`);
+  history.replaceState(null, "", `/poll?id=${id}`);
   currentPoll = null;
   currentComments = [];
   rankingOrder = null;
