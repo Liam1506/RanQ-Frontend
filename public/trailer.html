@@ -846,74 +846,67 @@
     }
 
     let activeBeamGains = [];
+function playBeam(duration, targetPct) {
+  if (audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime;
 
-    function playBeam(duration, targetPct) {
-      if (audioCtx.state !== 'running') return;
-      const t = audioCtx.currentTime;
-
-      // Fade out any currently playing beams
-      const toFade = activeBeamGains.slice();
-      activeBeamGains = [];
-      toFade.forEach(g => {
-        try {
-          g.gain.cancelAndHoldAtCurrentValue(t);
-          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-        } catch(e) {
-          try { g.gain.cancelScheduledValues(t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); } catch(e2) {}
-        }
-      });
-
-      const soundDur = Math.min(duration * 1.4, 1.2);
-      const startFreq = 200 + (targetPct / 100) * 300;
-      const peakFreq  = startFreq * 1.8;
-      const endFreq   = startFreq * 0.6;
-
-      const bufLen = Math.floor(audioCtx.sampleRate * (soundDur + 0.3));
-      const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
-
-      const src = audioCtx.createBufferSource();
-      src.buffer = buf;
-
-      const bp = audioCtx.createBiquadFilter();
-      bp.type = 'bandpass';
-      bp.frequency.setValueAtTime(startFreq, t);
-      bp.frequency.linearRampToValueAtTime(peakFreq, t + soundDur * 0.25);
-      bp.frequency.exponentialRampToValueAtTime(endFreq, t + soundDur * 1.0);
-      bp.Q.value = 4.0;
-
-      // Second narrower layer for texture/detail
-      const bp2 = audioCtx.createBiquadFilter();
-      bp2.type = 'bandpass';
-      bp2.frequency.setValueAtTime(startFreq * 1.5, t);
-      bp2.frequency.linearRampToValueAtTime(peakFreq * 1.5, t + soundDur * 0.25);
-      bp2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, t + soundDur * 1.0);
-      bp2.Q.value = 8.0;
-
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.09, t + soundDur * 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur * 1.0);
-
-      const gain2 = audioCtx.createGain();
-      gain2.gain.setValueAtTime(0.0001, t);
-      gain2.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.4);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, t + soundDur * 1.0);
-
-      src.connect(bp);
-      src.connect(bp2);
-      bp.connect(gain);
-      bp2.connect(gain2);
-      gain.connect(audioCtx.destination);
-      gain2.connect(audioCtx.destination);
-
-      activeBeamGains.push(gain, gain2);
-
-      src.start(t);
-      src.stop(t + soundDur + 0.1);
+  // 1. Instantly fade out any currently playing animation sounds
+  const toFade = activeBeamGains.slice();
+  activeBeamGains = [];
+  toFade.forEach(g => {
+    try {
+      g.gain.cancelAndHoldAtCurrentValue(t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    } catch(e) {
+      try { 
+        g.gain.cancelScheduledValues(t); 
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); 
+      } catch(e2) {}
     }
+  });
 
+  // Match the sound duration exactly to the visual animation duration
+  const soundDur = duration; 
+
+  // 2. Pitch Logic (Sweeps upward; higher percentages finish at a higher note)
+  const startFreq = 180; // A subtle, low starting hum (Hz)
+  const endFreq = 220 + (targetPct / 100) * 260; // Scales up to ~480Hz max
+
+  // 3. Create the Sound Layers
+  // Layer 1: Triangle wave gives a smooth, warm digital body (not harsh like a square wave)
+  const osc1 = audioCtx.createOscillator();
+  osc1.type = 'triangle';
+  osc1.frequency.setValueAtTime(startFreq, t);
+  osc1.frequency.exponentialRampToValueAtTime(endFreq, t + soundDur);
+
+  // Layer 2: A pure sine wave harmonic (a perfect fifth higher) to add a "premium tech" sheen
+  const osc2 = audioCtx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(startFreq * 1.5, t);
+  osc2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, t + soundDur);
+
+  // 4. Volume Envelope (Builds up subtly, then snaps shut to "lock in" the value)
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0.0001, t);
+  // Volume builds smoothly up to 80% of the duration
+  masterGain.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.8); 
+  // Snaps cleanly down to silence right at the finish line
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur);
+
+  // 5. Connect and Play
+  osc1.connect(masterGain);
+  osc2.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
+
+  activeBeamGains.push(masterGain);
+
+  osc1.start(t);
+  osc2.start(t);
+  
+  // Stop nodes slightly after the envelope finishes to ensure clean garbage collection
+  osc1.stop(t + soundDur + 0.05);
+  osc2.stop(t + soundDur + 0.05);
+}
     // Plant one click per character on the master timeline
     function addClicksForTyping(text, start, dur) {
       const step = dur / text.length;
