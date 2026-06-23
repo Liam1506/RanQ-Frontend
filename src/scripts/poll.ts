@@ -4,7 +4,7 @@ import { getCookie } from "../utils/cookies";
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
 
-const pollId = new URLSearchParams(window.location.search).get("id")!;
+let pollId = new URLSearchParams(window.location.search).get("id")!;
 const isAdmin = getCookie("isAdmin") === "true";
 
 
@@ -56,6 +56,75 @@ backBtn.textContent = "← back";
 backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
 
+const fullscreenBtn = document.createElement("button");
+fullscreenBtn.className = "fullscreen-btn btn-secondary";
+fullscreenBtn.textContent = "⛶";
+fullscreenBtn.title = "fullscreen";
+fullscreenBtn.addEventListener("click", () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    fullscreenBtn.textContent = "✕";
+    fullscreenBtn.title = "exit fullscreen";
+  } else {
+    document.exitFullscreen();
+    fullscreenBtn.textContent = "⛶";
+    fullscreenBtn.title = "fullscreen";
+  }
+});
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    fullscreenBtn.textContent = "⛶";
+    fullscreenBtn.title = "fullscreen";
+  }
+});
+document.body.append(fullscreenBtn);
+
+const prevBtn = document.createElement("button");
+prevBtn.className = "neighbor-btn neighbor-btn--prev neighbor-btn--hidden";
+prevBtn.textContent = "←";
+prevBtn.addEventListener("click", () => {
+  if (prevBtn.dataset.targetId) navigateTo(prevBtn.dataset.targetId);
+});
+
+const nextBtn = document.createElement("button");
+nextBtn.className = "neighbor-btn neighbor-btn--next neighbor-btn--hidden";
+nextBtn.textContent = "→";
+nextBtn.addEventListener("click", () => {
+  if (nextBtn.dataset.targetId) navigateTo(nextBtn.dataset.targetId);
+});
+
+document.body.append(prevBtn, nextBtn);
+
+function navigateTo(id: string) {
+  pollId = id;
+  history.pushState(null, "", `/poll?id=${id}`);
+  currentPoll = null;
+  currentComments = [];
+  rankingOrder = null;
+  prevBtn.classList.add("neighbor-btn--hidden");
+  nextBtn.classList.add("neighbor-btn--hidden");
+  delete prevBtn.dataset.targetId;
+  delete nextBtn.dataset.targetId;
+  loadPoll();
+}
+
+async function loadNeighbors() {
+  const res = await fetch(`${API.polls.neighbors}?id=${pollId}`, {
+    headers: { Authorization: `Bearer ${userId}` },
+  });
+  if (!res.ok) return;
+  const { prev, next } = await res.json();
+
+  if (prev) {
+    prevBtn.dataset.targetId = prev;
+    prevBtn.classList.remove("neighbor-btn--hidden");
+  }
+  if (next) {
+    nextBtn.dataset.targetId = next;
+    nextBtn.classList.remove("neighbor-btn--hidden");
+  }
+}
+
 function formatDate(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
@@ -83,6 +152,7 @@ async function loadPoll() {
   const poll: Poll = await res.json();
   renderPoll(container, poll);
   loadComment(pollId);
+  loadNeighbors();
 }
 
 function renderPoll(container: HTMLElement, poll: Poll) {
