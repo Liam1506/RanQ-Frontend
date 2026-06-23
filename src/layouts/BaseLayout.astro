@@ -1,14 +1,37 @@
 ---
 import "../styles/baseLayout.css";
 import Logo from "../components/Logo.astro";
-import HomeIcon from "../components/icons/HomeIcon.astro";
-import SearchIcon from "../components/icons/SearchIcon.astro";
-import AddIcon from "../components/icons/AddIcon.astro";
-import SettingsIcon from "../components/icons/SettingsIcon.astro";
-import AdminIcon from "../components/icons/AdminIcon.astro";
+import { Icon } from "astro-icon/components";
 
 const { showNav = true } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+
+const nav = [
+  {
+    href: "/start",
+    label: "Home",
+    outline: "heroicons:home",
+    solid: "heroicons:home-solid",
+  },
+  {
+    href: "/search",
+    label: "Search",
+    outline: "heroicons:magnifying-glass-circle",
+    solid: "heroicons:magnifying-glass-circle-solid",
+  },
+  {
+    href: "/create",
+    label: "Create",
+    outline: "heroicons:plus-circle",
+    solid: "heroicons:plus-circle-solid",
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    outline: "heroicons:cog-6-tooth",
+    solid: "heroicons:cog-6-tooth-solid",
+  },
+];
 ---
 
 <!doctype html>
@@ -17,7 +40,10 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ranq</title>
-    <meta name="description" content="ranq — vote, rank and discuss with your friends." />
+    <meta
+      name="description"
+      content="ranq — vote, rank and discuss with your friends."
+    />
     <script is:inline>
       const t = localStorage.getItem("theme");
       if (t) document.documentElement.setAttribute("data-theme", t);
@@ -34,30 +60,60 @@ const path = Astro.url.pathname.replace(/\/$/, "") || "/";
     <main>
       <div class="scroll-wrapper">
         <slot />
-        <p class="copyright">© {new Date().getFullYear()} ranq · <a href="/impressum">impressum</a> · <a href="/datenschutz">datenschutz</a></p>
+        <p class="copyright">
+          © {new Date().getFullYear()} ranq · <a href="/impressum">impressum</a> ·
+          <a href="/datenschutz">datenschutz</a>
+        </p>
       </div>
     </main>
-    {showNav && <footer>
-      <nav class="floating-nav">
-        <a href="/start" aria-label="Home" aria-current={path === "/start" ? "page" : undefined}>
-          <HomeIcon filled={path === "/start"} />
-        </a>
-        <a href="/search" aria-label="Search" aria-current={path === "/search" ? "page" : undefined}>
-          <SearchIcon filled={path === "/search"} />
-        </a>
-        <a href="/create" aria-label="Add" aria-current={path === "/create" ? "page" : undefined}>
-          <AddIcon filled={path === "/create"} />
-        </a>
-        <a href="/settings" aria-label="Settings" aria-current={path === "/settings" ? "page" : undefined}>
-          <SettingsIcon filled={path === "/settings"} />
-        </a>
-        <a href="/admin" aria-label="Admin" id="admin-nav-link" style="display:none" aria-current={path === "/admin" ? "page" : undefined}>
-          <AdminIcon filled={path === "/admin"} />
-        </a>
-      </nav>
-    </footer>}
+    {
+      showNav && (
+        <footer>
+          <nav class="floating-nav">
+            {nav.map(({ href, label, outline, solid }) => {
+              const active = path === href;
+              return (
+                <a
+                  href={href}
+                  aria-label={label}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <Icon
+                    name={active ? solid : outline}
+                    size={24}
+                    fill="currentColor"
+                    is:inline
+                  />
+                </a>
+              );
+            })}
+            <a
+              href="/admin"
+              aria-label="Admin"
+              id="admin-nav-link"
+              style="display:none"
+              aria-current={path === "/admin" ? "page" : undefined}
+            >
+              <Icon
+                name={
+                  path === "/admin"
+                    ? "heroicons:shield-check-solid"
+                    : "heroicons:shield-check"
+                }
+                size={24}
+                fill="currentColor"
+                is:inline
+              />
+            </a>
+          </nav>
+        </footer>
+      )
+    }
     <script is:inline>
-      const isAdmin = document.cookie.split("; ").find(c => c.startsWith("isAdmin="))?.split("=")[1];
+      const isAdmin = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("isAdmin="))
+        ?.split("=")[1];
       if (isAdmin === "true") {
         document.getElementById("admin-nav-link").style.display = "";
       }

@@ -14,7 +14,9 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "astro": "^6.4.8"
+    "@iconify-json/heroicons": "^1.2.3",
+    "astro": "^6.4.8",
+    "astro-icon": "^1.1.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

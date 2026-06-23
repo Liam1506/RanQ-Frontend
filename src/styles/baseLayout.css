@@ -67,6 +67,12 @@ footer {
   outline: none;
   border-radius: var(--border-radius);
   padding: 0.25rem;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.floating-nav a[aria-current="page"] {
+  opacity: 1;
 }
 
 .floating-nav a:focus-visible {
