@@ -737,45 +737,8 @@
     }
 
     function playNotification() {
-      if (audioCtx.state !== 'running') return;
-      const t = audioCtx.currentTime;
-
-      // Two-tone chime: rising interval like iPhone tri-tone
-      const notes = [
-        { freq: 1318, start: 0,    dur: 0.12 },  // E6
-        { freq: 1568, start: 0.13, dur: 0.12 },  // G6
-        { freq: 2093, start: 0.26, dur: 0.22 },  // C7 — holds longer
-      ];
-
-      notes.forEach(({ freq, start, dur }) => {
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-
-        // second sine one octave up for shimmer
-        const osc2 = audioCtx.createOscillator();
-        osc2.type = 'sine';
-        osc2.frequency.value = freq * 2;
-
-        const gain = audioCtx.createGain();
-        const startT = t + start;
-        gain.gain.setValueAtTime(0.0001, startT);
-        gain.gain.linearRampToValueAtTime(0.22, startT + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.0001, startT + dur);
-
-        const gain2 = audioCtx.createGain();
-        gain2.gain.value = 0.06; // shimmer quieter
-
-        osc.connect(gain);
-        osc2.connect(gain2);
-        gain.connect(audioCtx.destination);
-        gain2.connect(audioCtx.destination);
-
-        osc.start(startT);
-        osc.stop(startT + dur);
-        osc2.start(startT);
-        osc2.stop(startT + dur);
-      });
+      const audio = new Audio('applepay.mp3');
+      audio.play().catch(() => {});
     }
 
     function playWhoosh(vol) {
@@ -818,7 +781,7 @@
     function typeClick() {
       if (audioCtx.state !== 'running') return;
       // 18ms of white noise — longer burst = more distinct thud
-      const bufLen = Math.floor(audioCtx.sampleRate * 0.018);
+      const bufLen = Math.floor(audioCtx.sampleRate * 0.055);
       const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
       const data = buf.getChannelData(0);
       for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1);
@@ -837,7 +800,7 @@
 
       const gain = audioCtx.createGain();
       gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.055);
 
       src.connect(filter);
       filter.connect(gain);
@@ -846,72 +809,60 @@
     }
 
     let activeBeamGains = [];
-function playBeam(duration, targetPct) {
-  if (audioCtx.state !== 'running') return;
-  const t = audioCtx.currentTime;
 
-  // 1. Instantly fade out any currently playing animation sounds
-  const toFade = activeBeamGains.slice();
-  activeBeamGains = [];
-  toFade.forEach(g => {
-    try {
-      g.gain.cancelAndHoldAtCurrentValue(t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-    } catch(e) {
-      try { 
-        g.gain.cancelScheduledValues(t); 
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); 
-      } catch(e2) {}
+    function playBeam(duration, targetPct) {
+      if (audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+
+      const toFade = activeBeamGains.slice();
+      activeBeamGains = [];
+      toFade.forEach(g => {
+        try {
+          g.gain.cancelAndHoldAtCurrentValue(t);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+        } catch(e) {
+          try { g.gain.cancelScheduledValues(t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12); } catch(e2) {}
+        }
+      });
+
+      const soundDur = Math.min(duration * 1.4, 1.2);
+
+      const bufLen = Math.floor(audioCtx.sampleRate * (soundDur + 0.1));
+      const buf = audioCtx.createBuffer(1, bufLen, audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+
+      // highpass sweeps up — the "sss → iii" rise
+      const hp = audioCtx.createBiquadFilter();
+      hp.type = 'bandpass';
+      hp.frequency.setValueAtTime(150, t);
+      hp.frequency.exponentialRampToValueAtTime(400 + (targetPct / 100) * 300, t + soundDur * 0.9);
+      hp.Q.value = 1.2;
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.039, t + 0.04);
+      gain.gain.setValueAtTime(0.039, t + soundDur * 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur * 0.75);
+
+      src.connect(hp);
+      hp.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      activeBeamGains.push(gain);
+
+      src.start(t);
+      src.stop(t + soundDur + 0.1);
     }
-  });
-
-  // Match the sound duration exactly to the visual animation duration
-  const soundDur = duration; 
-
-  // 2. Pitch Logic (Sweeps upward; higher percentages finish at a higher note)
-  const startFreq = 180; // A subtle, low starting hum (Hz)
-  const endFreq = 220 + (targetPct / 100) * 260; // Scales up to ~480Hz max
-
-  // 3. Create the Sound Layers
-  // Layer 1: Triangle wave gives a smooth, warm digital body (not harsh like a square wave)
-  const osc1 = audioCtx.createOscillator();
-  osc1.type = 'triangle';
-  osc1.frequency.setValueAtTime(startFreq, t);
-  osc1.frequency.exponentialRampToValueAtTime(endFreq, t + soundDur);
-
-  // Layer 2: A pure sine wave harmonic (a perfect fifth higher) to add a "premium tech" sheen
-  const osc2 = audioCtx.createOscillator();
-  osc2.type = 'sine';
-  osc2.frequency.setValueAtTime(startFreq * 1.5, t);
-  osc2.frequency.exponentialRampToValueAtTime(endFreq * 1.5, t + soundDur);
-
-  // 4. Volume Envelope (Builds up subtly, then snaps shut to "lock in" the value)
-  const masterGain = audioCtx.createGain();
-  masterGain.gain.setValueAtTime(0.0001, t);
-  // Volume builds smoothly up to 80% of the duration
-  masterGain.gain.linearRampToValueAtTime(0.05, t + soundDur * 0.8); 
-  // Snaps cleanly down to silence right at the finish line
-  masterGain.gain.exponentialRampToValueAtTime(0.0001, t + soundDur);
-
-  // 5. Connect and Play
-  osc1.connect(masterGain);
-  osc2.connect(masterGain);
-  masterGain.connect(audioCtx.destination);
-
-  activeBeamGains.push(masterGain);
-
-  osc1.start(t);
-  osc2.start(t);
-  
-  // Stop nodes slightly after the envelope finishes to ensure clean garbage collection
-  osc1.stop(t + soundDur + 0.05);
-  osc2.stop(t + soundDur + 0.05);
-}
     // Plant one click per character on the master timeline
     function addClicksForTyping(text, start, dur) {
       const step = dur / text.length;
       for (let i = 0; i < text.length; i++) {
-        tl.call(typeClick, null, start + i * step);
+        const jitter = (Math.random() - 0.5) * step * 0.3;
+        tl.call(typeClick, null, start + i * step + jitter);
       }
     }
 
@@ -1186,7 +1137,8 @@ function playBeam(duration, targetPct) {
       }, 41.1)
       .to('#s8-url', { duration: 0.5, opacity: 1, ease: 'power2.out' }, 43.0)
       .to('#outro-line', { duration: 1.0, width: '220px', ease: 'power2.out' }, 43.4)
-      .call(() => playBeam(1.0, 100), null, 43.4);
+      .call(() => playBeam(1.0, 100), null, 43.4)
+      .call(playNotification, null, 44.5);
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // Progress bar
