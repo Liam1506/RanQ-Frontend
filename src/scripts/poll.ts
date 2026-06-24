@@ -1,6 +1,7 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
 import { formatDate } from "../utils/format";
+import { authedFetch, authedPost } from "../utils/api-client";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -48,6 +49,7 @@ let rankingOrder: string[] | null = null;
 const backBtn = document.createElement("button");
 backBtn.className = "back-btn btn-secondary";
 backBtn.textContent = "← back";
+backBtn.setAttribute("aria-label", "back");
 backBtn.addEventListener("click", () => history.back());
 document.getElementById("poll-detail")!.before(backBtn);
 
@@ -55,21 +57,25 @@ const fullscreenBtn = document.createElement("button");
 fullscreenBtn.className = "fullscreen-btn btn-secondary";
 fullscreenBtn.textContent = "⛶";
 fullscreenBtn.title = "fullscreen";
+fullscreenBtn.setAttribute("aria-label", "fullscreen");
 fullscreenBtn.addEventListener("click", () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen();
     fullscreenBtn.textContent = "✕";
     fullscreenBtn.title = "exit fullscreen";
+    fullscreenBtn.setAttribute("aria-label", "exit fullscreen");
   } else {
     document.exitFullscreen();
     fullscreenBtn.textContent = "⛶";
     fullscreenBtn.title = "fullscreen";
+    fullscreenBtn.setAttribute("aria-label", "fullscreen");
   }
 });
 document.addEventListener("fullscreenchange", () => {
   if (!document.fullscreenElement) {
     fullscreenBtn.textContent = "⛶";
     fullscreenBtn.title = "fullscreen";
+    fullscreenBtn.setAttribute("aria-label", "fullscreen");
   }
 });
 document.body.append(fullscreenBtn);
@@ -77,6 +83,7 @@ document.body.append(fullscreenBtn);
 const prevBtn = document.createElement("button");
 prevBtn.className = "neighbor-btn neighbor-btn--prev neighbor-btn--hidden";
 prevBtn.textContent = "←";
+prevBtn.setAttribute("aria-label", "previous poll");
 prevBtn.addEventListener("click", () => {
   if (prevBtn.dataset.targetId) navigateTo(prevBtn.dataset.targetId);
 });
@@ -84,6 +91,7 @@ prevBtn.addEventListener("click", () => {
 const nextBtn = document.createElement("button");
 nextBtn.className = "neighbor-btn neighbor-btn--next neighbor-btn--hidden";
 nextBtn.textContent = "→";
+nextBtn.setAttribute("aria-label", "next poll");
 nextBtn.addEventListener("click", () => {
   if (nextBtn.dataset.targetId) navigateTo(nextBtn.dataset.targetId);
 });
@@ -104,9 +112,7 @@ function navigateTo(id: string) {
 }
 
 async function loadNeighbors() {
-  const res = await fetch(`${API.polls.neighbors}?id=${pollId}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.neighbors}?id=${pollId}`);
   if (!res.ok) return;
   const { prev, next } = await res.json();
 
@@ -125,9 +131,7 @@ async function loadPoll() {
   container.innerHTML = "";
   rankingOrder = null;
 
-  const res = await fetch(`${API.polls.getById}?id=${pollId}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.getById}?id=${pollId}`);
 
   if (!res.ok) {
     container.textContent = "failed to load post.";
@@ -378,14 +382,7 @@ async function castVote(optionId: string) {
     options: poll.options.map((o) => ({ ...o })),
   });
 
-  const res = await fetch(API.polls.vote, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id: poll.id, option_id: optionId }),
-  });
+  const res = await authedPost(API.polls.vote, { poll_id: poll.id, option_id: optionId });
 
   if (!res.ok) {
     loadPoll();
@@ -446,14 +443,7 @@ async function castUpDownVote(
   poll.user_vote_up_down = next === 0 ? null : next;
   syncUpDown(poll, up, score, down);
 
-  const res = await fetch(API.polls.redditVote, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id: poll.id, voting_score: next }),
-  });
+  const res = await authedPost(API.polls.redditVote, { poll_id: poll.id, voting_score: next });
 
   if (!res.ok) {
     poll.total_up_down_score -= next - prev;
@@ -484,13 +474,9 @@ function renderAdminDeleteBtn(id: string): HTMLButtonElement {
   btn.className = "btn-secondary btn--danger";
   btn.textContent = "delete post";
   btn.addEventListener("click", async () => {
-    const res = await fetch(API.polls.delete, {
+    const res = await authedFetch(API.polls.delete, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${userId}`,
-      },
-      body: JSON.stringify({ id }),
+      body: { id },
     });
     if (res.ok) history.back();
   });
@@ -498,9 +484,7 @@ function renderAdminDeleteBtn(id: string): HTMLButtonElement {
 }
 
 async function loadComment(poll_id: string) {
-  const res = await fetch(`${API.polls.getAllComments}?poll_id=${poll_id}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.getAllComments}?poll_id=${poll_id}`);
   if (!res.ok) {
     return;
   }
@@ -657,14 +641,7 @@ function renderCommentCreation(poll_id: string): HTMLDivElement {
 }
 
 async function createComment(poll_id: string, comment: string) {
-  const res = await fetch(API.polls.comment, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ poll_id, comment }),
-  });
+  const res = await authedPost(API.polls.comment, { poll_id, comment });
   if (!res.ok) {
     return;
   }
@@ -685,13 +662,9 @@ async function createComment(poll_id: string, comment: string) {
 }
 
 async function deleteComment(commentId: string, li: HTMLLIElement) {
-  const res = await fetch(API.polls.deleteComment, {
+  const res = await authedFetch(API.polls.deleteComment, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ id: commentId }),
+    body: { id: commentId },
   });
   if (!res.ok) {
     return;
@@ -705,12 +678,8 @@ async function refreshPollStats() {
   if (!currentPoll) return;
 
   const [pollRes, commentRes] = await Promise.all([
-    fetch(`${API.polls.getById}?id=${pollId}`, {
-      headers: { Authorization: `Bearer ${userId}` },
-    }),
-    fetch(`${API.polls.getAllComments}?poll_id=${pollId}`, {
-      headers: { Authorization: `Bearer ${userId}` },
-    }),
+    authedFetch(`${API.polls.getById}?id=${pollId}`),
+    authedFetch(`${API.polls.getAllComments}?poll_id=${pollId}`),
   ]);
 
   if (pollRes.ok) {

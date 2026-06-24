@@ -1,4 +1,5 @@
 import { API } from "../config/api";
+import { authedFetch, authedPost } from "../utils/api-client";
 import { getCookie } from "../utils/cookies";
 import { escapeHtml, formatDate } from "../utils/format";
 
@@ -24,9 +25,7 @@ type Poll = {
 };
 
 async function loadUnapprovedPolls() {
-  const res = await fetch(API.polls.getUnapproved, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.polls.getUnapproved);
 
   const feed = document.getElementById("admin-box-polls")!;
 
@@ -124,36 +123,22 @@ async function loadUnapprovedPolls() {
 }
 
 async function approve(poll_id: string) {
-  await fetch(API.polls.approvePoll, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ poll_id }),
-  });
+  await authedPost(API.polls.approvePoll, { poll_id });
 }
 
 async function deletePoll(poll_id: string) {
-  await fetch(API.polls.delete, {
+  await authedFetch(API.polls.delete, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ id: poll_id }),
+    body: { id: poll_id },
   });
 }
 
 async function updateSetting(data: Record<string, unknown>) {
-  await fetch(API.siteSettings.update, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify(data),
-  });
+  await authedPost(API.siteSettings.update, data);
 }
 
 async function loadSettings() {
-  const res = await fetch(API.siteSettings.get, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.siteSettings.get);
   if (!res.ok) return;
   const s = await res.json();
 
@@ -185,9 +170,7 @@ document.getElementById("setting-max-options")!.addEventListener("change", (e) =
 });
 
 async function loadStats() {
-  const res = await fetch(API.siteSettings.stats, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.siteSettings.stats);
   if (!res.ok) return;
   const { totals, daily } = await res.json();
 
@@ -306,9 +289,8 @@ document.getElementById("cleanup-btn")!.addEventListener("click", async () => {
   result.textContent = "";
 
   try {
-    const res = await fetch(API.siteSettings.cleanup, {
+    const res = await authedFetch(API.siteSettings.cleanup, {
       method: "POST",
-      headers: { Authorization: `Bearer ${userId}` },
     });
     if (!res.ok) {
       result.textContent = "cleanup failed.";

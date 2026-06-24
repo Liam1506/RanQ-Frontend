@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { authedFetch } from "../utils/api-client";
 
 const POLL_INTERVAL = 15_000;
 let pollingInterval: ReturnType<typeof setInterval> | null = null;
@@ -18,9 +19,7 @@ async function pollNotifications() {
   const token = getCookie("userId");
   if (!token) return;
   try {
-    const res = await fetch(API.notifications.list, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await authedFetch(API.notifications.list);
     if (!res.ok) return;
     const notifications: Array<{ title: string; body: string }> = await res.json();
     notifications.forEach((n) => showNotification(n.title, n.body));

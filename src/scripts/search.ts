@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { authedFetch } from "../utils/api-client";
 import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
@@ -88,12 +89,10 @@ function renderCard(post: SearchPoll): string {
 
 async function fetchResults(q: string, off: number): Promise<{ polls: SearchPoll[]; has_more: boolean } | null> {
   const params = new URLSearchParams({ q, limit: String(LIMIT), offset: String(off) });
-  const res = await fetch(`${API.polls.search}?${params}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.search}?${params}`);
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    postList.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load."}</p>`;
+    postList.innerHTML = `<p class="feed-error">${escapeHtml(body?.detail ?? "failed to load.")}</p>`;
     return null;
   }
   return res.json();

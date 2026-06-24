@@ -4,9 +4,13 @@ export function getCookie(name: string): string | undefined {
 
 export function setCookie(name: string, value: string, days = 30) {
   const maxAge = days * 24 * 60 * 60;
-  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`;
+  // `Secure` is omitted on http:// (e.g. local `astro dev`) because browsers
+  // would silently drop the cookie; in production (https) it is always set.
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
 }
 
 export function deleteCookie(name: string) {
-  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secure}`;
 }

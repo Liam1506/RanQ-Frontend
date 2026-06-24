@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { authedFetch, authedPost } from "../utils/api-client";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -42,9 +43,7 @@ function applyFilter() {
 }
 
 async function loadUsers() {
-  const res = await fetch(API.users.list, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.users.list);
   if (!res.ok) {
     usersList.innerHTML = `<p class="feed-error">failed to load users.</p>`;
     return;
@@ -142,29 +141,20 @@ function renderUsers(users: User[]) {
 }
 
 async function toggleVerified(user_id: string) {
-  const res = await fetch(API.users.toggleVerified, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ user_id }),
-  });
+  const res = await authedPost(API.users.toggleVerified, { user_id });
   if (res.ok) loadUsers();
 }
 
 async function toggleAdmin(user_id: string) {
-  const res = await fetch(API.users.toggleAdmin, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ user_id }),
-  });
+  const res = await authedPost(API.users.toggleAdmin, { user_id });
   if (res.ok) loadUsers();
 }
 
 async function deleteUser(user_id: string) {
   if (!confirm("Delete this user? This cannot be undone.")) return;
-  const res = await fetch(API.users.delete, {
+  const res = await authedFetch(API.users.delete, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ user_id }),
+    body: { user_id },
   });
   if (res.ok) loadUsers();
 }

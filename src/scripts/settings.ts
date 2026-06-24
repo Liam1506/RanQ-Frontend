@@ -1,6 +1,7 @@
 import { API } from "../config/api";
 import { getCookie, deleteCookie } from "../utils/cookies";
 import { escapeHtml, formatDate } from "../utils/format";
+import { authedFetch } from "../utils/api-client";
 
 const userId = getCookie("userId");
 if (!userId) window.location.replace("/login");
@@ -48,9 +49,7 @@ async function loadUserInfo() {
 }
 
 async function checkMaintenance() {
-  const res = await fetch(API.siteSettings.get, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.siteSettings.get);
   if (!res.ok) return;
   const data = await res.json();
   if (data.maintenance_mode) {
@@ -202,13 +201,9 @@ function renderPolls() {
 }
 
 async function deletePoll(poll_id: string) {
-  const res = await fetch(API.polls.delete, {
+  const res = await authedFetch(API.polls.delete, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify({ id: poll_id }),
+    body: { id: poll_id },
   });
   if (!res.ok) return;
   allPolls = allPolls.filter((p) => p.id !== poll_id);
@@ -229,13 +224,11 @@ async function loadPolls() {
   const params = new URLSearchParams({ limit: "10" });
   if (typeFilter !== "all") params.set("kind", typeFilter);
   if (showUnapprovedOnly) params.set("approved", "false");
-  const res = await fetch(`${API.polls.getMyPolls}?${params}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.getMyPolls}?${params}`);
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    feed.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load polls."}</p>`;
+    feed.innerHTML = `<p class="feed-error">${escapeHtml(body?.detail ?? "failed to load polls.")}</p>`;
     return;
   }
 
@@ -253,9 +246,7 @@ async function loadMorePolls() {
   const params = new URLSearchParams({ limit: "10", cursor: nextCursor });
   if (typeFilter !== "all") params.set("kind", typeFilter);
   if (showUnapprovedOnly) params.set("approved", "false");
-  const res = await fetch(`${API.polls.getMyPolls}?${params}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.getMyPolls}?${params}`);
 
   if (!res.ok) { isLoadingPolls = false; return; }
 
@@ -312,10 +303,9 @@ function showFeedback(el: HTMLElement, msg: string, isError: boolean) {
 document.getElementById("btn-change-username")!.addEventListener("click", async () => {
   const newUsername = (document.getElementById("input-new-handle") as HTMLInputElement).value.trim();
   if (!newUsername) return;
-  const res = await fetch(API.auth.changeUsername, {
+  const res = await authedFetch(API.auth.changeUsername, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ username: newUsername }),
+    body: { username: newUsername },
   });
   const data = await res.json();
   if (res.ok) {
@@ -331,10 +321,9 @@ document.getElementById("btn-change-password")!.addEventListener("click", async 
   const current = (document.getElementById("input-current-password") as HTMLInputElement).value;
   const next = (document.getElementById("input-new-password") as HTMLInputElement).value;
   if (!current || !next) return;
-  const res = await fetch(API.auth.changePassword, {
+  const res = await authedFetch(API.auth.changePassword, {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ current_password: current, new_password: next }),
+    body: { current_password: current, new_password: next },
   });
   const data = await res.json();
   if (res.ok) {
@@ -355,9 +344,8 @@ document.getElementById("btn-delete-account")!.addEventListener("click", async (
     return;
   }
   deleteFeedback.textContent = "";
-  const res = await fetch(API.auth.deleteAccount, {
+  const res = await authedFetch(API.auth.deleteAccount, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${userId}` },
   });
   if (res.ok) {
     deleteCookie("userId");

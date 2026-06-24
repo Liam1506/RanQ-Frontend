@@ -86,7 +86,7 @@ footer {
 
 .copyright {
   font-size: var(--font-size-sm);
-  opacity: 0.3;
+  color: var(--color-input-text);
   margin: 3rem 0 0;
   text-align: center;
 }

@@ -1,4 +1,5 @@
 import { API } from "../config/api";
+import { authedFetch, authedPost } from "../utils/api-client";
 import { getCookie } from "../utils/cookies";
 
 const userId = getCookie("userId");
@@ -53,9 +54,7 @@ tabs.forEach((tab) => {
 });
 
 async function loadMaxOptions() {
-  const res = await fetch(API.siteSettings.get, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(API.siteSettings.get);
   if (res.ok) {
     const data = await res.json();
     maxOptions = data.max_options_per_poll ?? 10;
@@ -149,14 +148,7 @@ form.addEventListener("submit", async (e) => {
     payload.body = body;
   }
 
-  const res = await fetch(API.polls.create, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${userId}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  const res = await authedPost(API.polls.create, payload);
 
   if (res.ok) {
     window.location.replace("/start");

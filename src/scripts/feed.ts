@@ -1,5 +1,6 @@
 import { API } from "../config/api";
 import { getCookie } from "../utils/cookies";
+import { authedFetch, authedPost } from "../utils/api-client";
 import { escapeHtml, formatDate } from "../utils/format";
 
 const userId = getCookie("userId");
@@ -209,13 +210,11 @@ async function fetchPage(cursor: string | null = null): Promise<FeedResponse | n
   if (showUnvoted) params.set("not_voted", "true");
   if (cursor) params.set("cursor", cursor);
 
-  const res = await fetch(`${API.polls.feed}?${params}`, {
-    headers: { Authorization: `Bearer ${userId}` },
-  });
+  const res = await authedFetch(`${API.polls.feed}?${params}`);
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    feed.innerHTML = `<p class="feed-error">${body?.detail ?? "failed to load."}</p>`;
+    feed.innerHTML = `<p class="feed-error">${escapeHtml(body?.detail ?? "failed to load.")}</p>`;
     return null;
   }
   return res.json();
@@ -345,9 +344,7 @@ async function checkForNewPosts() {
   if (sort === "newest") {
     const params = new URLSearchParams({ limit: "1" });
     if (typeFilter !== "all") params.set("kind", typeFilter);
-    const res = await fetch(`${API.polls.feed}?${params}`, {
-      headers: { Authorization: `Bearer ${userId}` },
-    });
+    const res = await authedFetch(`${API.polls.feed}?${params}`);
     if (res.ok) {
       const data: FeedResponse = await res.json();
       const latestFetched = data.polls[0]?.created_at;
@@ -359,11 +356,7 @@ async function checkForNewPosts() {
   }
 
   const ids = allPolls.map((p) => p.id);
-  const statsRes = await fetch(API.polls.bulkStats, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${userId}` },
-    body: JSON.stringify({ ids }),
-  });
+  const statsRes = await authedPost(API.polls.bulkStats, { ids });
   if (!statsRes.ok) return;
   const updated: Poll[] = await statsRes.json();
   const byId = new Map(updated.map((p) => [p.id, p]));

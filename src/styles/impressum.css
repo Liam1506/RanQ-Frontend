@@ -6,7 +6,7 @@
 
 .impressum h2 {
   font-size: var(--font-size-sm);
-  opacity: 0.5;
+  color: var(--color-input-text);
   text-transform: lowercase;
   letter-spacing: 0.02em;
   margin: 0 0 0.5rem;
