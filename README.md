@@ -1,4 +1,4 @@
-### 🔗 [Backend Repository](https://github.com/HaiTzung/RanQ)
+**Backend:** [HaiTzung/RanQ](https://github.com/HaiTzung/RanQ)
 
 # RanQ
 
@@ -14,30 +14,49 @@ A web-based polling platform for the DHBW community. Users can create polls (ran
 - Vanilla TypeScript — all client-side interactivity, no JS framework
 - Plain CSS — per-feature stylesheets, design tokens in `variables.css`
 - [Vitest](https://vitest.dev) + [happy-dom](https://github.com/capricorn86/happy-dom) — unit tests
-- Node.js >= 22.12.0
 
 ---
 
 ## Setup
 
+Make sure the backend is running first — see [HaiTzung/RanQ](https://github.com/HaiTzung/RanQ).
+
+**Prerequisites:** [Node.js](https://nodejs.org) >= 22.12.0. No global installs needed — Astro and all dependencies are installed locally via npm.
+
 ```bash
 npm install
 ```
 
-Create a `.env` file at the root:
-
-```
-PUBLIC_API_BASE_URL=http://localhost:{PORT OF DJANGO API, 8000 BY DEFAULT}
-```
+Copy the environment file and adjust if needed:
 
 ```bash
-npm run astro dev      # dev server at http://localhost:4321
+cp .env.example .env
+```
+
+```env
+# The base URL of the Django backend.
+# Default for local development: http://localhost:8000
+# Change this if you run the backend on a different port or host.
+PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+Start the dev server:
+
+```bash
+npm run astro dev
+```
+
+The app is available at **http://localhost:4321**.
+
+Other commands:
+
+```bash
 npm run build    # production build → dist/
 npm run preview  # serve dist/ locally
 npx astro check  # type-check without building
 ```
 
-The `PUBLIC_API_BASE_URL` variable is baked in at build time. It must be set before running `npm run build`.
+> **Note:** `PUBLIC_API_BASE_URL` is baked in at build time. It must be set before running `npm run build`.
 
 ---
 
@@ -52,7 +71,7 @@ All API communication goes through a single REST backend. Endpoints are centrall
 |---|---|
 | Auth | login, register, logout, verify, status, dev-login |
 | Profile | change username, change password, delete account |
-| Polls | feed, search, getById, neighbors, bulkStats, create, delete, vote, redditVote, comment, getAllComments, deleteComment, approvePoll, like, getUnapproved, getMyPolls |
+| Polls | feed, search, getById, neighbors, bulkStats, create, delete, vote, redditVote, comment, getAllComments, deleteComment, approvePoll, getUnapproved, getMyPolls |
 | Settings | get, update, cleanup, stats |
 | Users (admin) | list, toggleAdmin, toggleVerified, delete |
 | Notifications | list |
@@ -130,8 +149,6 @@ npm test              # run all tests once
 npm run test:watch    # watch mode
 ```
 
-**83 tests across 10 files:**
-
 | File | Tests | Covers |
 |---|---|---|
 | `src/utils/cookies.test.ts` | 9 | `getCookie`, `setCookie`, `deleteCookie`, expiry, collision handling |
@@ -156,7 +173,7 @@ test → build → deploy
 ```
 
 1. **test** — runs `npm test`; pipeline fails if any test fails
-2. **build** — runs `npm run build` with `PUBLIC_API_BASE_URL=https://ranq.haitzung.com`; uploads `dist/` as a Pages artifact
+2. **build** — runs `npm run build`; uploads `dist/` as a Pages artifact
 3. **deploy** — publishes the artifact to GitHub Pages at https://ranq.dev
 
 All jobs run on `ubuntu-latest` with Node.js 22.
