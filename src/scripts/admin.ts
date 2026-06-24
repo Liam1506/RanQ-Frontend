@@ -58,13 +58,9 @@ async function loadUnapprovedPolls() {
       })
       .join("");
 
-    const meta = [
-      `${total} vote${total !== 1 ? "s" : ""}`,
-      poll.creator_username ? `by ${escapeHtml(poll.creator_username)}` : "",
-      poll.created_at ? formatDate(poll.created_at) : "",
-    ]
-      .filter(Boolean)
-      .join(" · ");
+    const metaLeft = poll.kind === "ranking"
+      ? [`${total} vote${total !== 1 ? "s" : ""}`]
+      : [];
 
     const contentHtml =
       poll.kind === "post"
@@ -76,9 +72,15 @@ async function loadUnapprovedPolls() {
     const tmp = document.createElement("div");
     tmp.innerHTML = `
       <div class="poll-card poll-card--static">
-        <p class="poll-question">${escapeHtml(poll.question)}</p>
+        <div class="poll-card-header">
+          <p class="poll-question">${escapeHtml(poll.question)}</p>
+          <span class="poll-meta-date">${poll.created_at ? formatDate(poll.created_at) : ""}</span>
+        </div>
         ${contentHtml}
-        <span class="poll-meta">${meta}</span>
+        <div class="poll-card-footer">
+          <span class="poll-meta">${metaLeft.join(" · ")}</span>
+          <span class="poll-meta poll-meta-author">${poll.creator_username ? `@${escapeHtml(poll.creator_username)}` : ""}</span>
+        </div>
         <div class="poll-card-actions">
           <button class="btn-secondary btn--positive" data-action="approve" data-poll-id="${poll.id}">approve</button>
           <span style="flex:1"></span>

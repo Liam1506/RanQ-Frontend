@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.2.3",
-    "astro": "^7.0.0",
+    "astro": "^7.0.2",
     "astro-icon": "^1.1.5"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.2",
+    "@astrojs/check": "^0.9.9",
     "@eslint/js": "^10.0.1",
     "@vitest/ui": "^4.1.8",
     "eslint": "^10.5.0",
