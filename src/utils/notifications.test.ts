@@ -85,9 +85,10 @@ describe("startNotificationPolling", () => {
 
     expect(fetchSpy).toHaveBeenCalled();
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect((init.headers as Record<string, string>)["Authorization"]).toBe(
-      "Bearer my-jwt-token"
-    );
+    const headers = init.headers instanceof Headers
+      ? init.headers
+      : new Headers(init.headers as Record<string, string>);
+    expect(headers.get("Authorization")).toBe("Bearer my-jwt-token");
   });
 
   it("shows a Notification for each item returned by the API", async () => {
