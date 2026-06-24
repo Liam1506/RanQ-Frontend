@@ -114,7 +114,7 @@ Every protected page script also starts with `if (!userId) window.location.repla
 | `Web Share API` | Share button on poll detail page |
 | `Intersection Observer` | Infinite scroll sentinel on feed, search, settings |
 | `localStorage` | Theme preference (`light` / `dark` / system) |
-| `sessionStorage` | Scroll position restore on feed; optimistic vote patches |
+| `sessionStorage` | Scroll position restore on feed; feed filter state (sort, type, unvoted); optimistic vote patches |
 | `History API` | Back button and URL updates on poll detail |
 | `requestAnimationFrame` | Smooth bar width transitions after voting |
 | `AudioContext` | Synthesised sound effects in the trailer |
