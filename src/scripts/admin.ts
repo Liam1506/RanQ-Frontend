@@ -181,6 +181,7 @@ async function loadStats() {
     verified: totals.verified_users,
     polls: totals.polls,
     posts: totals.posts,
+    quotes: totals.quotes,
     votes: totals.votes,
     comments: totals.comments,
   });
