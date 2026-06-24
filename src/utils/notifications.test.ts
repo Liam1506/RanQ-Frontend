@@ -85,9 +85,10 @@ describe("startNotificationPolling", () => {
 
     expect(fetchSpy).toHaveBeenCalled();
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    const headers = init.headers instanceof Headers
-      ? init.headers
-      : new Headers(init.headers as Record<string, string>);
+    // Normalize init.headers (which may be a Headers instance, plain object, or
+    // tuple array depending on how the caller built the request) into a Headers
+    // we can read uniformly.
+    const headers = new Headers((init.headers ?? {}) as HeadersInit);
     expect(headers.get("Authorization")).toBe("Bearer my-jwt-token");
   });
 
