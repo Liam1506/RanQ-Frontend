@@ -27,11 +27,11 @@ npm install
 Create a `.env` file at the root:
 
 ```
-PUBLIC_API_BASE_URL=http://localhost:5001
+PUBLIC_API_BASE_URL=http://localhost:{PORT OF DJANGO API, 8000 BY DEFAULT}
 ```
 
 ```bash
-npm run dev      # dev server at http://localhost:4321
+npm run astro dev      # dev server at http://localhost:4321
 npm run build    # production build → dist/
 npm run preview  # serve dist/ locally
 npx astro check  # type-check without building
