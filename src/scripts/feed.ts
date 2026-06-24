@@ -41,6 +41,9 @@ let showUnvoted = sessionStorage.getItem("feedUnvoted") === "true";
 let typeFilter: "all" | Kind = (sessionStorage.getItem("feedType") as "all" | Kind) ?? "all";
 let sort = sessionStorage.getItem("feedSort") ?? "newest";
 let initialRender = true;
+const deletedPollIds = new Set<string>(
+  JSON.parse(sessionStorage.getItem("deletedPollIds") ?? "[]")
+);
 
 const LIMIT = 10;
 const MAX_OPTIONS_IN_FEED = 5;
@@ -175,7 +178,7 @@ function animateBars(card: HTMLAnchorElement) {
 }
 
 function renderAll() {
-  const polls = [...allPolls];
+  const polls = [...allPolls].filter((p) => !deletedPollIds.has(p.id));
 
   feed.querySelectorAll(".feed-empty, .feed-error, .feed-loading").forEach((el) => el.remove());
 
@@ -233,6 +236,14 @@ async function loadFeed() {
   allPolls = data.polls;
   nextCursor = data.next_cursor;
   hasMore = data.has_more;
+
+  const deletedId = sessionStorage.getItem("deletedPollId");
+  if (deletedId) {
+    sessionStorage.removeItem("deletedPollId");
+    deletedPollIds.add(deletedId);
+    sessionStorage.setItem("deletedPollIds", JSON.stringify([...deletedPollIds]));
+    allPolls = allPolls.filter((p) => !deletedPollIds.has(p.id));
+  }
 
   applyPendingUpdates();
   renderAll();

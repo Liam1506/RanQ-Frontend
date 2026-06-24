@@ -478,7 +478,10 @@ function renderAdminDeleteBtn(id: string): HTMLButtonElement {
       method: "DELETE",
       body: { id },
     });
-    if (res.ok) history.back();
+    if (res.ok) {
+      sessionStorage.setItem("deletedPollId", id);
+      history.back();
+    }
   });
   return btn;
 }
